@@ -114,92 +114,112 @@ def test_replay_set_save_delete_and_stage_persistence():
   branch_id = stage["surface_defaults"]["selected_branch_id"]
   event_title = stage["observatory"]["key_events"][0]["title"]
   branch_label = stage["observatory"]["key_events"][0]["branches"][0]["label"]
+  replay_payload = {
+    "replay_set_key": "current",
+    "replay_set_label": "Current Set",
+    "replay_set_note": "Tracks the currently selected path.",
+    "authored_note": "A saved replay excerpt for persistence testing.",
+    "artifact": {
+      "title": "Current Set / Exhibit",
+      "deck": "Deck line for the saved replay.",
+      "wall_text": "Wall text for the saved replay.",
+      "pressure_note": "Pressure note for the saved replay.",
+      "closing_note": "Closing note for the saved replay.",
+      "tags": ["Current Set", "Test"],
+    },
+    "focus": {
+      "event_id": event_id,
+      "event_title": event_title,
+      "branch_id": branch_id,
+      "branch_label": branch_label,
+    },
+    "metrics": {
+      "event_count": 2,
+      "average_confidence": 0.62,
+      "average_pressure": 1.4,
+      "alternate_count": 1,
+    },
+    "dossier": {
+      "summary": "Saved replay dossier summary.",
+      "entry": {
+        "title": f"{event_title} / {branch_label}",
+        "summary": "Entry summary.",
+      },
+      "hinge": {
+        "title": f"{event_title} / {branch_label}",
+        "summary": "Hinge summary.",
+      },
+      "terminal": {
+        "title": f"{event_title} / {branch_label}",
+        "summary": "Terminal summary.",
+      },
+    },
+    "timeline": [
+      {
+        "index": "ARCHIVE 01",
+        "stage": stage["observatory"]["key_events"][0]["stage"],
+        "event_title": event_title,
+        "branch_label": branch_label,
+        "confidence": 0.62,
+        "counter_signal_count": 1,
+        "description": "Saved replay timeline entry.",
+        "upstream": {
+          "title": "Archive Origin",
+          "summary": "Saved replay origin.",
+        },
+        "downstream": {
+          "title": "Archive Open End",
+          "summary": "Saved replay downstream.",
+        },
+        "focus": {
+          "event_id": event_id,
+          "event_title": event_title,
+          "branch_id": branch_id,
+          "branch_label": branch_label,
+        },
+      }
+    ],
+    "language": "zh",
+  }
 
   save_response = client.post(
     f"/api/projects/{project_id}/replay-sets",
-    json={
-      "replay_set_key": "current",
-      "replay_set_label": "Current Set",
-      "replay_set_note": "Tracks the currently selected path.",
-      "authored_note": "A saved replay excerpt for persistence testing.",
-      "artifact": {
-        "title": "Current Set / Exhibit",
-        "deck": "Deck line for the saved replay.",
-        "wall_text": "Wall text for the saved replay.",
-        "pressure_note": "Pressure note for the saved replay.",
-        "closing_note": "Closing note for the saved replay.",
-        "tags": ["Current Set", "Test"],
-      },
-      "focus": {
-        "event_id": event_id,
-        "event_title": event_title,
-        "branch_id": branch_id,
-        "branch_label": branch_label,
-      },
-      "metrics": {
-        "event_count": 2,
-        "average_confidence": 0.62,
-        "average_pressure": 1.4,
-        "alternate_count": 1,
-      },
-      "dossier": {
-        "summary": "Saved replay dossier summary.",
-        "entry": {
-          "title": f"{event_title} / {branch_label}",
-          "summary": "Entry summary.",
-        },
-        "hinge": {
-          "title": f"{event_title} / {branch_label}",
-          "summary": "Hinge summary.",
-        },
-        "terminal": {
-          "title": f"{event_title} / {branch_label}",
-          "summary": "Terminal summary.",
-        },
-      },
-      "timeline": [
-        {
-          "index": "ARCHIVE 01",
-          "stage": stage["observatory"]["key_events"][0]["stage"],
-          "event_title": event_title,
-          "branch_label": branch_label,
-          "confidence": 0.62,
-          "counter_signal_count": 1,
-          "description": "Saved replay timeline entry.",
-          "upstream": {
-            "title": "Archive Origin",
-            "summary": "Saved replay origin.",
-          },
-          "downstream": {
-            "title": "Archive Open End",
-            "summary": "Saved replay downstream.",
-          },
-          "focus": {
-            "event_id": event_id,
-            "event_title": event_title,
-            "branch_id": branch_id,
-            "branch_label": branch_label,
-          },
-        }
-      ],
-      "language": "zh",
-    },
+    json=replay_payload,
   )
   assert save_response.status_code == 200
   saved_payload = save_response.json()["data"]
   assert len(saved_payload) == 1
   assert saved_payload[0]["replay_set_key"] == "current"
 
+  second_save_response = client.post(
+    f"/api/projects/{project_id}/replay-sets",
+    json={
+      **replay_payload,
+      "replay_set_label": "Current Set / Curated Variant",
+      "replay_set_note": "A second authored reading of the same replay focus.",
+      "artifact": {
+        **replay_payload["artifact"],
+        "title": "Current Set / Curated Variant / Exhibit",
+      },
+    },
+  )
+  assert second_save_response.status_code == 200
+  second_saved_payload = second_save_response.json()["data"]
+  assert len(second_saved_payload) == 2
+  assert second_saved_payload[0]["replay_set_label"] == "Current Set / Curated Variant"
+  assert second_saved_payload[1]["replay_set_label"] == "Current Set"
+
   stage_response = client.get(f"/api/projects/{project_id}/stage", params={"language": "zh"})
   assert stage_response.status_code == 200
   persisted_stage = stage_response.json()["data"]
-  assert persisted_stage["ripple"]["saved_replay_sets"][0]["replay_set_id"] == saved_payload[0]["replay_set_id"]
+  assert len(persisted_stage["ripple"]["saved_replay_sets"]) == 2
+  assert persisted_stage["ripple"]["saved_replay_sets"][0]["replay_set_id"] == second_saved_payload[0]["replay_set_id"]
 
   delete_response = client.delete(
-    f"/api/projects/{project_id}/replay-sets/{saved_payload[0]['replay_set_id']}",
+    f"/api/projects/{project_id}/replay-sets/{second_saved_payload[0]['replay_set_id']}",
   )
   assert delete_response.status_code == 200
-  assert delete_response.json()["data"] == []
+  assert len(delete_response.json()["data"]) == 1
 
 
 def test_invalid_effect_scope_is_rejected():

@@ -179,6 +179,15 @@
                 setAlternateCount: copy.ripple.setAlternateCount,
                 replayDossier: copy.ripple.replayDossier,
                 replayDossierNote: copy.ripple.replayDossierNote,
+                authorDeck: language === 'zh' ? '重演作者台' : 'Replay Author Deck',
+                authorDeckNote: language === 'zh'
+                  ? '在保存和导出之前，为当前重演写下你自己的标题和策展注记。'
+                  : 'Write a title and curator note for the current replay before you save or export it.',
+                authorTitlePlaceholder: language === 'zh' ? '例如：裂缝中的共振线' : 'For example: Resonance Through The Fracture',
+                authorNotePlaceholder: language === 'zh'
+                  ? '写下这一版重演为什么值得被保存、展示或带走。'
+                  : 'Write why this replay cut deserves to be saved, exhibited, or carried away.',
+                resetAuthorDeck: language === 'zh' ? '恢复派生文案' : 'Reset To Derived Copy',
                 replayArtifact: language === 'zh' ? '重演展签' : 'Replay Artifact',
                 replayArtifactNote: language === 'zh'
                   ? '把当前重演读成一张可带走的展签，而不是只留在技术 dossier 里。'
@@ -223,7 +232,7 @@
                 pressureLowBand: language === 'zh' ? '低压' : 'Low Pressure',
                 replayShelf: language === 'zh' ? '重演架' : 'Replay Shelf',
                 replayShelfNote: language === 'zh'
-                  ? '把当前重演包暂存到本地架上，之后可以回看、恢复和再次导出。'
+                  ? '把当前重演包保存到项目重演架上，之后可以回看、恢复和再次导出。'
                   : 'Keep authored replay packets on this project shelf so they can be revisited, restored, and exported again.',
                 saveReplayShelf: language === 'zh' ? '保存到 Replay Shelf' : 'Save To Replay Shelf',
                 restoreReplayShelf: language === 'zh' ? '恢复重演' : 'Restore Replay',

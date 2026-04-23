@@ -109,7 +109,8 @@ This slice does include:
 - [x] turn the replay shelf into a more legible replay atlas with a bundled export for saved replay sets
 - [x] move saved replay sets from browser-local state into project-level persistence
 - [x] remove the deprecated `jsonschema.RefResolver` path from API contract validation
-- [ ] deepen the replay dossier further if later we need more authored replay sets or stronger replay writing
+- [x] add clearer curatorial control so replay sets can be authored before save/export instead of only using derived labels
+- [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 

@@ -609,3 +609,34 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
 - deepen Ripple beyond the current persisted replay shelf into richer authored replay sets if later we need stronger curation
 - continue polishing Observatory density and wording if the public shell needs tighter reading cues
+
+## 2026-04-23 - Experience Rebuild Slice 4 (authored replay set pass started)
+
+Planned in this iteration:
+
+- add clearer curatorial control so a replay set can be authored before save and export
+- keep the persisted replay shelf and replay atlas flow working while the authored layer becomes editable
+- preserve the art-first, author-first reading of Ripple rather than turning the surface into a utility form
+
+## 2026-04-23 - Experience Rebuild Slice 4 (authored replay set pass completed)
+
+Completed in this iteration:
+
+- added a replay author deck so the current replay can be given a custom title and curatorial note before save or export
+- wired authored replay edits through dossier, artifact, packet, exhibit, and persisted shelf flows instead of leaving them as temporary UI-only text
+- adjusted replay-set persistence so different authored titles for the same replay focus can coexist as separate saved variants
+- extended API and frontend tests so authored replay variants and restore behavior are exercised
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+- `git diff --check` passed
+- secret pattern scan returned no matches for the provided MiniMax key fragment
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
+- deepen Ripple beyond title-and-note authorship into richer authored replay collections or stronger long-form narration if needed
+- continue polishing Observatory density and wording if the public shell needs tighter reading cues

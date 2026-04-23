@@ -1145,6 +1145,15 @@ li {
   box-shadow: var(--shadow);
 }
 
+.ripple-author-deck-card {
+  background: linear-gradient(180deg, rgba(13, 24, 32, 0.92), rgba(8, 13, 18, 0.76));
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
 .ripple-track-header--dossier {
   align-items: flex-start;
   gap: 1rem;
@@ -1161,6 +1170,26 @@ li {
 .ripple-dossier-grid {
   display: grid;
   gap: 0.8rem;
+}
+
+.ripple-author-deck-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ripple-author-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ripple-author-field--wide {
+  grid-column: 1 / -1;
+}
+
+.ripple-author-field textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .ripple-dossier-grid {
@@ -1474,6 +1503,7 @@ li {
 
   .ripple-replay-set-grid,
   .ripple-shelf-atlas-grid,
+  .ripple-author-deck-grid,
   .ripple-dossier-grid,
   .ripple-history-mode-row,
   .ripple-history-sections {

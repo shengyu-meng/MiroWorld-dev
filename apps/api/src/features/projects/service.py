@@ -175,6 +175,7 @@ class ProjectService:
   def _is_same_saved_replay(self, saved_replay: SavedReplaySet, payload: ReplaySetSaveRequest) -> bool:
     return (
       saved_replay.replay_set_key == payload.replay_set_key
+      and saved_replay.replay_set_label == payload.replay_set_label
       and saved_replay.focus.event_id == payload.focus.event_id
       and saved_replay.focus.branch_id == payload.focus.branch_id
     )

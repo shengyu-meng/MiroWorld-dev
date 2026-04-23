@@ -2,11 +2,11 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 persisted replay set pass completed`
+Phase: `experience-first rebuild / scene-shell slice 4 authored replay set pass completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, png, bundle, and exhibit artifacts while calibration reads through wider window, branch, decision-type, and longitudinal slices and Ripple now supports a replay-set library, replay dossier, authored replay artifact, replay atlas, local replay packet and exhibit export, and a project-persisted replay shelf.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, png, bundle, and exhibit artifacts while calibration reads through wider window, branch, decision-type, and longitudinal slices and Ripple now supports a replay-set library, replay dossier, editable authored replay deck, authored replay artifact, replay atlas, local replay packet and exhibit export, and a project-persisted replay shelf.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -25,6 +25,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and Ripple can now read each replay set through clearer dossier anchors such as entry, hinge pressure, and terminal exposure
 - and Ripple can now turn the selected replay dossier into a portable local packet instead of leaving it as an in-scene reading only
 - and Ripple can now keep authored replay packets on a small project-persisted shelf so replay states can be revisited instead of only exported once
+- and Ripple now lets the viewer rewrite the replay title and curatorial note before saving or exporting a replay set
 - and calibration can now be read not only by branch and window, but also by decision type and longer-horizon archive slices
 - and the archive exports can now also leave the shell as a denser local media packet instead of only a row of separate files
 - and Ripple can now leave the shell not only as a technical packet, but also as a more authored replay artifact and replay exhibit
@@ -164,6 +165,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - Ripple now saves and removes replay shelf entries through backend routes while keeping replay atlas and replay exhibit exports working
 - API contract validation no longer depends on deprecated `jsonschema.RefResolver`
 
+### Frontend experience rebuild slice 4 (authored replay set pass)
+
+- Ripple now exposes an editable replay author deck so title and curatorial note can be rewritten before save or export
+- authored replay edits now flow through dossier, artifact, packet, exhibit, and replay shelf persistence instead of stopping at a temporary preview
+- persisted replay sets can now coexist as authored variants when the same replay focus is saved under different curatorial titles
+
 ### Frontend experience rebuild slice 4 (replay set library pass)
 
 - Ripple now exposes a small replay set library instead of only one replay-history reading
@@ -186,8 +193,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ### Product / experience gaps
 
-- the linefield and Ripple now act more like a multi-path replay surface with named replay sets, but they are not yet a fuller replay archive across multiple synthesized histories or more authored replay sets
-- Ripple now exposes replay sets, dossier anchors, a more authored replay artifact, a replay atlas, local replay exhibit export, and a project-persisted shelf, but it still does not yet support deeper authored replay writing or richer replay-set curation
+- the linefield and Ripple now act more like a multi-path replay surface with named replay sets, but they are not yet a fuller replay archive across multiple synthesized histories or saved authored collections
+- Ripple now exposes replay sets, dossier anchors, an editable authored replay deck, a more authored replay artifact, a replay atlas, local replay exhibit export, and a project-persisted shelf, but it still does not yet support deeper authored replay writing or richer replay-set curation beyond title and note
 - the archive now exports local svg, png, text, exhibit html, artifact bundle, and a zipped media packet, but it still does not yet generate richer image pipelines or broader packaged media sets beyond this first denser bundle
 - calibration history is now comparative across windows, branches, decision types, and longer-horizon slices, but it can still become denser if later we need deeper longitudinal narration
 - ripple continuity now includes a replay set library and dossier layer, but it still may need persisted replay sets or deeper authored narration later
@@ -208,6 +215,6 @@ The main product risk is no longer "can it run." It is "how far the public exper
 The next active slice is still `Experience Rebuild Slice 4`:
 
 - deepen the export path beyond the current SVG / PNG / TXT / HTML / JSON / ZIP packet set if richer packaged media becomes necessary
-- deepen Ripple beyond the current authored replay artifact and replay atlas into richer authored replay sets or more persistent narration if needed
+- deepen Ripple beyond the current authored replay artifact and replay atlas into richer authored replay sets such as wider curatorial fields, saved collections, or stronger narration
 - deepen calibration comparison beyond the current slice deck into richer decision-type or longer-horizon archive perspectives if needed
 - keep extending the linefield / ripple system toward richer authored or persisted replay sets without regressing shell speed

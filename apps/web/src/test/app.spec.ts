@@ -260,17 +260,17 @@ const savedReplaySetResponse = [
     replay_set_id: 'rset_1',
     saved_at: '2026-01-06T00:00:00Z',
     replay_set_key: 'pressure',
-    replay_set_label: 'Pressure Set',
-    replay_set_note: 'The branch keeps pressure visible at each hinge.',
-    authored_note: 'Enters through Event One / Alternate, takes pressure at Event Two / Backlash, and exposes its tail at Event Two / Backlash.',
+    replay_set_label: 'Pressure Chronicle',
+    replay_set_note: 'Hold the hinge open.',
+    authored_note: 'This replay dossier reads through Pressure Chronicle, covering 2 events with 27% average confidence and 2.7 average pressure. Hold the hinge open. Enters through Event One / Alternate, takes pressure at Event Two / Backlash, and exposes its tail at Event Two / Backlash.',
     language: 'en',
     artifact: {
-      title: 'Pressure Set / Event Two / Backlash',
+      title: 'Pressure Chronicle / Event Two / Backlash',
       deck: 'Pours in from Event One / Alternate, bends at Event Two / Backlash, and leaves its afterimage toward Event Two / Backlash.',
-      wall_text: 'This Pressure Set replay spans 2 events, holds 27% effective confidence, carries 2.7 visible pressure, and keeps 2 alternate turns in frame.',
+      wall_text: 'This Pressure Chronicle replay spans 2 events, holds 27% effective confidence, carries 2.7 visible pressure, and keeps 2 alternate turns in frame. Hold the hinge open.',
       pressure_note: 'This is a high-pressure reading: it stays with the branch where counter-signals and costs remain most exposed.',
       closing_note: 'What remains at Event Two / Backlash is not a free ending, because the line still keeps 2 alternate turns under pressure in the background.',
-      tags: ['Pressure Set', 'Event Two / Backlash', '2 Event Count'],
+      tags: ['Pressure Chronicle', 'Event Two / Backlash', '2 Event Count'],
     },
     focus: {
       event_id: 'evt_2',
@@ -503,17 +503,22 @@ describe('app routes', () => {
     expect(wrapper.text()).toContain('Backlash branch')
     await wrapper.find('[data-testid="replay-set-pressure"]').trigger('click')
     expect(wrapper.find('[data-testid="ripple-replay-set-library"]').text()).toContain('Pressure Set')
+    expect(wrapper.find('[data-testid="replay-author-deck"]').exists()).toBe(true)
+    await wrapper.find('[data-testid="author-title-input"]').setValue('Pressure Chronicle')
+    await wrapper.find('[data-testid="author-note-input"]').setValue('Hold the hinge open.')
     expect(wrapper.find('[data-testid="ripple-replay-dossier"]').text()).toContain('Hinge Pressure')
     expect(wrapper.find('[data-testid="ripple-authored-artifact"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Replay Artifact')
+    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Pressure Chronicle')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Enters through')
+    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Hold the hinge open.')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).not.toContain(' 路 ')
     await wrapper.find('[data-testid="copy-replay-excerpt"]').trigger('click')
     expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1)
     expect(clipboardWriteTextMock).toHaveBeenCalledWith(expect.stringContaining('Enters through'))
     await wrapper.find('[data-testid="copy-replay-artifact"]').trigger('click')
     expect(clipboardWriteTextMock).toHaveBeenCalledTimes(2)
-    expect(clipboardWriteTextMock).toHaveBeenCalledWith(expect.stringContaining('Pressure Set'))
+    expect(clipboardWriteTextMock).toHaveBeenCalledWith(expect.stringContaining('Pressure Chronicle'))
     await wrapper.find('[data-testid="download-replay-dossier"]').trigger('click')
     expect(createObjectURLMock).toHaveBeenCalledTimes(1)
     await wrapper.find('[data-testid="download-replay-packet"]').trigger('click')
@@ -522,7 +527,7 @@ describe('app routes', () => {
     expect(createObjectURLMock).toHaveBeenCalledTimes(3)
     await wrapper.find('[data-testid="save-replay-shelf"]').trigger('click')
     await flushPromises()
-    expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('Pressure Set')
+    expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('Pressure Chronicle')
     expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').text()).toContain('High Pressure')
     expect(fetchMock).toHaveBeenCalledTimes(3)
@@ -537,7 +542,8 @@ describe('app routes', () => {
     await wrapper.find('[data-testid="replay-set-current"]').trigger('click')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Current Set')
     await wrapper.find('[data-testid="restore-saved-replay"]').trigger('click')
-    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Pressure Set')
+    await flushPromises()
+    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Pressure Chronicle')
     await wrapper.find('[data-testid="remove-saved-replay"]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('No replay packets')
