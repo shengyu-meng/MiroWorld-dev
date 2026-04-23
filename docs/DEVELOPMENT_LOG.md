@@ -139,3 +139,32 @@ Still open inside slice 4:
 - deepen the artifact path beyond local SVG / TXT export
 - make calibration more comparative than the current pattern view
 - extend ripple and linefield continuity beyond the current replay track
+
+## 2026-04-23 - Experience Rebuild Slice 4 (calibration atlas pass started)
+
+Planned in this iteration:
+
+- turn calibration from a simple pattern meter into a more comparative archive view
+- surface recent tendency and dominant outcomes without changing public contracts
+- keep the archive readable as a public-facing art shell rather than a dashboard
+
+## 2026-04-23 - Experience Rebuild Slice 4 (calibration atlas pass completed)
+
+Completed in this iteration:
+
+- turned the archive calibration panel into a comparative atlas rather than a plain pattern strip
+- added dominant-outcome, recent-tendency, and branch-focus cues without changing public contracts
+- compared the recent calibration window against the full archive inside the existing art shell
+- extended frontend coverage so the archive route checks for the calibration atlas
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- deepen the artifact path beyond local SVG / TXT export
+- extend calibration comparison if the current atlas proves too shallow in real use
+- extend ripple and linefield continuity beyond the current replay track

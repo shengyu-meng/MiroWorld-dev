@@ -82,7 +82,9 @@ This slice does include:
 
 - [x] add local export actions for archive poster and share bundle
 - [ ] turn the archive poster layer into a stronger export-ready artifact flow
-- [ ] compare calibration records by pattern and tendency, not only chronology
+- [x] turn calibration pattern into a comparative archive atlas
+- [x] compare calibration records by pattern and tendency, not only chronology
+- [ ] deepen calibration comparison across wider archive slices if the current atlas proves too shallow
 - [ ] deepen ripple continuity beyond the current replay track
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration

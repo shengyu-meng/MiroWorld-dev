@@ -854,6 +854,25 @@ li {
   gap: 0.45rem;
 }
 
+.calibration-atlas-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.calibration-atlas-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.8rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.calibration-atlas-card strong {
+  font-size: 1.05rem;
+}
+
 .calibration-meter-segment {
   display: grid;
   gap: 0.15rem;
@@ -867,6 +886,40 @@ li {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+}
+
+.calibration-comparison-stack {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.calibration-comparison-row {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.calibration-comparison-row > span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.calibration-comparison-bar {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.calibration-comparison-segment {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 1.55rem;
+  border-radius: 999px;
+}
+
+.calibration-comparison-segment small {
+  color: var(--text);
 }
 
 .calibration-pattern-dot {
@@ -1003,6 +1056,10 @@ li {
   .entry-launch-grid,
   .stage-overview,
   .share-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calibration-atlas-grid {
     grid-template-columns: 1fr;
   }
 

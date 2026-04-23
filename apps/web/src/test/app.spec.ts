@@ -148,10 +148,47 @@ const sampleStage: StageData = {
         cost_changes: ['Cost 1'],
       },
     ],
-    calibration_records: [],
+    calibration_records: [
+      {
+        calibration_id: 'cal_1',
+        event_id: 'evt_1',
+        branch_id: 'br_1',
+        result: 'hit',
+        actual_outcome: 'Outcome one aligned with the selected branch.',
+        note: '',
+        created_at: '2026-01-05T00:00:00Z',
+      },
+      {
+        calibration_id: 'cal_2',
+        event_id: 'evt_1',
+        branch_id: 'br_1',
+        result: 'partial',
+        actual_outcome: 'Outcome two only partially aligned.',
+        note: '',
+        created_at: '2026-01-04T00:00:00Z',
+      },
+      {
+        calibration_id: 'cal_3',
+        event_id: 'evt_1',
+        branch_id: 'br_2',
+        result: 'miss',
+        actual_outcome: 'Outcome three broke away from the branch.',
+        note: '',
+        created_at: '2026-01-03T00:00:00Z',
+      },
+      {
+        calibration_id: 'cal_4',
+        event_id: 'evt_1',
+        branch_id: 'br_1',
+        result: 'partial',
+        actual_outcome: 'Outcome four stayed contested.',
+        note: '',
+        created_at: '2026-01-02T00:00:00Z',
+      },
+    ],
     calibration_summary: {
-      count: 0,
-      summary: 'No actual outcomes have been written into the archive yet.',
+      count: 4,
+      summary: 'The archive now shows a split but partially stabilizing calibration pattern.',
     },
   },
   version: 1,
@@ -245,6 +282,7 @@ describe('app routes', () => {
     await wrapper.findAll('.surface-chip')[4]?.trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="archive-section"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="calibration-atlas"]').exists()).toBe(true)
     await wrapper.find('[data-testid="download-poster"]').trigger('click')
     expect(createObjectURLMock).toHaveBeenCalledTimes(1)
     await wrapper.find('[data-testid="download-bundle"]').trigger('click')

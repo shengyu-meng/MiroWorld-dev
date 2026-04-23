@@ -2,17 +2,18 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 export pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 calibration atlas pass complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive can now export local poster and share-bundle artifacts.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now supports both export artifacts and comparative calibration reading.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
 - the shell now reads as a scene-based worldline interface instead of a long panel stack
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
+- calibration no longer reads as a plain log; it now exposes dominant outcomes, recent tendency, and branch focus
 - but the linefield can still become a stronger event-to-event storytelling actor
 - and the calibration / replay archive can still become more comparative and more navigable
 
@@ -76,6 +77,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - Archive can export a local share-bundle text file that packages summary, share text, decision log, and calibration notes
 - frontend tests now cover the export actions at a minimal interaction level
 
+### Frontend experience rebuild slice 4 (calibration atlas pass)
+
+- Archive calibration view now compares the recent window against the full archive rather than only listing records
+- calibration now surfaces dominant outcomes, recent tendency, and the most-tested branch as first-pass comparative cues
+- frontend route tests now cover the presence of the calibration atlas
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -88,7 +95,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 - the linefield now acts as a branch field for the current event, but it is not yet a full event-to-event explorer
 - the archive now exports local poster and text artifacts, but it does not yet generate richer saved multi-format bundles or image pipelines beyond SVG
-- calibration history is now patterned, but it is not yet comparative across branch families, time windows, or decision types
+- calibration history is now comparative at a first pass, but it is not yet deeper across branch families, broader time windows, or decision types
 - ripple history is now more track-like, but it still centers one replay chain more than a broader event-to-event archive
 
 ### Content expression gaps
@@ -107,5 +114,5 @@ The main product risk is no longer "can it run." It is "how far the public exper
 The next active slice is still `Experience Rebuild Slice 4`:
 
 - deepen the export path beyond local SVG / TXT into stronger artifact options
-- make calibration more comparative, not only pattern-readable
+- deepen calibration comparison beyond the current atlas into richer archive perspectives if needed
 - keep extending the linefield / ripple system toward a fuller event-to-event explorer without regressing shell speed
