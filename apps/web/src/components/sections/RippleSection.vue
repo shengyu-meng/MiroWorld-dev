@@ -147,6 +147,46 @@
       </div>
     </div>
 
+    <div v-if="selectedReplaySet && replayDossier" class="ripple-replay-dossier-card" data-testid="ripple-replay-dossier">
+      <header class="ripple-track-header">
+        <div>
+          <span class="annotation-label">{{ copy.replayDossier }}</span>
+          <p class="surface-callout">{{ copy.replayDossierNote }}</p>
+        </div>
+      </header>
+
+      <div class="ripple-dossier-summary">
+        <strong>{{ selectedReplaySet.label }}</strong>
+        <p>{{ replayDossier.summary }}</p>
+      </div>
+
+      <div class="ripple-dossier-grid">
+        <article class="ripple-dossier-card">
+          <span class="annotation-label">{{ copy.entryAnchor }}</span>
+          <strong>{{ replayDossier.entry.title }}</strong>
+          <p>{{ replayDossier.entry.summary }}</p>
+        </article>
+
+        <article class="ripple-dossier-card">
+          <span class="annotation-label">{{ copy.hingePressure }}</span>
+          <strong>{{ replayDossier.hinge.title }}</strong>
+          <p>{{ replayDossier.hinge.summary }}</p>
+        </article>
+
+        <article class="ripple-dossier-card">
+          <span class="annotation-label">{{ copy.terminalExposure }}</span>
+          <strong>{{ replayDossier.terminal.title }}</strong>
+          <p>{{ replayDossier.terminal.summary }}</p>
+        </article>
+      </div>
+
+      <div class="ripple-dossier-meta">
+        <span class="event-meta-pill">{{ copy.setConfidence }} / {{ formatConfidence(selectedReplaySet.averageConfidence) }}</span>
+        <span class="event-meta-pill">{{ copy.setPressure }} / {{ selectedReplaySet.averagePressure }}</span>
+        <span class="event-meta-pill">{{ copy.setAlternateCount }} / {{ selectedReplaySet.alternateCount }}</span>
+      </div>
+    </div>
+
     <div class="ripple-history-archive-card" data-testid="ripple-replay-history">
       <header class="ripple-track-header">
         <div>
@@ -276,6 +316,11 @@ const props = defineProps<{
     setConfidence: string
     setPressure: string
     setAlternateCount: string
+    replayDossier: string
+    replayDossierNote: string
+    entryAnchor: string
+    hingePressure: string
+    terminalExposure: string
   }
 }>()
 
@@ -411,9 +456,44 @@ const replaySets = computed<Array<{
   ]
 })
 
+const selectedReplaySet = computed(() => (
+  replaySets.value.find((set) => set.key === selectedReplaySetKey.value)
+  ?? replaySets.value[0]
+  ?? null
+))
+
+const replayDossier = computed(() => {
+  if (!selectedReplaySet.value) return null
+
+  const nodes = selectedReplaySet.value.nodes
+  const entryNode = nodes[0]
+  const hingeNode = [...nodes].sort((left, right) => (
+    branchPressure(right.branch) - branchPressure(left.branch)
+  ))[0]
+  const terminalNode = nodes[nodes.length - 1]
+
+  if (!entryNode || !hingeNode || !terminalNode) return null
+
+  return {
+    summary: `${props.copy.entryAnchor} / ${entryNode.event.title} · ${props.copy.hingePressure} / ${hingeNode.event.title} · ${props.copy.terminalExposure} / ${terminalNode.event.title}`,
+    entry: {
+      title: `${entryNode.event.title} / ${entryNode.branch.label}`,
+      summary: entryNode.branch.description || entryNode.event.summary || entryNode.branch.cost_hint,
+    },
+    hinge: {
+      title: `${hingeNode.event.title} / ${hingeNode.branch.label}`,
+      summary: hingeNode.branch.cost_hint || hingeNode.branch.description || hingeNode.event.summary,
+    },
+    terminal: {
+      title: `${terminalNode.event.title} / ${terminalNode.branch.label}`,
+      summary: terminalNode.branch.cost_hint || terminalNode.event.summary || terminalNode.branch.description,
+    },
+  }
+})
+
 const historyEntries = computed(() => {
-  const activePath = replaySets.value.find((set) => set.key === selectedReplaySetKey.value)
-    ?? replaySets.value[0]
+  const activePath = selectedReplaySet.value
+  if (!activePath) return []
 
   return activePath.nodes.map((node, index) => {
     const upstreamNode = activePath.nodes[index - 1]

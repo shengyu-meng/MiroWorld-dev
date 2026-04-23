@@ -206,6 +206,11 @@ export const appCopy = {
       setConfidence: '集合置信',
       setPressure: '集合压力',
       setAlternateCount: '替代数',
+      replayDossier: '重演案卷',
+      replayDossierNote: '把一套重演集合读成进入点、压力拐点和尾迹暴露，世界线才会像一条被策展过的线。',
+      entryAnchor: '进入锚点',
+      hingePressure: '压力拐点',
+      terminalExposure: '尾迹暴露',
     },
     labels: {
       primary: '主分支',
@@ -409,6 +414,11 @@ export const appCopy = {
       setConfidence: 'Set Confidence',
       setPressure: 'Set Pressure',
       setAlternateCount: 'Alternates',
+      replayDossier: 'Replay Dossier',
+      replayDossierNote: 'Read a replay set as an entry anchor, a pressure hinge, and a terminal exposure so the line feels authored rather than merely listed.',
+      entryAnchor: 'Entry Anchor',
+      hingePressure: 'Hinge Pressure',
+      terminalExposure: 'Terminal Exposure',
     },
     labels: {
       primary: 'Primary',

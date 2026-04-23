@@ -1136,6 +1136,42 @@ li {
   flex-wrap: wrap;
 }
 
+.ripple-replay-dossier-card {
+  background: linear-gradient(180deg, rgba(11, 21, 28, 0.9), rgba(7, 12, 17, 0.72));
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
+.ripple-dossier-summary,
+.ripple-dossier-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.ripple-dossier-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ripple-dossier-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ripple-dossier-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
 .ripple-history-archive-card {
   background: linear-gradient(180deg, rgba(11, 21, 28, 0.9), rgba(7, 12, 17, 0.72));
   border: 1px solid var(--line);
@@ -1305,6 +1341,7 @@ li {
   }
 
   .ripple-replay-set-grid,
+  .ripple-dossier-grid,
   .ripple-history-mode-row,
   .ripple-history-sections {
     grid-template-columns: 1fr;

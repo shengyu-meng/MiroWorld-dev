@@ -174,6 +174,11 @@
                 setConfidence: copy.ripple.setConfidence,
                 setPressure: copy.ripple.setPressure,
                 setAlternateCount: copy.ripple.setAlternateCount,
+                replayDossier: copy.ripple.replayDossier,
+                replayDossierNote: copy.ripple.replayDossierNote,
+                entryAnchor: copy.ripple.entryAnchor,
+                hingePressure: copy.ripple.hingePressure,
+                terminalExposure: copy.ripple.terminalExposure,
               }"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"
