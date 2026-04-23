@@ -2,16 +2,17 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 3 complete`
+Phase: `experience-first rebuild / scene-shell slice 4 export pass complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell that has moved into a stronger archive/export presentation layer.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive can now export local poster and share-bundle artifacts.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
 - the shell now reads as a scene-based worldline interface instead of a long panel stack
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
+- and its core artifact can now leave the UI as a local poster SVG or share bundle
 - but the linefield can still become a stronger event-to-event storytelling actor
 - and the calibration / replay archive can still become more comparative and more navigable
 
@@ -69,6 +70,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - calibration history gained a first pass pattern view so recent outcomes read at a glance
 - Ripple now reads more like a propagation track than a single latest-bend note
 
+### Frontend experience rebuild slice 4 (export actions pass)
+
+- Archive can export its current poster artifact as a local SVG without involving the backend or exposing secrets
+- Archive can export a local share-bundle text file that packages summary, share text, decision log, and calibration notes
+- frontend tests now cover the export actions at a minimal interaction level
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -80,7 +87,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Product / experience gaps
 
 - the linefield now acts as a branch field for the current event, but it is not yet a full event-to-event explorer
-- the archive now presents a visual artifact, but it does not yet generate downloadable poster/image outputs or saved multi-format share bundles
+- the archive now exports local poster and text artifacts, but it does not yet generate richer saved multi-format bundles or image pipelines beyond SVG
 - calibration history is now patterned, but it is not yet comparative across branch families, time windows, or decision types
 - ripple history is now more track-like, but it still centers one replay chain more than a broader event-to-event archive
 
@@ -97,8 +104,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice is `Experience Rebuild Slice 4`:
+The next active slice is still `Experience Rebuild Slice 4`:
 
-- turn the archive poster layer into a stronger exportable artifact path
+- deepen the export path beyond local SVG / TXT into stronger artifact options
 - make calibration more comparative, not only pattern-readable
 - keep extending the linefield / ripple system toward a fuller event-to-event explorer without regressing shell speed

@@ -206,6 +206,18 @@ describe('app routes', () => {
 
   it('loads the stage route, allows branch selection, language switching, and archive drawer toggle', async () => {
     const fetchMock = vi.spyOn(global, 'fetch')
+    const createObjectURLMock = vi.fn(() => 'blob:miroworld')
+    const revokeObjectURLMock = vi.fn()
+    const anchorClickMock = vi.fn()
+    Object.defineProperty(global.URL, 'createObjectURL', {
+      writable: true,
+      value: createObjectURLMock,
+    })
+    Object.defineProperty(global.URL, 'revokeObjectURL', {
+      writable: true,
+      value: revokeObjectURLMock,
+    })
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(anchorClickMock)
     fetchMock
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
@@ -233,6 +245,12 @@ describe('app routes', () => {
     await wrapper.findAll('.surface-chip')[4]?.trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="archive-section"]').exists()).toBe(true)
+    await wrapper.find('[data-testid="download-poster"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(1)
+    await wrapper.find('[data-testid="download-bundle"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(2)
+    expect(anchorClickMock).toHaveBeenCalledTimes(2)
+    expect(revokeObjectURLMock).toHaveBeenCalledTimes(2)
     await wrapper.find('[data-testid="archive-section"] .secondary-action').trigger('click')
     expect(wrapper.find('[data-testid="calibration-drawer"]').exists()).toBe(true)
   })

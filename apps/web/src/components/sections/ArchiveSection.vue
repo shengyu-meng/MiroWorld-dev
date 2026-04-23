@@ -1,11 +1,22 @@
 <template>
   <section class="scene-section archive-section" data-testid="archive-section">
     <div class="archive-actions">
-      <button type="button" class="primary-action" @click="$emit('share')">{{ copy.share }}</button>
-      <button type="button" class="secondary-action" @click="$emit('toggle-calibration')">
-        {{ calibrationOpen ? copy.hideCalibration : copy.openCalibration }}
-      </button>
+      <div class="archive-action-group">
+        <button type="button" class="primary-action" @click="$emit('share')">{{ copy.share }}</button>
+        <button type="button" class="secondary-action" @click="$emit('toggle-calibration')">
+          {{ calibrationOpen ? copy.hideCalibration : copy.openCalibration }}
+        </button>
+      </div>
+      <div class="archive-action-group">
+        <button type="button" class="ghost-action" data-testid="download-poster" @click="downloadPoster">
+          {{ copy.downloadPoster }}
+        </button>
+        <button type="button" class="ghost-action" data-testid="download-bundle" @click="downloadBundle">
+          {{ copy.downloadBundle }}
+        </button>
+      </div>
     </div>
+    <small v-if="archiveFeedback" class="archive-status">{{ archiveFeedback }}</small>
 
     <div class="archive-grid">
       <div class="archive-main">
@@ -164,6 +175,7 @@ const props = defineProps<{
   calibrationOpen: boolean
   calibrationDraft: string
   calibrationResult: string
+  projectId: string
   copy: {
     share: string
     openCalibration: string
@@ -183,6 +195,8 @@ const props = defineProps<{
     copyPosterCaption: string
     copyShareText: string
     calibrationPattern: string
+    downloadPoster: string
+    downloadBundle: string
     hit: string
     partial: string
     miss: string
@@ -199,6 +213,7 @@ defineEmits<{
 }>()
 
 const copyFeedback = ref('')
+const archiveFeedback = ref('')
 
 const calibrationSegments = computed(() => {
   const counts = {
@@ -231,6 +246,18 @@ async function copyText(label: string, text: string) {
   }
 }
 
+function downloadPoster() {
+  archiveFeedback.value = ''
+  downloadFile(`${safeFileStem(props.projectId)}-poster.svg`, buildPosterSvg(), 'image/svg+xml;charset=utf-8')
+  archiveFeedback.value = props.copy.downloadPoster
+}
+
+function downloadBundle() {
+  archiveFeedback.value = ''
+  downloadFile(`${safeFileStem(props.projectId)}-share.txt`, buildShareBundle(), 'text/plain;charset=utf-8')
+  archiveFeedback.value = props.copy.downloadBundle
+}
+
 function formatTimestamp(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
@@ -239,5 +266,147 @@ function formatTimestamp(value: string) {
 
 function mapResultLabel(result: CalibrationRecord['result']) {
   return props.copy[result]
+}
+
+function buildPosterSvg() {
+  const titleLines = wrapLines(props.shareSnapshot.title, 16)
+  const summaryLines = wrapLines(props.shareSnapshot.summary, 34)
+  const captionLines = wrapLines(props.shareSnapshot.poster_caption, 28)
+  const noteLines = wrapLines(props.shareSnapshot.curator_note || props.shareSnapshot.short_excerpt, 28)
+  const tagLine = props.shareSnapshot.tags.join(' / ')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">${escapeXml(props.shareSnapshot.title)}</title>
+  <desc id="desc">${escapeXml(props.shareSnapshot.summary)}</desc>
+  <rect width="1280" height="720" fill="#071117" />
+  <circle cx="200" cy="140" r="220" fill="#ffb979" fill-opacity="0.09" />
+  <circle cx="1110" cy="130" r="180" fill="#8be2f8" fill-opacity="0.08" />
+  <path d="M118 566C256 500 356 468 485 432C628 394 726 332 920 270C1044 230 1122 199 1216 148" fill="none" stroke="#8be2f8" stroke-opacity="0.42" stroke-width="2" stroke-linecap="round" />
+  <circle cx="192" cy="531" r="12" fill="#ffb979" fill-opacity="0.92" />
+  <circle cx="192" cy="531" r="36" fill="#ffb979" fill-opacity="0.08" />
+  <text x="72" y="86" fill="#8be2f8" font-size="18" font-family="Aptos, Segoe UI, sans-serif" letter-spacing="6">MIROWORLD</text>
+  <text x="72" y="124" fill="#8fa7b0" font-size="14" font-family="Aptos, Segoe UI, sans-serif" letter-spacing="4">${escapeXml(props.copy.posterArtifact.toUpperCase())}</text>
+  ${renderTextLines(titleLines, 72, 232, 68, 66, '#e8efe9', `'Iowan Old Style', 'Palatino Linotype', serif`, '600')}
+  ${renderTextLines(summaryLines, 76, 338, 28, 38, '#e8efe9', `'Aptos', 'Segoe UI', sans-serif`, '400')}
+  ${renderTextLines(captionLines, 76, 512, 24, 34, '#ffb979', `'Aptos', 'Segoe UI', sans-serif`, '400')}
+  <rect x="906" y="92" width="292" height="404" rx="28" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.08" />
+  <text x="942" y="140" fill="#8fa7b0" font-size="13" font-family="Aptos, Segoe UI, sans-serif" letter-spacing="3">${escapeXml(props.copy.wallLabel.toUpperCase())}</text>
+  ${renderTextLines(wrapLines(props.shareSnapshot.wall_label, 24), 942, 180, 18, 28, '#e8efe9', `'Aptos', 'Segoe UI', sans-serif`, '400')}
+  <text x="942" y="294" fill="#8fa7b0" font-size="13" font-family="Aptos, Segoe UI, sans-serif" letter-spacing="3">${escapeXml(props.copy.curatorNote.toUpperCase())}</text>
+  ${renderTextLines(noteLines, 942, 334, 18, 28, '#e8efe9', `'Aptos', 'Segoe UI', sans-serif`, '400')}
+  <text x="76" y="646" fill="#8fa7b0" font-size="15" font-family="Aptos, Segoe UI, sans-serif">${escapeXml(tagLine)}</text>
+  <text x="76" y="680" fill="#8fa7b0" font-size="13" font-family="Aptos, Segoe UI, sans-serif">${escapeXml(props.shareSnapshot.archive_summary)}</text>
+</svg>`
+}
+
+function buildShareBundle() {
+  const decisions = props.decisionLog.length
+    ? props.decisionLog.map((entry, index) => (
+      `${index + 1}. ${entry.event_title}\n` +
+      `   ${entry.input_type}: ${entry.content}\n` +
+      `   ${entry.replay_summary}\n` +
+      (entry.cost_changes.length ? `   ${entry.cost_changes.join(' / ')}\n` : '')
+    )).join('\n')
+    : 'No recorded decisions yet.\n'
+
+  const calibrations = props.calibrationRecords.length
+    ? props.calibrationRecords.slice(0, 6).map((record, index) => (
+      `${index + 1}. ${mapResultLabel(record.result)}\n` +
+      `   ${record.actual_outcome}\n` +
+      `   ${formatTimestamp(record.created_at)}\n`
+    )).join('\n')
+    : `${props.copy.actualOutcomePlaceholder}\n`
+
+  return [
+    props.shareSnapshot.title,
+    '',
+    props.shareSnapshot.summary,
+    '',
+    `${props.copy.posterCaption}: ${props.shareSnapshot.poster_caption}`,
+    `${props.copy.wallLabel}: ${props.shareSnapshot.wall_label}`,
+    `${props.copy.curatorNote}: ${props.shareSnapshot.curator_note || props.shareSnapshot.short_excerpt}`,
+    `${props.copy.archiveSummary}: ${props.shareSnapshot.archive_summary}`,
+    '',
+    `${props.copy.shareText}:`,
+    props.shareSnapshot.share_text,
+    '',
+    `${props.copy.decisionLog}:`,
+    decisions.trimEnd(),
+    '',
+    `${props.copy.calibrationHistory}:`,
+    calibrations.trimEnd(),
+  ].join('\n')
+}
+
+function downloadFile(filename: string, content: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+function wrapLines(value: string, lineLength: number) {
+  const trimmed = value.trim()
+  if (!trimmed) return []
+
+  const words = trimmed.split(/\s+/).filter(Boolean)
+  if (words.length <= 1 && trimmed.length > lineLength) {
+    const chunks: string[] = []
+    for (let index = 0; index < trimmed.length; index += lineLength) {
+      chunks.push(trimmed.slice(index, index + lineLength))
+    }
+    return chunks.slice(0, 4)
+  }
+
+  const lines: string[] = []
+  let current = ''
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word
+    if (next.length > lineLength && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = next
+    }
+  }
+
+  if (current) lines.push(current)
+  return lines.slice(0, 4)
+}
+
+function renderTextLines(
+  lines: string[],
+  x: number,
+  startY: number,
+  fontSize: number,
+  lineHeight: number,
+  fill: string,
+  fontFamily: string,
+  fontWeight: string,
+) {
+  return lines.map((line, index) => (
+    `<text x="${x}" y="${startY + lineHeight * index}" fill="${fill}" font-size="${fontSize}" font-family="${fontFamily}" font-weight="${fontWeight}">${escapeXml(line)}</text>`
+  )).join('')
+}
+
+function escapeXml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;')
+}
+
+function safeFileStem(value: string) {
+  const stem = value.toLowerCase().replace(/[^a-z0-9-_]+/g, '-').replace(/^-+|-+$/g, '')
+  return stem || 'miroworld-artifact'
 }
 </script>

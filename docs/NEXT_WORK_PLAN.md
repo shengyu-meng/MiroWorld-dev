@@ -80,6 +80,7 @@ This slice does include:
 
 ### In progress now
 
+- [x] add local export actions for archive poster and share bundle
 - [ ] turn the archive poster layer into a stronger export-ready artifact flow
 - [ ] compare calibration records by pattern and tendency, not only chronology
 - [ ] deepen ripple continuity beyond the current replay track

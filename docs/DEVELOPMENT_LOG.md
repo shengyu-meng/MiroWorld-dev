@@ -111,3 +111,31 @@ Next likely slice after this pass:
 - make the archive artifact export-ready beyond in-app presentation
 - deepen calibration from pattern view to comparative reading
 - keep extending linefield / ripple continuity toward fuller event-to-event exploration
+
+## 2026-04-23 - Experience Rebuild Slice 4 (export actions pass started)
+
+Planned in this iteration:
+
+- add local export actions so the archive poster can leave the UI as a reusable artifact
+- add a lightweight share bundle export without introducing frontend-side secret risk
+- keep the export flow inside the existing public shell and contracts
+
+## 2026-04-23 - Experience Rebuild Slice 4 (export actions pass completed)
+
+Completed in this iteration:
+
+- added local Archive export actions for poster SVG and share-bundle TXT outputs
+- kept the export flow fully frontend-side so no backend contract or secret handling changed
+- extended frontend route coverage so the archive export buttons are exercised in tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- deepen the artifact path beyond local SVG / TXT export
+- make calibration more comparative than the current pattern view
+- extend ripple and linefield continuity beyond the current replay track

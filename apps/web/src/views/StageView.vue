@@ -144,6 +144,7 @@
               :calibration-open="calibrationOpen"
               :calibration-draft="calibrationDraft"
               :calibration-result="calibrationResult"
+              :project-id="stage.project_context.project_id"
               :copy="copy.archive"
               @share="generateShare"
               @toggle-calibration="calibrationOpen = !calibrationOpen"
