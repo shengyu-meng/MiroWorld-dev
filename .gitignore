@@ -8,6 +8,7 @@ Thumbs.db
 
 # Local agent / temp
 .codex-temp/
+.codex-run/
 .claude/
 .cursor/
 AGENTS.md

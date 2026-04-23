@@ -54,6 +54,31 @@ cd apps/api
 python -m pip install -e .[dev]
 ```
 
+## One-Click Start On Windows
+
+Double-click [start-miroworld.cmd](D:/github/01_Agent/MiroWorld-dev/start-miroworld.cmd) from the repo root, or run:
+
+```powershell
+.\start-miroworld.cmd
+```
+
+What it does:
+
+- creates local `.env` from `.env.example` if missing
+- creates `.venv` if missing
+- installs npm and Python dependencies when needed
+- starts the API on `http://127.0.0.1:8000`
+- starts the web app on `http://127.0.0.1:4173`
+- opens the browser automatically
+
+Logs and pid files are written to `logs/local-dev/`.
+
+To stop both services:
+
+```powershell
+.\stop-miroworld.cmd
+```
+
 ## Run
 
 Start both apps from the repo root:
