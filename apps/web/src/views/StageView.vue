@@ -127,9 +127,11 @@
             <RippleSection
               v-else-if="activeSurface === 'ripple'"
               :project-id="stage.project_context.project_id"
+              :language="language"
               :latest-bend="latestBend"
               :events="stage.observatory.key_events"
               :worldline-track="stage.observatory.worldline_track"
+              :saved-replay-sets="stage.ripple.saved_replay_sets"
               :selected-event-id="selectedEventId"
               :selected-branch-id="selectedBranchId"
               :ripple-cards="stage.ripple.ripple_cards"
@@ -222,7 +224,7 @@
                 replayShelf: language === 'zh' ? '重演架' : 'Replay Shelf',
                 replayShelfNote: language === 'zh'
                   ? '把当前重演包暂存到本地架上，之后可以回看、恢复和再次导出。'
-                  : 'Keep authored replay packets on a local shelf so they can be revisited, restored, and exported again.',
+                  : 'Keep authored replay packets on this project shelf so they can be revisited, restored, and exported again.',
                 saveReplayShelf: language === 'zh' ? '保存到 Replay Shelf' : 'Save To Replay Shelf',
                 restoreReplayShelf: language === 'zh' ? '恢复重演' : 'Restore Replay',
                 removeReplayShelf: language === 'zh' ? '移除' : 'Remove',
@@ -240,6 +242,8 @@
               }"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"
+              @save-replay-set="saveReplaySetToProject"
+              @delete-replay-set="deleteReplaySetFromProject"
             />
 
             <ArchiveSection
@@ -353,9 +357,9 @@ import CostLensSection from '@/components/sections/CostLensSection.vue'
 import InterventionSection from '@/components/sections/InterventionSection.vue'
 import ObservatorySection from '@/components/sections/ObservatorySection.vue'
 import RippleSection from '@/components/sections/RippleSection.vue'
-import { applyInput, buildShare, getStage, recordCalibration } from '@/lib/api'
+import { applyInput, buildShare, deleteReplaySet, getStage, recordCalibration, saveReplaySet } from '@/lib/api'
 import { getAppCopy } from '@/lib/copy'
-import type { Branch, DisplayLanguage, InputType, KnowledgeLayer, StageData, SurfaceKey } from '@/lib/types'
+import type { Branch, DisplayLanguage, InputType, KnowledgeLayer, SavedReplaySet, SavedReplaySetDraft, StageData, SurfaceKey } from '@/lib/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -586,6 +590,38 @@ async function saveCalibration() {
     calibrationOpen.value = false
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+async function saveReplaySetToProject(payload: SavedReplaySetDraft) {
+  try {
+    const projectId = route.params.projectId as string
+    const savedReplaySets = await saveReplaySet(projectId, payload)
+    updateSavedReplaySets(savedReplaySets)
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+async function deleteReplaySetFromProject(replaySetId: string) {
+  try {
+    const projectId = route.params.projectId as string
+    const savedReplaySets = await deleteReplaySet(projectId, replaySetId)
+    updateSavedReplaySets(savedReplaySets)
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+function updateSavedReplaySets(savedReplaySets: SavedReplaySet[]) {
+  if (!stage.value) return
+
+  stage.value = {
+    ...stage.value,
+    ripple: {
+      ...stage.value.ripple,
+      saved_replay_sets: savedReplaySets,
+    },
   }
 }
 </script>

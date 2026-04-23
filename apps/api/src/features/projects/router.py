@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from .models import CalibrationRequest, InputRequest, ProjectCreateRequest, ShareRequest
+from .models import CalibrationRequest, InputRequest, ProjectCreateRequest, ReplaySetSaveRequest, ShareRequest
 from .service import ProjectService
 
 
@@ -55,4 +55,20 @@ def record_calibration(project_id: str, payload: CalibrationRequest):
   return {
     "success": True,
     "data": service.record_calibration(project_id, payload),
+  }
+
+
+@router.post("/{project_id}/replay-sets")
+def save_replay_set(project_id: str, payload: ReplaySetSaveRequest):
+  return {
+    "success": True,
+    "data": service.save_replay_set(project_id, payload),
+  }
+
+
+@router.delete("/{project_id}/replay-sets/{replay_set_id}")
+def delete_replay_set(project_id: str, replay_set_id: str):
+  return {
+    "success": True,
+    "data": service.delete_replay_set(project_id, replay_set_id),
   }

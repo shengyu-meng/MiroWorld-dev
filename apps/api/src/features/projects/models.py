@@ -156,6 +156,72 @@ class ReplayTraceItem(BaseModel):
   summary: str
 
 
+class SavedReplayFocus(BaseModel):
+  event_id: str
+  event_title: str
+  branch_id: str
+  branch_label: str
+
+
+class SavedReplayDossierCard(BaseModel):
+  title: str
+  summary: str
+
+
+class SavedReplayDossier(BaseModel):
+  summary: str
+  entry: SavedReplayDossierCard
+  hinge: SavedReplayDossierCard
+  terminal: SavedReplayDossierCard
+
+
+class SavedReplayArtifact(BaseModel):
+  title: str
+  deck: str
+  wall_text: str
+  pressure_note: str
+  closing_note: str
+  tags: list[str]
+
+
+class SavedReplayMetrics(BaseModel):
+  event_count: int
+  average_confidence: float
+  average_pressure: float
+  alternate_count: int
+
+
+class SavedReplayTimelineEntry(BaseModel):
+  index: str
+  stage: str
+  event_title: str
+  branch_label: str
+  confidence: float
+  counter_signal_count: int
+  description: str
+  upstream: SavedReplayDossierCard
+  downstream: SavedReplayDossierCard
+  focus: SavedReplayFocus
+
+
+class SavedReplaySetDraft(BaseModel):
+  replay_set_key: str
+  replay_set_label: str
+  replay_set_note: str
+  authored_note: str
+  artifact: SavedReplayArtifact
+  focus: SavedReplayFocus
+  metrics: SavedReplayMetrics
+  dossier: SavedReplayDossier
+  timeline: list[SavedReplayTimelineEntry]
+  language: DisplayLanguage = "zh"
+
+
+class SavedReplaySet(SavedReplaySetDraft):
+  replay_set_id: str
+  saved_at: str
+
+
 class ProjectRecord(BaseModel):
   project_id: str
   title: str
@@ -188,6 +254,7 @@ class WorldState(BaseModel):
   player_inputs: list[UserInputRecord] = Field(default_factory=list)
   player_decision_log: list[DecisionLogEntry] = Field(default_factory=list)
   replay_trace: list[ReplayTraceItem] = Field(default_factory=list)
+  saved_replay_sets: list[SavedReplaySet] = Field(default_factory=list)
   calibration_records: list[CalibrationRecord] = Field(default_factory=list)
   created_at: str
   updated_at: str
@@ -236,3 +303,7 @@ class CalibrationRequest(BaseModel):
   actual_outcome: str
   note: str = ""
   language: DisplayLanguage = "zh"
+
+
+class ReplaySetSaveRequest(SavedReplaySetDraft):
+  pass

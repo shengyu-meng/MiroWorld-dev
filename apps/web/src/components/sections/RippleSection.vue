@@ -269,7 +269,7 @@
         <div class="ripple-shelf-atlas-grid" data-testid="ripple-shelf-atlas">
           <button
             v-for="item in replayShelf"
-            :key="`atlas-${item.shelfId}`"
+            :key="`atlas-${item.replaySetId}`"
             type="button"
             class="ripple-shelf-atlas-card"
             :class="{ active: isShelfItemActive(item) }"
@@ -288,7 +288,7 @@
         </div>
 
         <div class="ripple-shelf-stack">
-        <article v-for="item in replayShelf" :key="item.shelfId" class="ripple-shelf-entry">
+        <article v-for="item in replayShelf" :key="item.replaySetId" class="ripple-shelf-entry">
           <div class="ripple-shelf-copy">
             <span class="annotation-label">{{ item.replaySetLabel }}</span>
             <strong>{{ item.dossier.hinge.title }}</strong>
@@ -313,7 +313,7 @@
             <button type="button" class="ghost-action" data-testid="download-saved-replay-exhibit" @click="downloadSavedReplayExhibit(item)">
               {{ copy.downloadSavedReplayExhibit }}
             </button>
-            <button type="button" class="ghost-action" data-testid="remove-saved-replay" @click="removeReplayFromShelf(item.shelfId)">
+            <button type="button" class="ghost-action" data-testid="remove-saved-replay" @click="removeReplayFromShelf(item.replaySetId)">
               {{ copy.removeReplayShelf }}
             </button>
           </div>
@@ -384,7 +384,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { KeyEvent } from '@/lib/types'
+import type { DisplayLanguage, KeyEvent, SavedReplaySet, SavedReplaySetDraft } from '@/lib/types'
 
 interface WorldlineTrackNode {
   event_id: string
@@ -458,16 +458,18 @@ interface ReplayPacket {
 }
 
 interface SavedReplayPacket extends ReplayPacket {
-  shelfId: string
+  replaySetId: string
   savedAt: string
 }
 
 const props = defineProps<{
   projectId: string
+  language: DisplayLanguage
   latestBend: string
   emptyCopy: string
   events: KeyEvent[]
   worldlineTrack: WorldlineTrackNode[]
+  savedReplaySets: SavedReplaySet[]
   selectedEventId: string
   selectedBranchId: string
   rippleCards: Array<{
@@ -560,6 +562,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'select-event': [eventId: string]
   'select-branch': [eventId: string, branchId: string]
+  'save-replay-set': [payload: SavedReplaySetDraft]
+  'delete-replay-set': [replaySetId: string]
 }>()
 
 const continuityNodes = computed(() => {
@@ -646,8 +650,7 @@ const selectedReplaySetKey = ref<ReplaySetKey>('current')
 const dossierFeedback = ref('')
 const artifactFeedback = ref('')
 const shelfFeedback = ref('')
-const replayShelf = ref<SavedReplayPacket[]>([])
-const replayStorageKey = computed(() => `miroworld:ripple-shelf:${safeFileStem(props.projectId)}`)
+const replayShelf = computed(() => props.savedReplaySets.map(mapSavedReplaySet))
 
 const replaySets = computed<Array<{
   key: ReplaySetKey
@@ -893,9 +896,8 @@ watch(selectedReplaySetKey, () => {
 })
 
 watch(
-  () => props.projectId,
+  () => [props.projectId, props.savedReplaySets.length],
   () => {
-    replayShelf.value = loadReplayShelf()
     dossierFeedback.value = ''
     artifactFeedback.value = ''
     shelfFeedback.value = ''
@@ -983,17 +985,7 @@ function saveReplayToShelf() {
   if (!replayPacket.value) return
 
   shelfFeedback.value = ''
-  const savedPacket: SavedReplayPacket = {
-    ...replayPacket.value,
-    shelfId: `${Date.now()}-${replayPacket.value.replaySetKey}`,
-    savedAt: new Date().toISOString(),
-  }
-
-  replayShelf.value = [
-    savedPacket,
-    ...replayShelf.value.filter((item) => !isSameReplayFocus(item, savedPacket)),
-  ].slice(0, 8)
-  persistReplayShelf()
+  emit('save-replay-set', buildSavedReplaySetDraft(replayPacket.value))
   shelfFeedback.value = props.copy.saveReplayShelf
 }
 
@@ -1015,17 +1007,16 @@ function restoreReplayFromShelf(item: SavedReplayPacket) {
   shelfFeedback.value = props.copy.restoreReplayShelf
 }
 
-function removeReplayFromShelf(shelfId: string) {
+function removeReplayFromShelf(replaySetId: string) {
   shelfFeedback.value = ''
-  replayShelf.value = replayShelf.value.filter((item) => item.shelfId !== shelfId)
-  persistReplayShelf()
+  emit('delete-replay-set', replaySetId)
   shelfFeedback.value = props.copy.removeReplayShelf
 }
 
 function downloadSavedReplayDossier(item: SavedReplayPacket) {
   shelfFeedback.value = ''
   downloadFile(
-    `${safeFileStem(props.projectId)}-${safeFileStem(item.shelfId)}-replay-dossier.md`,
+    `${safeFileStem(props.projectId)}-${safeFileStem(item.replaySetId)}-replay-dossier.md`,
     buildReplayDossierMarkdown(item),
     'text/markdown;charset=utf-8',
   )
@@ -1035,7 +1026,7 @@ function downloadSavedReplayDossier(item: SavedReplayPacket) {
 function downloadSavedReplayPacket(item: SavedReplayPacket) {
   shelfFeedback.value = ''
   downloadFile(
-    `${safeFileStem(props.projectId)}-${safeFileStem(item.shelfId)}-replay-packet.json`,
+    `${safeFileStem(props.projectId)}-${safeFileStem(item.replaySetId)}-replay-packet.json`,
     JSON.stringify(item, null, 2),
     'application/json;charset=utf-8',
   )
@@ -1045,7 +1036,7 @@ function downloadSavedReplayPacket(item: SavedReplayPacket) {
 function downloadSavedReplayExhibit(item: SavedReplayPacket) {
   shelfFeedback.value = ''
   downloadFile(
-    `${safeFileStem(props.projectId)}-${safeFileStem(item.shelfId)}-replay-exhibit.html`,
+    `${safeFileStem(props.projectId)}-${safeFileStem(item.replaySetId)}-replay-exhibit.html`,
     buildReplayExhibitHtml(item),
     'text/html;charset=utf-8',
   )
@@ -1475,39 +1466,123 @@ function buildReplayAtlasHtml(items: SavedReplayPacket[] = replayShelf.value) {
 </html>`
 }
 
-function loadReplayShelf() {
-  if (!hasBrowserStorage()) return []
-
-  try {
-    const raw = window.localStorage.getItem(replayStorageKey.value)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed as SavedReplayPacket[] : []
-  } catch {
-    return []
-  }
-}
-
-function persistReplayShelf() {
-  if (!hasBrowserStorage()) return
-
-  window.localStorage.setItem(replayStorageKey.value, JSON.stringify(replayShelf.value))
-}
-
 function formatTimestamp(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return date.toLocaleString()
 }
 
-function hasBrowserStorage() {
-  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+function buildSavedReplaySetDraft(packet: ReplayPacket): SavedReplaySetDraft {
+  return {
+    replay_set_key: packet.replaySetKey,
+    replay_set_label: packet.replaySetLabel,
+    replay_set_note: packet.replaySetNote,
+    authored_note: packet.authoredNote,
+    artifact: {
+      title: packet.artifact.title,
+      deck: packet.artifact.deck,
+      wall_text: packet.artifact.wallText,
+      pressure_note: packet.artifact.pressureNote,
+      closing_note: packet.artifact.closingNote,
+      tags: packet.artifact.tags,
+    },
+    focus: {
+      event_id: packet.focus.eventId,
+      event_title: packet.focus.eventTitle,
+      branch_id: packet.focus.branchId,
+      branch_label: packet.focus.branchLabel,
+    },
+    metrics: {
+      event_count: packet.metrics.eventCount,
+      average_confidence: packet.metrics.averageConfidence,
+      average_pressure: packet.metrics.averagePressure,
+      alternate_count: packet.metrics.alternateCount,
+    },
+    dossier: {
+      summary: packet.dossier.summary,
+      entry: packet.dossier.entry,
+      hinge: packet.dossier.hinge,
+      terminal: packet.dossier.terminal,
+    },
+    timeline: packet.timeline.map((entry) => ({
+      index: entry.index,
+      stage: entry.stage,
+      event_title: entry.eventTitle,
+      branch_label: entry.branchLabel,
+      confidence: entry.confidence,
+      counter_signal_count: entry.counterSignalCount,
+      description: entry.description,
+      upstream: entry.upstream,
+      downstream: entry.downstream,
+      focus: {
+        event_id: entry.focus.eventId,
+        event_title: entry.focus.eventTitle,
+        branch_id: entry.focus.branchId,
+        branch_label: entry.focus.branchLabel,
+      },
+    })),
+    language: props.language,
+  }
 }
 
-function isSameReplayFocus(left: SavedReplayPacket, right: SavedReplayPacket) {
-  return left.replaySetKey === right.replaySetKey
-    && left.focus.eventId === right.focus.eventId
-    && left.focus.branchId === right.focus.branchId
+function mapSavedReplaySet(savedReplaySet: SavedReplaySet): SavedReplayPacket {
+  return {
+    projectId: props.projectId,
+    replaySetId: savedReplaySet.replay_set_id,
+    savedAt: savedReplaySet.saved_at,
+    replaySetKey: normalizeReplaySetKey(savedReplaySet.replay_set_key),
+    replaySetLabel: savedReplaySet.replay_set_label,
+    replaySetNote: savedReplaySet.replay_set_note,
+    authoredNote: savedReplaySet.authored_note,
+    artifact: {
+      title: savedReplaySet.artifact.title,
+      deck: savedReplaySet.artifact.deck,
+      wallText: savedReplaySet.artifact.wall_text,
+      pressureNote: savedReplaySet.artifact.pressure_note,
+      closingNote: savedReplaySet.artifact.closing_note,
+      tags: savedReplaySet.artifact.tags,
+    },
+    focus: {
+      eventId: savedReplaySet.focus.event_id,
+      eventTitle: savedReplaySet.focus.event_title,
+      branchId: savedReplaySet.focus.branch_id,
+      branchLabel: savedReplaySet.focus.branch_label,
+    },
+    metrics: {
+      eventCount: savedReplaySet.metrics.event_count,
+      averageConfidence: savedReplaySet.metrics.average_confidence,
+      averagePressure: savedReplaySet.metrics.average_pressure,
+      alternateCount: savedReplaySet.metrics.alternate_count,
+    },
+    dossier: {
+      summary: savedReplaySet.dossier.summary,
+      entry: savedReplaySet.dossier.entry,
+      hinge: savedReplaySet.dossier.hinge,
+      terminal: savedReplaySet.dossier.terminal,
+    },
+    timeline: savedReplaySet.timeline.map((entry) => ({
+      index: entry.index,
+      stage: entry.stage,
+      eventTitle: entry.event_title,
+      branchLabel: entry.branch_label,
+      confidence: entry.confidence,
+      counterSignalCount: entry.counter_signal_count,
+      description: entry.description,
+      upstream: entry.upstream,
+      downstream: entry.downstream,
+      focus: {
+        eventId: entry.focus.event_id,
+        eventTitle: entry.focus.event_title,
+        branchId: entry.focus.branch_id,
+        branchLabel: entry.focus.branch_label,
+      },
+    })),
+  }
+}
+
+function normalizeReplaySetKey(value: string): ReplaySetKey {
+  if (value === 'stabilizing' || value === 'pressure') return value
+  return 'current'
 }
 
 function fillTemplate(template: string, replacements: Record<string, string | number>) {

@@ -10,7 +10,9 @@ from .models import (
   InputRequest,
   ProjectCreateRequest,
   ProjectSnapshot,
+  ReplaySetSaveRequest,
   ReplayTraceItem,
+  SavedReplaySet,
   ShareRequest,
   UserInputRecord,
 )
@@ -119,6 +121,36 @@ class ProjectService:
     self.project_repository.save(snapshot)
     return self.stage_builder.build(snapshot.world_state, payload.language)
 
+  def save_replay_set(self, project_id: str, payload: ReplaySetSaveRequest) -> list[dict]:
+    snapshot = self.project_repository.load(project_id)
+    saved_replay = SavedReplaySet(
+      replay_set_id=make_id("rset"),
+      saved_at=utc_now(),
+      **payload.model_dump(mode="python"),
+    )
+    snapshot.world_state.saved_replay_sets = [
+      saved_replay,
+      *[
+        item
+        for item in snapshot.world_state.saved_replay_sets
+        if not self._is_same_saved_replay(item, payload)
+      ],
+    ][:8]
+    snapshot.world_state.updated_at = utc_now()
+    self.project_repository.save(snapshot)
+    return [item.model_dump(mode="json") for item in snapshot.world_state.saved_replay_sets]
+
+  def delete_replay_set(self, project_id: str, replay_set_id: str) -> list[dict]:
+    snapshot = self.project_repository.load(project_id)
+    snapshot.world_state.saved_replay_sets = [
+      item
+      for item in snapshot.world_state.saved_replay_sets
+      if item.replay_set_id != replay_set_id
+    ]
+    snapshot.world_state.updated_at = utc_now()
+    self.project_repository.save(snapshot)
+    return [item.model_dump(mode="json") for item in snapshot.world_state.saved_replay_sets]
+
   def _validate_effect_scope(self, input_type: str, effect_scope: str) -> None:
     allowed = self.EFFECT_SCOPE_RULES[input_type]
     if effect_scope not in allowed:
@@ -139,6 +171,13 @@ class ProjectService:
         if branch.branch_id == branch_id:
           return branch.label
     return ""
+
+  def _is_same_saved_replay(self, saved_replay: SavedReplaySet, payload: ReplaySetSaveRequest) -> bool:
+    return (
+      saved_replay.replay_set_key == payload.replay_set_key
+      and saved_replay.focus.event_id == payload.focus.event_id
+      and saved_replay.focus.branch_id == payload.focus.branch_id
+    )
 
   def _build_non_replay_summary(self, language: str, input_type: str) -> str:
     if language == "zh":

@@ -92,6 +92,72 @@ export interface CalibrationRecord {
   created_at: string
 }
 
+export interface SavedReplayFocus {
+  event_id: string
+  event_title: string
+  branch_id: string
+  branch_label: string
+}
+
+export interface SavedReplayDossierCard {
+  title: string
+  summary: string
+}
+
+export interface SavedReplayDossier {
+  summary: string
+  entry: SavedReplayDossierCard
+  hinge: SavedReplayDossierCard
+  terminal: SavedReplayDossierCard
+}
+
+export interface SavedReplayArtifact {
+  title: string
+  deck: string
+  wall_text: string
+  pressure_note: string
+  closing_note: string
+  tags: string[]
+}
+
+export interface SavedReplayMetrics {
+  event_count: number
+  average_confidence: number
+  average_pressure: number
+  alternate_count: number
+}
+
+export interface SavedReplayTimelineEntry {
+  index: string
+  stage: string
+  event_title: string
+  branch_label: string
+  confidence: number
+  counter_signal_count: number
+  description: string
+  upstream: SavedReplayDossierCard
+  downstream: SavedReplayDossierCard
+  focus: SavedReplayFocus
+}
+
+export interface SavedReplaySetDraft {
+  replay_set_key: string
+  replay_set_label: string
+  replay_set_note: string
+  authored_note: string
+  artifact: SavedReplayArtifact
+  focus: SavedReplayFocus
+  metrics: SavedReplayMetrics
+  dossier: SavedReplayDossier
+  timeline: SavedReplayTimelineEntry[]
+  language: DisplayLanguage
+}
+
+export interface SavedReplaySet extends SavedReplaySetDraft {
+  replay_set_id: string
+  saved_at: string
+}
+
 export interface StageData {
   project_context: {
     project_id: string
@@ -142,6 +208,7 @@ export interface StageData {
       summary: string
       branch_label: string
     }>
+    saved_replay_sets: SavedReplaySet[]
   }
   archive: {
     share_snapshot: ShareArtifact

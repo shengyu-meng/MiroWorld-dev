@@ -139,6 +139,166 @@
         }
       }
     },
+    "saved_replay_sets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "replay_set_id",
+          "saved_at",
+          "replay_set_key",
+          "replay_set_label",
+          "replay_set_note",
+          "authored_note",
+          "artifact",
+          "focus",
+          "metrics",
+          "dossier",
+          "timeline",
+          "language"
+        ],
+        "properties": {
+          "replay_set_id": { "type": "string" },
+          "saved_at": { "type": "string", "format": "date-time" },
+          "replay_set_key": { "type": "string" },
+          "replay_set_label": { "type": "string" },
+          "replay_set_note": { "type": "string" },
+          "authored_note": { "type": "string" },
+          "language": { "type": "string", "enum": ["zh", "en"] },
+          "artifact": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["title", "deck", "wall_text", "pressure_note", "closing_note", "tags"],
+            "properties": {
+              "title": { "type": "string" },
+              "deck": { "type": "string" },
+              "wall_text": { "type": "string" },
+              "pressure_note": { "type": "string" },
+              "closing_note": { "type": "string" },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "focus": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["event_id", "event_title", "branch_id", "branch_label"],
+            "properties": {
+              "event_id": { "type": "string" },
+              "event_title": { "type": "string" },
+              "branch_id": { "type": "string" },
+              "branch_label": { "type": "string" }
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["event_count", "average_confidence", "average_pressure", "alternate_count"],
+            "properties": {
+              "event_count": { "type": "integer", "minimum": 0 },
+              "average_confidence": { "type": "number" },
+              "average_pressure": { "type": "number" },
+              "alternate_count": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "dossier": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["summary", "entry", "hinge", "terminal"],
+            "properties": {
+              "summary": { "type": "string" },
+              "entry": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["title", "summary"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "summary": { "type": "string" }
+                }
+              },
+              "hinge": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["title", "summary"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "summary": { "type": "string" }
+                }
+              },
+              "terminal": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["title", "summary"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "summary": { "type": "string" }
+                }
+              }
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "index",
+                "stage",
+                "event_title",
+                "branch_label",
+                "confidence",
+                "counter_signal_count",
+                "description",
+                "upstream",
+                "downstream",
+                "focus"
+              ],
+              "properties": {
+                "index": { "type": "string" },
+                "stage": { "type": "string" },
+                "event_title": { "type": "string" },
+                "branch_label": { "type": "string" },
+                "confidence": { "type": "number" },
+                "counter_signal_count": { "type": "integer", "minimum": 0 },
+                "description": { "type": "string" },
+                "upstream": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["title", "summary"],
+                  "properties": {
+                    "title": { "type": "string" },
+                    "summary": { "type": "string" }
+                  }
+                },
+                "downstream": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["title", "summary"],
+                  "properties": {
+                    "title": { "type": "string" },
+                    "summary": { "type": "string" }
+                  }
+                },
+                "focus": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["event_id", "event_title", "branch_id", "branch_label"],
+                  "properties": {
+                    "event_id": { "type": "string" },
+                    "event_title": { "type": "string" },
+                    "branch_id": { "type": "string" },
+                    "branch_label": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "calibration_records": {
       "type": "array",
       "items": { "$ref": "./calibration-record.schema.json" }

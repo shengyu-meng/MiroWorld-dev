@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import jsonschema
 from fastapi.testclient import TestClient
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
 
 from main import app
 
@@ -16,18 +17,17 @@ client = TestClient(app)
 
 def load_schema(name: str):
   schema = json.loads((CONTRACTS_DIR / name).read_text(encoding="utf-8"))
-  store = {}
+  registry = Registry()
   for target in CONTRACTS_DIR.glob("*.json"):
     candidate = json.loads(target.read_text(encoding="utf-8"))
-    store[candidate.get("$id", target.name)] = candidate
-    store[f"./{target.name}"] = candidate
-  resolver = jsonschema.RefResolver.from_schema(schema, store=store)
-  return schema, resolver
+    resource = Resource.from_contents(candidate)
+    registry = registry.with_resource(candidate.get("$id", target.name), resource)
+    registry = registry.with_resource(f"./{target.name}", resource)
+  return Draft202012Validator(schema, registry=registry)
 
 
 def assert_schema(name: str, payload):
-  schema, resolver = load_schema(name)
-  jsonschema.validate(payload, schema, resolver=resolver)
+  load_schema(name).validate(payload)
 
 
 def create_fixture_project():
@@ -104,6 +104,102 @@ def test_input_replay_share_and_calibration_flow():
   stage_payload = calibration_response.json()["data"]
   assert_schema("stage-response.schema.json", stage_payload)
   assert stage_payload["archive"]["calibration_summary"]["count"] >= 1
+
+
+def test_replay_set_save_delete_and_stage_persistence():
+  payload = create_fixture_project()
+  project_id = payload["project_id"]
+  stage = payload["stage"]
+  event_id = stage["surface_defaults"]["selected_event_id"]
+  branch_id = stage["surface_defaults"]["selected_branch_id"]
+  event_title = stage["observatory"]["key_events"][0]["title"]
+  branch_label = stage["observatory"]["key_events"][0]["branches"][0]["label"]
+
+  save_response = client.post(
+    f"/api/projects/{project_id}/replay-sets",
+    json={
+      "replay_set_key": "current",
+      "replay_set_label": "Current Set",
+      "replay_set_note": "Tracks the currently selected path.",
+      "authored_note": "A saved replay excerpt for persistence testing.",
+      "artifact": {
+        "title": "Current Set / Exhibit",
+        "deck": "Deck line for the saved replay.",
+        "wall_text": "Wall text for the saved replay.",
+        "pressure_note": "Pressure note for the saved replay.",
+        "closing_note": "Closing note for the saved replay.",
+        "tags": ["Current Set", "Test"],
+      },
+      "focus": {
+        "event_id": event_id,
+        "event_title": event_title,
+        "branch_id": branch_id,
+        "branch_label": branch_label,
+      },
+      "metrics": {
+        "event_count": 2,
+        "average_confidence": 0.62,
+        "average_pressure": 1.4,
+        "alternate_count": 1,
+      },
+      "dossier": {
+        "summary": "Saved replay dossier summary.",
+        "entry": {
+          "title": f"{event_title} / {branch_label}",
+          "summary": "Entry summary.",
+        },
+        "hinge": {
+          "title": f"{event_title} / {branch_label}",
+          "summary": "Hinge summary.",
+        },
+        "terminal": {
+          "title": f"{event_title} / {branch_label}",
+          "summary": "Terminal summary.",
+        },
+      },
+      "timeline": [
+        {
+          "index": "ARCHIVE 01",
+          "stage": stage["observatory"]["key_events"][0]["stage"],
+          "event_title": event_title,
+          "branch_label": branch_label,
+          "confidence": 0.62,
+          "counter_signal_count": 1,
+          "description": "Saved replay timeline entry.",
+          "upstream": {
+            "title": "Archive Origin",
+            "summary": "Saved replay origin.",
+          },
+          "downstream": {
+            "title": "Archive Open End",
+            "summary": "Saved replay downstream.",
+          },
+          "focus": {
+            "event_id": event_id,
+            "event_title": event_title,
+            "branch_id": branch_id,
+            "branch_label": branch_label,
+          },
+        }
+      ],
+      "language": "zh",
+    },
+  )
+  assert save_response.status_code == 200
+  saved_payload = save_response.json()["data"]
+  assert len(saved_payload) == 1
+  assert saved_payload[0]["replay_set_key"] == "current"
+
+  stage_response = client.get(f"/api/projects/{project_id}/stage", params={"language": "zh"})
+  assert stage_response.status_code == 200
+  persisted_stage = stage_response.json()["data"]
+  assert persisted_stage["ripple"]["saved_replay_sets"][0]["replay_set_id"] == saved_payload[0]["replay_set_id"]
+
+  delete_response = client.delete(
+    f"/api/projects/{project_id}/replay-sets/{saved_payload[0]['replay_set_id']}",
+  )
+  assert delete_response.status_code == 200
+  assert delete_response.json()["data"] == []
 
 
 def test_invalid_effect_scope_is_rejected():

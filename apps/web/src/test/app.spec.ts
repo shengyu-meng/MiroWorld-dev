@@ -179,6 +179,7 @@ const sampleStage: StageData = {
         branch_label: 'Continuation',
       },
     ],
+    saved_replay_sets: [],
   },
   archive: {
     share_snapshot: {
@@ -253,6 +254,101 @@ const sampleStage: StageData = {
   },
   version: 1,
 }
+
+const savedReplaySetResponse = [
+  {
+    replay_set_id: 'rset_1',
+    saved_at: '2026-01-06T00:00:00Z',
+    replay_set_key: 'pressure',
+    replay_set_label: 'Pressure Set',
+    replay_set_note: 'The branch keeps pressure visible at each hinge.',
+    authored_note: 'Enters through Event One / Alternate, takes pressure at Event Two / Backlash, and exposes its tail at Event Two / Backlash.',
+    language: 'en',
+    artifact: {
+      title: 'Pressure Set / Event Two / Backlash',
+      deck: 'Pours in from Event One / Alternate, bends at Event Two / Backlash, and leaves its afterimage toward Event Two / Backlash.',
+      wall_text: 'This Pressure Set replay spans 2 events, holds 27% effective confidence, carries 2.7 visible pressure, and keeps 2 alternate turns in frame.',
+      pressure_note: 'This is a high-pressure reading: it stays with the branch where counter-signals and costs remain most exposed.',
+      closing_note: 'What remains at Event Two / Backlash is not a free ending, because the line still keeps 2 alternate turns under pressure in the background.',
+      tags: ['Pressure Set', 'Event Two / Backlash', '2 Event Count'],
+    },
+    focus: {
+      event_id: 'evt_2',
+      event_title: 'Event Two',
+      branch_id: 'br_4',
+      branch_label: 'Backlash',
+    },
+    metrics: {
+      event_count: 2,
+      average_confidence: 0.265,
+      average_pressure: 2.7,
+      alternate_count: 2,
+    },
+    dossier: {
+      summary: 'Enters through Event One / Alternate, takes pressure at Event Two / Backlash, and exposes its tail at Event Two / Backlash.',
+      entry: {
+        title: 'Event One / Alternate',
+        summary: 'Alternate branch',
+      },
+      hinge: {
+        title: 'Event Two / Backlash',
+        summary: 'Cost D',
+      },
+      terminal: {
+        title: 'Event Two / Backlash',
+        summary: 'Cost D',
+      },
+    },
+    timeline: [
+      {
+        index: 'ARCHIVE 01',
+        stage: 'Entry',
+        event_title: 'Event One',
+        branch_label: 'Alternate',
+        confidence: 0.22,
+        counter_signal_count: 1,
+        description: 'Alternate branch',
+        upstream: {
+          title: 'Archive Origin',
+          summary: 'The replay opens where the visible archive begins.',
+        },
+        downstream: {
+          title: 'Event Two / Backlash',
+          summary: 'Cost D',
+        },
+        focus: {
+          event_id: 'evt_1',
+          event_title: 'Event One',
+          branch_id: 'br_2',
+          branch_label: 'Alternate',
+        },
+      },
+      {
+        index: 'ARCHIVE 02',
+        stage: 'Aftermath',
+        event_title: 'Event Two',
+        branch_label: 'Backlash',
+        confidence: 0.31,
+        counter_signal_count: 1,
+        description: 'Backlash branch',
+        upstream: {
+          title: 'Event One / Alternate',
+          summary: 'Cost B',
+        },
+        downstream: {
+          title: 'Archive Open End',
+          summary: 'The replay keeps leaking into the next unread event.',
+        },
+        focus: {
+          event_id: 'evt_2',
+          event_title: 'Event Two',
+          branch_id: 'br_4',
+          branch_label: 'Backlash',
+        },
+      },
+    ],
+  },
+]
 
 function makeRouter(initialPath: string) {
   return createRouter({
@@ -370,6 +466,8 @@ describe('app routes', () => {
     fetchMock
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: savedReplaySetResponse })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: [] })))
 
     const router = makeRouter('/world/proj_test')
     router.push('/world/proj_test?lang=zh')
@@ -423,10 +521,11 @@ describe('app routes', () => {
     await wrapper.find('[data-testid="download-replay-exhibit"]').trigger('click')
     expect(createObjectURLMock).toHaveBeenCalledTimes(3)
     await wrapper.find('[data-testid="save-replay-shelf"]').trigger('click')
+    await flushPromises()
     expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('Pressure Set')
     expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').text()).toContain('High Pressure')
-    expect(window.localStorage.getItem('miroworld:ripple-shelf:proj_test')).toContain('"replaySetKey":"pressure"')
+    expect(fetchMock).toHaveBeenCalledTimes(3)
     await wrapper.find('[data-testid="download-replay-atlas"]').trigger('click')
     expect(createObjectURLMock).toHaveBeenCalledTimes(4)
     await wrapper.find('[data-testid="download-saved-replay-dossier"]').trigger('click')
@@ -440,9 +539,10 @@ describe('app routes', () => {
     await wrapper.find('[data-testid="restore-saved-replay"]').trigger('click')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Pressure Set')
     await wrapper.find('[data-testid="remove-saved-replay"]').trigger('click')
+    await flushPromises()
     expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('No replay packets')
     expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').exists()).toBe(false)
-    expect(window.localStorage.getItem('miroworld:ripple-shelf:proj_test')).toBe('[]')
+    expect(fetchMock).toHaveBeenCalledTimes(4)
     await wrapper.find('[data-testid="ripple-history-entry-pressure-evt_2"]').trigger('click')
     expect(wrapper.text()).toContain('Counter-Signal Density')
     expect(wrapper.text()).toContain('Backlash')

@@ -577,3 +577,35 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
 - deepen Ripple further if persisted replay sets or more durable authored narration becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (persisted replay set pass started)
+
+Planned in this iteration:
+
+- move saved replay sets out of browser-local state and into project-level persistence
+- keep the replay atlas and replay exhibit flow working after the persistence shift
+- keep the implementation contract-safe by adding the smallest backend and stage extensions needed for persisted replay sets
+
+## 2026-04-23 - Experience Rebuild Slice 4 (persisted replay set pass completed)
+
+Completed in this iteration:
+
+- moved saved replay sets out of browser-local state and into project-level snapshots
+- added backend replay-set save and delete routes plus stage payload support for persisted replay sets
+- rewired Ripple shelf and atlas interactions so save / remove actions now round-trip through the API while replay dossier, packet, exhibit, and atlas exports keep working
+- updated API and frontend tests to cover persisted replay-set behavior
+- removed the deprecated `jsonschema.RefResolver` path from API contract validation
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+- `git diff --check` passed
+- secret pattern scan returned no matches for the provided MiniMax key fragment
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
+- deepen Ripple beyond the current persisted replay shelf into richer authored replay sets if later we need stronger curation
+- continue polishing Observatory density and wording if the public shell needs tighter reading cues

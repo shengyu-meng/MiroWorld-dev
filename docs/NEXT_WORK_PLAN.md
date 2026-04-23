@@ -107,7 +107,9 @@ This slice does include:
 - [x] add a persisted local replay shelf so authored replay packets can be saved, revisited, and re-exported inside Ripple
 - [x] deepen the replay dossier into a more authored replay artifact and portable exhibit export
 - [x] turn the replay shelf into a more legible replay atlas with a bundled export for saved replay sets
-- [ ] deepen the replay dossier further if later we need persisted replay sets or more authored writing
+- [x] move saved replay sets from browser-local state into project-level persistence
+- [x] remove the deprecated `jsonschema.RefResolver` path from API contract validation
+- [ ] deepen the replay dossier further if later we need more authored replay sets or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 

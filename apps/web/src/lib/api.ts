@@ -5,6 +5,8 @@ import type {
   FixtureManifest,
   InputType,
   ReplayResult,
+  SavedReplaySet,
+  SavedReplaySetDraft,
   ShareArtifact,
   StageData,
 } from '@/lib/types'
@@ -101,5 +103,18 @@ export function recordCalibration(
   return request<StageData>(`/api/projects/${projectId}/calibration`, {
     method: 'POST',
     body: JSON.stringify(payload),
+  })
+}
+
+export function saveReplaySet(projectId: string, payload: SavedReplaySetDraft) {
+  return request<SavedReplaySet[]>(`/api/projects/${projectId}/replay-sets`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteReplaySet(projectId: string, replaySetId: string) {
+  return request<SavedReplaySet[]>(`/api/projects/${projectId}/replay-sets/${replaySetId}`, {
+    method: 'DELETE',
   })
 }

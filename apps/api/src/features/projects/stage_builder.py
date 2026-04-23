@@ -70,6 +70,10 @@ class StageBuilder:
           }
           for item in world_state.replay_trace[:5]
         ],
+        "saved_replay_sets": [
+          replay_set.model_dump(mode="json")
+          for replay_set in world_state.saved_replay_sets[:8]
+        ],
       },
       "archive": {
         "share_snapshot": world_state.share_artifact.model_dump(mode="json"),
