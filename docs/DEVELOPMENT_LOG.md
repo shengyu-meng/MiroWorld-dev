@@ -342,3 +342,32 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
 - extend the replay-history archive from derived in-stage slices into richer saved replay sets if needed
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay set library pass started)
+
+Planned in this iteration:
+
+- deepen Ripple from one replay-history reading into a small library of saved replay sets
+- keep the replay set library contract-safe by deriving it from the existing event and branch payload
+- let the viewer switch between named replay sets without leaving the Ripple surface
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay set library pass completed)
+
+Completed in this iteration:
+
+- deepened Ripple from one replay-history reading into a small library of saved replay sets
+- added named replay sets such as current, stabilizing, and pressure so replay history can switch without leaving Ripple
+- kept the implementation contract-safe by deriving each replay set from the existing event and branch payload
+- extended frontend coverage so the replay set library interaction is exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
+- deepen the replay set library further if persisted or more authored replay sets become necessary

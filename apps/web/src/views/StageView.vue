@@ -162,6 +162,18 @@
                 archiveOpenEnd: copy.ripple.archiveOpenEnd,
                 archiveOpenEndNote: copy.ripple.archiveOpenEndNote,
                 counterSignalDensity: copy.ripple.counterSignalDensity,
+                replaySetLibrary: copy.ripple.replaySetLibrary,
+                replaySetLibraryNote: copy.ripple.replaySetLibraryNote,
+                currentSet: copy.ripple.currentSet,
+                currentSetNote: copy.ripple.currentSetNote,
+                stabilizingSet: copy.ripple.stabilizingSet,
+                stabilizingSetNote: copy.ripple.stabilizingSetNote,
+                pressureSet: copy.ripple.pressureSet,
+                pressureSetNote: copy.ripple.pressureSetNote,
+                eventCount: copy.ripple.eventCount,
+                setConfidence: copy.ripple.setConfidence,
+                setPressure: copy.ripple.setPressure,
+                setAlternateCount: copy.ripple.setAlternateCount,
               }"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"

@@ -113,25 +113,45 @@
       </div>
     </div>
 
+    <div class="ripple-replay-set-card" data-testid="ripple-replay-set-library">
+      <header class="ripple-track-header">
+        <div>
+          <span class="annotation-label">{{ copy.replaySetLibrary }}</span>
+          <p class="surface-callout">{{ copy.replaySetLibraryNote }}</p>
+        </div>
+      </header>
+
+      <div class="ripple-replay-set-grid">
+        <button
+          v-for="set in replaySets"
+          :key="set.key"
+          type="button"
+          class="ripple-replay-set-entry"
+          :class="{ active: set.key === selectedReplaySetKey }"
+          :data-testid="`replay-set-${set.key}`"
+          @click="selectedReplaySetKey = set.key"
+        >
+          <div class="ripple-replay-set-header">
+            <span class="annotation-label">{{ set.label }}</span>
+            <small>{{ set.eventCount }} {{ copy.eventCount }}</small>
+          </div>
+
+          <p>{{ set.note }}</p>
+
+          <div class="ripple-replay-set-meta">
+            <span class="event-meta-pill">{{ copy.setConfidence }} / {{ formatConfidence(set.averageConfidence) }}</span>
+            <span class="event-meta-pill">{{ copy.setPressure }} / {{ set.averagePressure }}</span>
+            <span class="event-meta-pill">{{ copy.setAlternateCount }} / {{ set.alternateCount }}</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
     <div class="ripple-history-archive-card" data-testid="ripple-replay-history">
       <header class="ripple-track-header">
         <div>
           <span class="annotation-label">{{ copy.replayHistory }}</span>
           <p class="surface-callout">{{ copy.replayHistoryNote }}</p>
-        </div>
-
-        <div class="ripple-history-mode-row">
-          <button
-            v-for="path in pathVariants"
-            :key="`${path.key}-history`"
-            type="button"
-            class="branch-chip ripple-history-mode"
-            :class="{ active: path.key === selectedHistoryMode }"
-            :data-testid="`ripple-history-mode-${path.key}`"
-            @click="selectedHistoryMode = path.key"
-          >
-            {{ path.label }}
-          </button>
         </div>
       </header>
 
@@ -201,6 +221,7 @@ interface WorldlineTrackNode {
 }
 
 type HistoryMode = 'active' | 'primary' | 'alternate'
+type ReplaySetKey = 'current' | 'stabilizing' | 'pressure'
 
 const props = defineProps<{
   latestBend: string
@@ -243,6 +264,18 @@ const props = defineProps<{
     archiveOpenEnd: string
     archiveOpenEndNote: string
     counterSignalDensity: string
+    replaySetLibrary: string
+    replaySetLibraryNote: string
+    currentSet: string
+    currentSetNote: string
+    stabilizingSet: string
+    stabilizingSetNote: string
+    pressureSet: string
+    pressureSetNote: string
+    eventCount: string
+    setConfidence: string
+    setPressure: string
+    setAlternateCount: string
   }
 }>()
 
@@ -289,8 +322,6 @@ const selectedEvent = computed(() => (
   ?? null
 ))
 
-const selectedHistoryMode = ref<HistoryMode>('active')
-
 const pathVariants = computed<Array<{
   key: HistoryMode
   label: string
@@ -333,9 +364,56 @@ const pathVariants = computed<Array<{
   ]
 })
 
+const selectedReplaySetKey = ref<ReplaySetKey>('current')
+
+const replaySets = computed<Array<{
+  key: ReplaySetKey
+  label: string
+  note: string
+  eventCount: number
+  averageConfidence: number
+  averagePressure: number
+  alternateCount: number
+  nodes: Array<{
+    event: KeyEvent
+    branch: KeyEvent['branches'][number]
+  }>
+}>>(() => {
+  const currentPath = pathVariants.value.find((path) => path.key === 'active')?.nodes ?? []
+  const stabilizingNodes = props.events.map((event) => ({
+    event,
+    branch: pickStabilizingBranch(event),
+  }))
+  const pressureNodes = props.events.map((event) => ({
+    event,
+    branch: pickPressureBranch(event),
+  }))
+
+  return [
+    buildReplaySet(
+      'current',
+      props.copy.currentSet,
+      props.copy.currentSetNote,
+      currentPath,
+    ),
+    buildReplaySet(
+      'stabilizing',
+      props.copy.stabilizingSet,
+      props.copy.stabilizingSetNote,
+      stabilizingNodes,
+    ),
+    buildReplaySet(
+      'pressure',
+      props.copy.pressureSet,
+      props.copy.pressureSetNote,
+      pressureNodes,
+    ),
+  ]
+})
+
 const historyEntries = computed(() => {
-  const activePath = pathVariants.value.find((path) => path.key === selectedHistoryMode.value)
-    ?? pathVariants.value[0]
+  const activePath = replaySets.value.find((set) => set.key === selectedReplaySetKey.value)
+    ?? replaySets.value[0]
 
   return activePath.nodes.map((node, index) => {
     const upstreamNode = activePath.nodes[index - 1]
@@ -373,11 +451,11 @@ const historyEntries = computed(() => {
 })
 
 watch(
-  () => props.selectedBranchId,
+  () => [props.selectedEventId, props.selectedBranchId],
   () => {
-    selectedHistoryMode.value = pathVariants.value.some((path) => path.key === selectedHistoryMode.value)
-      ? selectedHistoryMode.value
-      : 'active'
+    selectedReplaySetKey.value = replaySets.value.some((set) => set.key === selectedReplaySetKey.value)
+      ? selectedReplaySetKey.value
+      : 'current'
   },
 )
 
@@ -393,5 +471,50 @@ function pickPrimaryBranch(event: KeyEvent) {
 function pickAlternateBranch(event: KeyEvent) {
   return event.branches.find((branch) => branch.visibility === 'alternate')
     ?? pickPrimaryBranch(event)
+}
+
+function pickStabilizingBranch(event: KeyEvent) {
+  return [...event.branches].sort((left, right) => (
+    (right.effective_confidence ?? right.confidence) - (left.effective_confidence ?? left.confidence)
+  ))[0] ?? pickPrimaryBranch(event)
+}
+
+function pickPressureBranch(event: KeyEvent) {
+  return [...event.branches].sort((left, right) => (
+    branchPressure(right) - branchPressure(left)
+  ))[0] ?? pickAlternateBranch(event)
+}
+
+function branchPressure(branch: KeyEvent['branches'][number]) {
+  const confidence = branch.effective_confidence ?? branch.confidence
+  return branch.signals_against.length * 2
+    + (branch.cost_hint ? 1 : 0)
+    + (branch.visibility === 'alternate' ? 0.5 : 0)
+    + (1 - confidence)
+}
+
+function buildReplaySet(
+  key: ReplaySetKey,
+  label: string,
+  note: string,
+  nodes: Array<{ event: KeyEvent, branch: KeyEvent['branches'][number] }>,
+) {
+  const eventCount = nodes.length
+  const totalConfidence = nodes.reduce((sum, node) => (
+    sum + (node.branch.effective_confidence ?? node.branch.confidence)
+  ), 0)
+  const totalPressure = nodes.reduce((sum, node) => sum + branchPressure(node.branch), 0)
+  const alternateCount = nodes.filter((node) => node.branch.visibility === 'alternate').length
+
+  return {
+    key,
+    label,
+    note,
+    eventCount,
+    averageConfidence: eventCount ? totalConfidence / eventCount : 0,
+    averagePressure: Math.round(eventCount ? (totalPressure / eventCount) * 10 : 0) / 10,
+    alternateCount,
+    nodes,
+  }
 }
 </script>

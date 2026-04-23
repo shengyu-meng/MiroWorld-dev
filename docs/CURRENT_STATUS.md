@@ -2,11 +2,11 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 calibration slice deck pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 replay set library pass complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, png, bundle, and exhibit artifacts while calibration reads through wider slice decks and Ripple supports both a multi-path comparison view and a deeper replay-history archive.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, png, bundle, and exhibit artifacts while calibration reads through wider slice decks and Ripple supports both a multi-path comparison view and a named replay-set library.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -21,6 +21,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and the linefield opens wider on the Ripple surface so continuity reads across more events than before
 - Ripple now also lets the viewer compare active, primary, and alternate drift paths side by side
 - and Ripple can now read the selected path as replay-history slices of upstream tension, hinge branch, and downstream drift
+- and Ripple can now switch between named replay sets such as current, stabilizing, and pressure readings without leaving the surface
 - and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
@@ -125,6 +126,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - calibration now also surfaces branch-focused slice cards so dominant branch families can be compared directly
 - frontend route tests now cover the deeper calibration slice deck interaction layer
 
+### Frontend experience rebuild slice 4 (replay set library pass)
+
+- Ripple now exposes a small replay set library instead of only one replay-history reading
+- named replay sets such as current, stabilizing, and pressure can switch the saved replay view without leaving Ripple
+- frontend route tests now cover the replay set library interaction layer
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -135,10 +142,10 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ### Product / experience gaps
 
-- the linefield and Ripple now act more like a multi-path replay surface, but they are not yet a fuller replay archive across multiple synthesized histories or saved replay sets
+- the linefield and Ripple now act more like a multi-path replay surface with named replay sets, but they are not yet a fuller replay archive across multiple synthesized histories or backend-saved replay sets
 - the archive now exports local svg, png, text, exhibit html, and artifact bundle outputs, but it still does not yet generate richer image pipelines or packaged media sets beyond those first formats
 - calibration history is now more comparative across wider windows and branch slices, but it is not yet deeper across decision types or richer longitudinal cuts
-- ripple continuity now includes a first replay-history archive pass, but it still needs richer saved histories and more authored path narration
+- ripple continuity now includes a replay set library, but it still needs richer authored path narration and possibly persisted replay sets later
 
 ### Content expression gaps
 
@@ -158,4 +165,4 @@ The next active slice is still `Experience Rebuild Slice 4`:
 - deepen the export path beyond local SVG / TXT into stronger artifact options
 - keep evolving the archive export path beyond the current SVG / PNG / TXT / HTML / JSON set if richer packaged media becomes necessary
 - deepen calibration comparison beyond the current slice deck into richer decision-type or longer-horizon archive perspectives if needed
-- keep extending the linefield / ripple system toward saved replay histories and richer path narration without regressing shell speed
+- keep extending the linefield / ripple system toward richer authored replay sets and path narration without regressing shell speed
