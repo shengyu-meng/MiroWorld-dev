@@ -313,3 +313,32 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
 - extend calibration comparison if the current atlas proves too shallow in real use
 - extend the replay-history archive from derived in-stage slices into richer saved replay sets if needed
+
+## 2026-04-23 - Experience Rebuild Slice 4 (calibration slice deck pass started)
+
+Planned in this iteration:
+
+- deepen calibration comparison beyond recent-vs-full into wider archive windows and branch-focused slices
+- keep the archive readable as an art shell rather than falling back into a dashboard
+- stay contract-safe by deriving all extra slice views from the existing calibration and decision payload
+
+## 2026-04-23 - Experience Rebuild Slice 4 (calibration slice deck pass completed)
+
+Completed in this iteration:
+
+- deepened calibration comparison beyond recent-vs-full into wider archive window slices
+- added branch-focused slice cards so the archive can compare dominant branch families directly
+- kept the implementation contract-safe by deriving all new comparisons from the existing calibration and decision payload
+- extended frontend coverage so the deeper calibration slice deck is exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
+- extend the replay-history archive from derived in-stage slices into richer saved replay sets if needed

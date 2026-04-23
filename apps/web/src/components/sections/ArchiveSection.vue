@@ -149,6 +149,20 @@
               </div>
             </div>
             <div class="calibration-comparison-row">
+              <span>{{ copy.priorWindow }}</span>
+              <div class="calibration-comparison-bar">
+                <span
+                  v-for="segment in priorCalibrationSegments"
+                  :key="`prior-${segment.key}`"
+                  class="calibration-comparison-segment"
+                  :class="`result-${segment.key}`"
+                  :style="{ flexGrow: segment.count || 1 }"
+                >
+                  <small>{{ segment.count }}</small>
+                </span>
+              </div>
+            </div>
+            <div class="calibration-comparison-row">
               <span>{{ copy.fullArchive }}</span>
               <div class="calibration-comparison-bar">
                 <span
@@ -162,6 +176,48 @@
                 </span>
               </div>
             </div>
+          </div>
+
+          <span class="annotation-label">{{ copy.windowSlices }}</span>
+          <div class="calibration-window-slice-grid" data-testid="calibration-window-slices">
+            <article v-for="slice in calibrationWindowCards" :key="slice.label" class="calibration-window-slice-card">
+              <span class="annotation-label">{{ slice.label }}</span>
+              <strong>{{ slice.value }}</strong>
+              <p>{{ slice.note }}</p>
+              <div class="calibration-comparison-bar">
+                <span
+                  v-for="segment in slice.segments"
+                  :key="`${slice.label}-${segment.key}`"
+                  class="calibration-comparison-segment"
+                  :class="`result-${segment.key}`"
+                  :style="{ flexGrow: segment.count || 1 }"
+                >
+                  <small>{{ segment.count }}</small>
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <div class="calibration-branch-slice-stack" data-testid="calibration-branch-slices">
+            <span class="annotation-label">{{ copy.branchSlices }}</span>
+            <article v-for="slice in calibrationBranchCards" :key="slice.branchId" class="calibration-branch-slice-card">
+              <div class="calibration-branch-slice-header">
+                <strong>{{ slice.label }}</strong>
+                <small>{{ slice.count }} / {{ sortedCalibrationRecords.length || 1 }}</small>
+              </div>
+              <p>{{ slice.note }}</p>
+              <div class="calibration-comparison-bar">
+                <span
+                  v-for="segment in slice.segments"
+                  :key="`${slice.branchId}-${segment.key}`"
+                  class="calibration-comparison-segment"
+                  :class="`result-${segment.key}`"
+                  :style="{ flexGrow: segment.count || 1 }"
+                >
+                  <small>{{ segment.count }}</small>
+                </span>
+              </div>
+            </article>
           </div>
           <p>{{ calibrationSummary.summary }}</p>
         </article>
@@ -251,10 +307,13 @@ const props = defineProps<{
     downloadExhibitHtml: string
     downloadArtifactBundle: string
     calibrationAtlas: string
+    windowSlices: string
+    branchSlices: string
     dominantOutcome: string
     recentTendency: string
     mostTestedBranch: string
     recentWindow: string
+    priorWindow: string
     fullArchive: string
     tendencyStrengthening: string
     tendencySlipping: string
@@ -284,6 +343,8 @@ const sortedCalibrationRecords = computed(() => [...props.calibrationRecords].so
 )))
 
 const recentCalibrationRecords = computed(() => sortedCalibrationRecords.value.slice(0, 4))
+const priorCalibrationRecords = computed(() => sortedCalibrationRecords.value.slice(4, 8))
+const branchLabels = computed(() => new Map(props.decisionLog.map((entry) => [entry.branch_id, entry.branch_label])))
 
 const calibrationSegments = computed(() => {
   return buildResultSegments(sortedCalibrationRecords.value)
@@ -293,20 +354,20 @@ const recentCalibrationSegments = computed(() => {
   return buildResultSegments(recentCalibrationRecords.value)
 })
 
+const priorCalibrationSegments = computed(() => {
+  return buildResultSegments(priorCalibrationRecords.value)
+})
+
 const calibrationAtlasCards = computed(() => {
   const total = sortedCalibrationRecords.value.length
-  const dominant = calibrationSegments.value.reduce((best, segment) => (
-    segment.count > best.count ? segment : best
-  ), calibrationSegments.value[0])
+  const dominant = dominantSegmentFor(sortedCalibrationRecords.value)
   const branchCounts = new Map<string, { count: number, label: string }>()
-  const branchLabels = new Map(props.decisionLog.map((entry) => [entry.branch_id, entry.branch_label]))
   const recentScore = scoreWindow(recentCalibrationRecords.value)
-  const priorWindow = sortedCalibrationRecords.value.slice(4, 8)
-  const priorScore = priorWindow.length ? scoreWindow(priorWindow) : recentScore
+  const priorScore = priorCalibrationRecords.value.length ? scoreWindow(priorCalibrationRecords.value) : recentScore
   const delta = recentScore - priorScore
 
   for (const record of sortedCalibrationRecords.value) {
-    const label = branchLabels.get(record.branch_id) ?? record.branch_id
+    const label = branchLabels.value.get(record.branch_id) ?? record.branch_id
     const current = branchCounts.get(record.branch_id) ?? { count: 0, label }
     current.count += 1
     branchCounts.set(record.branch_id, current)
@@ -335,6 +396,39 @@ const calibrationAtlasCards = computed(() => {
   ]
 })
 
+const calibrationWindowCards = computed(() => {
+  return [
+    buildWindowSliceCard(props.copy.recentWindow, recentCalibrationRecords.value),
+    buildWindowSliceCard(props.copy.priorWindow, priorCalibrationRecords.value),
+    buildWindowSliceCard(props.copy.fullArchive, sortedCalibrationRecords.value),
+  ]
+})
+
+const calibrationBranchCards = computed(() => {
+  const grouped = new Map<string, CalibrationRecord[]>()
+
+  for (const record of sortedCalibrationRecords.value) {
+    const current = grouped.get(record.branch_id) ?? []
+    current.push(record)
+    grouped.set(record.branch_id, current)
+  }
+
+  return [...grouped.entries()]
+    .map(([branchId, records]) => {
+      const dominant = dominantSegmentFor(records)
+      const label = branchLabels.value.get(branchId) ?? branchId
+      return {
+        branchId,
+        label,
+        count: records.length,
+        note: `${props.copy.dominantOutcome}: ${records.length ? dominant.label : props.copy.thinArchive}`,
+        segments: buildResultSegments(records),
+      }
+    })
+    .sort((left, right) => right.count - left.count)
+    .slice(0, 3)
+})
+
 function buildResultSegments(records: CalibrationRecord[]) {
   const counts = {
     hit: 0,
@@ -353,6 +447,24 @@ function buildResultSegments(records: CalibrationRecord[]) {
     { key: 'miss', count: counts.miss, label: props.copy.miss },
     { key: 'insufficient_data', count: counts.insufficient_data, label: props.copy.insufficient_data },
   ] as const
+}
+
+function dominantSegmentFor(records: CalibrationRecord[]) {
+  return buildResultSegments(records).reduce((best, segment) => (
+    segment.count > best.count ? segment : best
+  ), buildResultSegments(records)[0])
+}
+
+function buildWindowSliceCard(label: string, records: CalibrationRecord[]) {
+  const dominant = dominantSegmentFor(records)
+  return {
+    label,
+    value: records.length ? dominant.label : props.copy.thinArchive,
+    note: records.length
+      ? `${props.copy.dominantOutcome}: ${dominant.label} / ${records.length}`
+      : props.calibrationSummary.summary,
+    segments: buildResultSegments(records),
+  }
 }
 
 async function copyText(label: string, text: string) {

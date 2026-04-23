@@ -88,7 +88,9 @@ This slice does include:
 - [ ] keep extending the archive bundle beyond the current SVG / PNG / TXT / HTML / JSON set if a denser media packet becomes valuable
 - [x] turn calibration pattern into a comparative archive atlas
 - [x] compare calibration records by pattern and tendency, not only chronology
-- [ ] deepen calibration comparison across wider archive slices if the current atlas proves too shallow
+- [x] deepen calibration comparison across wider archive slices if the current atlas proves too shallow
+- [x] add wider calibration window slices and branch-family slices so comparison does not stop at recent-vs-full
+- [ ] deepen calibration beyond the current slice deck into decision-type or longer-horizon views if needed
 - [x] turn Ripple into a continuity explorer instead of a single replay strip
 - [x] deepen ripple continuity beyond the current replay track
 - [x] turn Ripple into a multi-path replay archive instead of a single continuity chain
