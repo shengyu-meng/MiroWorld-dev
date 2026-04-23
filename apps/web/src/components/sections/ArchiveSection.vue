@@ -23,6 +23,9 @@
         <button type="button" class="ghost-action" data-testid="download-artifact-bundle" @click="downloadArtifactBundle">
           {{ copy.downloadArtifactBundle }}
         </button>
+        <button type="button" class="ghost-action" data-testid="download-media-packet" @click="downloadMediaPacket">
+          {{ copy.downloadMediaPacket }}
+        </button>
       </div>
     </div>
     <small v-if="archiveFeedback" class="archive-status">{{ archiveFeedback }}</small>
@@ -297,6 +300,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import JSZip from 'jszip'
 
 import type { CalibrationRecord, ShareArtifact } from '@/lib/types'
 
@@ -348,6 +352,7 @@ const props = defineProps<{
     downloadBundle: string
     downloadExhibitHtml: string
     downloadArtifactBundle: string
+    downloadMediaPacket: string
     calibrationAtlas: string
     windowSlices: string
     branchSlices: string
@@ -685,6 +690,38 @@ function downloadArtifactBundle() {
   archiveFeedback.value = props.copy.downloadArtifactBundle
 }
 
+async function downloadMediaPacket() {
+  archiveFeedback.value = ''
+  const baseName = safeFileStem(props.projectId)
+  const zip = new JSZip()
+  const folder = zip.folder(`${baseName}-media-packet`)
+
+  if (!folder) return
+
+  folder.file(`${baseName}-poster.svg`, buildPosterSvg())
+  folder.file(`${baseName}-share.txt`, buildShareBundle())
+  folder.file(`${baseName}-exhibit.html`, buildExhibitHtml())
+  folder.file(`${baseName}-artifact-bundle.json`, buildArtifactBundle())
+
+  let includesPosterPng = false
+  try {
+    const posterPngDataUrl = await buildPosterPngDataUrl()
+    const parsed = parseDataUrl(posterPngDataUrl)
+    if (parsed) {
+      folder.file(`${baseName}-poster.png`, parsed.content, { base64: true })
+      includesPosterPng = true
+    }
+  } catch {
+    includesPosterPng = false
+  }
+
+  folder.file(`${baseName}-manifest.md`, buildMediaPacketManifest(includesPosterPng))
+
+  const blob = await zip.generateAsync({ type: 'blob' })
+  downloadBlob(`${baseName}-media-packet.zip`, blob)
+  archiveFeedback.value = props.copy.downloadMediaPacket
+}
+
 function formatTimestamp(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
@@ -807,6 +844,40 @@ function buildArtifactBundle() {
       suggested_png_filename: `${safeFileStem(props.projectId)}-poster.png`,
     },
   }, null, 2)
+}
+
+function buildMediaPacketManifest(includesPosterPng: boolean) {
+  const baseName = safeFileStem(props.projectId)
+  const files = [
+    `${baseName}-poster.svg`,
+    ...(includesPosterPng ? [`${baseName}-poster.png`] : []),
+    `${baseName}-share.txt`,
+    `${baseName}-exhibit.html`,
+    `${baseName}-artifact-bundle.json`,
+    `${baseName}-manifest.md`,
+  ]
+
+  return [
+    '# MIROWORLD MEDIA PACKET',
+    '',
+    `Project: ${props.projectId}`,
+    `Exported At: ${new Date().toLocaleString()}`,
+    '',
+    '## Included Files',
+    ...files.map((file) => `- ${file}`),
+    '',
+    '## Packet Notes',
+    '- poster.svg is the print-first vector artifact.',
+    ...(includesPosterPng
+      ? ['- poster.png is the browser-rendered raster artifact.']
+      : ['- poster.png could not be rendered in this environment, so the packet preserves the svg poster instead.']),
+    '- share.txt carries summary, share text, decision trace, and calibration excerpts.',
+    '- exhibit.html is the standalone exhibition page.',
+    '- artifact-bundle.json keeps the structured snapshot and embedded export surfaces together.',
+    '',
+    '## Curator Frame',
+    props.shareSnapshot.archive_summary,
+  ].join('\n')
 }
 
 function buildExhibitHtml() {
@@ -1022,6 +1093,10 @@ function buildExhibitHtml() {
 
 function downloadFile(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType })
+  downloadBlob(filename, blob)
+}
+
+function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -1078,6 +1153,16 @@ function downloadDataUrl(filename: string, dataUrl: string) {
   document.body.appendChild(link)
   link.click()
   link.remove()
+}
+
+function parseDataUrl(dataUrl: string) {
+  const match = dataUrl.match(/^data:(.+);base64,(.+)$/)
+  if (!match) return null
+
+  return {
+    mimeType: match[1],
+    content: match[2],
+  }
 }
 
 function wrapLines(value: string, lineLength: number) {

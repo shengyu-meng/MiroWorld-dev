@@ -2,7 +2,7 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 calibration longitudinal pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 media packet pass complete`
 
 ## One-line Summary
 
@@ -26,6 +26,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and Ripple can now turn the selected replay dossier into a portable local packet instead of leaving it as an in-scene reading only
 - and Ripple can now keep authored replay packets on a small persisted local shelf so replay states can be revisited instead of only exported once
 - and calibration can now be read not only by branch and window, but also by decision type and longer-horizon archive slices
+- and the archive exports can now also leave the shell as a denser local media packet instead of only a row of separate files
 - and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
@@ -136,6 +137,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - calibration now exposes origin, hinge, and latest chronological slices so longer-horizon drift can be compared directly
 - frontend route tests now cover the decision-type and longitudinal calibration views
 
+### Frontend experience rebuild slice 4 (media packet pass)
+
+- Archive can now bundle poster svg, poster png, share text, exhibit html, artifact bundle json, and a manifest into one local media packet zip
+- the media packet stays frontend-only and secret-safe by assembling the packet entirely from existing local export surfaces
+- frontend route tests now cover the denser archive packet export alongside the earlier single-file export actions
+
 ### Frontend experience rebuild slice 4 (replay set library pass)
 
 - Ripple now exposes a small replay set library instead of only one replay-history reading
@@ -160,7 +167,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 - the linefield and Ripple now act more like a multi-path replay surface with named replay sets, but they are not yet a fuller replay archive across multiple synthesized histories or backend-saved replay sets
 - Ripple now exposes replay sets, dossier anchors, local replay packet export, and a persisted local shelf, but it still does not yet support backend-saved replay sets or deeper authored replay writing
-- the archive now exports local svg, png, text, exhibit html, and artifact bundle outputs, but it still does not yet generate richer image pipelines or packaged media sets beyond those first formats
+- the archive now exports local svg, png, text, exhibit html, artifact bundle, and a zipped media packet, but it still does not yet generate richer image pipelines or broader packaged media sets beyond this first denser bundle
 - calibration history is now comparative across windows, branches, decision types, and longer-horizon slices, but it can still become denser if later we need deeper longitudinal narration
 - ripple continuity now includes a replay set library and dossier layer, but it still may need persisted replay sets or deeper authored narration later
 
@@ -179,8 +186,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 The next active slice is still `Experience Rebuild Slice 4`:
 
-- deepen the export path beyond local SVG / TXT into stronger artifact options
-- keep evolving the archive export path beyond the current SVG / PNG / TXT / HTML / JSON set if richer packaged media becomes necessary
+- deepen the export path beyond the current SVG / PNG / TXT / HTML / JSON / ZIP packet set if richer packaged media becomes necessary
 - deepen calibration comparison beyond the current slice deck into richer decision-type or longer-horizon archive perspectives if needed
 - deepen Ripple beyond the current local replay packet into richer saved replay sets or more authored replay narration if needed
 - keep extending the linefield / ripple system toward richer authored or persisted replay sets without regressing shell speed

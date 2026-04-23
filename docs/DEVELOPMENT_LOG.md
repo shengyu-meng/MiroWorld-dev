@@ -489,3 +489,32 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
 - deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (media packet pass started)
+
+Planned in this iteration:
+
+- bundle the current archive exports into a denser media packet instead of leaving them as separate files
+- keep the implementation frontend-only and secret-safe so the packet is assembled entirely from existing local export surfaces
+- preserve the archive as an exhibition exit rather than turning export into a purely technical utility list
+
+## 2026-04-23 - Experience Rebuild Slice 4 (media packet pass completed)
+
+Completed in this iteration:
+
+- bundled the current Archive exports into a denser local media packet zip instead of leaving them as separate files
+- packed poster svg, poster png, share text, exhibit html, artifact bundle json, and a manifest into one frontend-only export flow
+- kept the implementation secret-safe by assembling the packet entirely from the existing local export surfaces
+- extended frontend coverage so the media packet export is exercised alongside the earlier archive export actions
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
+- deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
