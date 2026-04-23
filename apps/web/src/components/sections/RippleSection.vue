@@ -204,6 +204,36 @@
       </div>
     </div>
 
+    <div v-if="replayArtifact && replayPacket" class="ripple-authored-artifact-card" data-testid="ripple-authored-artifact">
+      <header class="ripple-track-header ripple-track-header--dossier">
+        <div>
+          <span class="annotation-label">{{ copy.replayArtifact }}</span>
+          <p class="surface-callout">{{ copy.replayArtifactNote }}</p>
+        </div>
+        <div class="ripple-dossier-actions">
+          <button type="button" class="ghost-action" data-testid="copy-replay-artifact" @click="copyReplayArtifact">
+            {{ copy.copyReplayArtifact }}
+          </button>
+          <button type="button" class="ghost-action" data-testid="download-replay-exhibit" @click="downloadReplayExhibit">
+            {{ copy.downloadReplayExhibit }}
+          </button>
+        </div>
+      </header>
+      <small v-if="artifactFeedback" class="copy-feedback">{{ artifactFeedback }}</small>
+
+      <article class="ripple-authored-poster">
+        <p class="ripple-authored-brand">MIROWORLD</p>
+        <h3>{{ replayArtifact.title }}</h3>
+        <p class="ripple-authored-deck">{{ replayArtifact.deck }}</p>
+        <p>{{ replayArtifact.wallText }}</p>
+        <p class="ripple-authored-pressure">{{ replayArtifact.pressureNote }}</p>
+        <p class="ripple-authored-closing">{{ replayArtifact.closingNote }}</p>
+        <div class="share-tag-row">
+          <span v-for="tag in replayArtifact.tags" :key="tag" class="share-tag">{{ tag }}</span>
+        </div>
+      </article>
+    </div>
+
     <div class="ripple-replay-shelf-card" data-testid="ripple-replay-shelf">
       <header class="ripple-track-header ripple-track-header--dossier">
         <div>
@@ -240,6 +270,9 @@
             </button>
             <button type="button" class="ghost-action" data-testid="download-saved-replay-packet" @click="downloadSavedReplayPacket(item)">
               {{ copy.downloadSavedReplayPacket }}
+            </button>
+            <button type="button" class="ghost-action" data-testid="download-saved-replay-exhibit" @click="downloadSavedReplayExhibit(item)">
+              {{ copy.downloadSavedReplayExhibit }}
             </button>
             <button type="button" class="ghost-action" data-testid="remove-saved-replay" @click="removeReplayFromShelf(item.shelfId)">
               {{ copy.removeReplayShelf }}
@@ -344,6 +377,15 @@ interface ReplayDossierData {
   terminal: ReplayDossierCard
 }
 
+interface ReplayArtifactData {
+  title: string
+  deck: string
+  wallText: string
+  pressureNote: string
+  closingNote: string
+  tags: string[]
+}
+
 interface ReplayTimelineEntry {
   index: string
   stage: string
@@ -363,6 +405,7 @@ interface ReplayPacket {
   replaySetLabel: string
   replaySetNote: string
   authoredNote: string
+  artifact: ReplayArtifactData
   focus: ReplayFocus
   metrics: {
     eventCount: number
@@ -435,12 +478,23 @@ const props = defineProps<{
     setAlternateCount: string
     replayDossier: string
     replayDossierNote: string
+    replayArtifact: string
+    replayArtifactNote: string
     replayExcerpt: string
     copyReplayExcerpt: string
+    copyReplayArtifact: string
     downloadReplayDossier: string
     downloadReplayPacket: string
+    downloadReplayExhibit: string
+    downloadSavedReplayExhibit: string
     replayDossierSummaryTemplate: string
     replayPacketIntroTemplate: string
+    replayArtifactDeckTemplate: string
+    replayArtifactWallTemplate: string
+    replayArtifactClosingTemplate: string
+    replayArtifactPressureHigh: string
+    replayArtifactPressureMedium: string
+    replayArtifactPressureLow: string
     replayShelf: string
     replayShelfNote: string
     saveReplayShelf: string
@@ -544,6 +598,7 @@ const pathVariants = computed<Array<{
 
 const selectedReplaySetKey = ref<ReplaySetKey>('current')
 const dossierFeedback = ref('')
+const artifactFeedback = ref('')
 const shelfFeedback = ref('')
 const replayShelf = ref<SavedReplayPacket[]>([])
 const replayStorageKey = computed(() => `miroworld:ripple-shelf:${safeFileStem(props.projectId)}`)
@@ -677,8 +732,47 @@ const replayDossierSummary = computed(() => {
   })
 })
 
-const replayPacket = computed<ReplayPacket | null>(() => {
+const replayArtifact = computed<ReplayArtifactData | null>(() => {
   if (!selectedReplaySet.value || !replayDossier.value) return null
+
+  const pressure = selectedReplaySet.value.averagePressure
+  const pressureNote = pressure >= 2.2
+    ? props.copy.replayArtifactPressureHigh
+    : pressure >= 1.4
+      ? props.copy.replayArtifactPressureMedium
+      : props.copy.replayArtifactPressureLow
+
+  return {
+    title: `${selectedReplaySet.value.label} / ${replayDossier.value.hinge.title}`,
+    deck: fillTemplate(props.copy.replayArtifactDeckTemplate, {
+      entry: replayDossier.value.entry.title,
+      hinge: replayDossier.value.hinge.title,
+      terminal: replayDossier.value.terminal.title,
+    }),
+    wallText: fillTemplate(props.copy.replayArtifactWallTemplate, {
+      setLabel: selectedReplaySet.value.label,
+      eventCount: selectedReplaySet.value.eventCount,
+      confidence: formatConfidence(selectedReplaySet.value.averageConfidence),
+      pressure: selectedReplaySet.value.averagePressure,
+      alternateCount: selectedReplaySet.value.alternateCount,
+      hinge: replayDossier.value.hinge.title,
+      terminal: replayDossier.value.terminal.title,
+    }),
+    pressureNote,
+    closingNote: fillTemplate(props.copy.replayArtifactClosingTemplate, {
+      alternateCount: selectedReplaySet.value.alternateCount,
+      terminal: replayDossier.value.terminal.title,
+    }),
+    tags: [
+      selectedReplaySet.value.label,
+      replayDossier.value.hinge.title,
+      `${selectedReplaySet.value.eventCount} ${props.copy.eventCount}`,
+    ],
+  }
+})
+
+const replayPacket = computed<ReplayPacket | null>(() => {
+  if (!selectedReplaySet.value || !replayDossier.value || !replayArtifact.value) return null
 
   const selectedEvent = props.events.find((event) => event.event_id === props.selectedEventId)
   const selectedBranch = selectedEvent?.branches.find((branch) => branch.branch_id === props.selectedBranchId)
@@ -697,6 +791,7 @@ const replayPacket = computed<ReplayPacket | null>(() => {
       }),
       replayDossierSummary.value,
     ].join(' '),
+    artifact: replayArtifact.value,
     focus: {
       eventId: selectedEvent?.event_id ?? props.selectedEventId,
       eventTitle: selectedEvent?.title ?? replayDossier.value.hinge.title,
@@ -740,12 +835,14 @@ watch(
       ? selectedReplaySetKey.value
       : 'current'
     dossierFeedback.value = ''
+    artifactFeedback.value = ''
     shelfFeedback.value = ''
   },
 )
 
 watch(selectedReplaySetKey, () => {
   dossierFeedback.value = ''
+  artifactFeedback.value = ''
   shelfFeedback.value = ''
 })
 
@@ -754,6 +851,7 @@ watch(
   () => {
     replayShelf.value = loadReplayShelf()
     dossierFeedback.value = ''
+    artifactFeedback.value = ''
     shelfFeedback.value = ''
   },
   { immediate: true },
@@ -772,6 +870,18 @@ async function copyReplayExcerpt() {
     dossierFeedback.value = props.copy.copyReplayExcerpt
   } catch {
     dossierFeedback.value = ''
+  }
+}
+
+async function copyReplayArtifact() {
+  artifactFeedback.value = ''
+  if (!navigator.clipboard || !replayPacket.value) return
+
+  try {
+    await navigator.clipboard.writeText(buildReplayArtifactText())
+    artifactFeedback.value = props.copy.copyReplayArtifact
+  } catch {
+    artifactFeedback.value = ''
   }
 }
 
@@ -797,6 +907,18 @@ function downloadReplayPacket() {
     'application/json;charset=utf-8',
   )
   dossierFeedback.value = props.copy.downloadReplayPacket
+}
+
+function downloadReplayExhibit() {
+  if (!replayPacket.value) return
+
+  artifactFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-${selectedReplaySet.value?.key ?? 'current'}-replay-exhibit.html`,
+    buildReplayExhibitHtml(),
+    'text/html;charset=utf-8',
+  )
+  artifactFeedback.value = props.copy.downloadReplayExhibit
 }
 
 function saveReplayToShelf() {
@@ -862,6 +984,16 @@ function downloadSavedReplayPacket(item: SavedReplayPacket) {
   shelfFeedback.value = props.copy.downloadSavedReplayPacket
 }
 
+function downloadSavedReplayExhibit(item: SavedReplayPacket) {
+  shelfFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-${safeFileStem(item.shelfId)}-replay-exhibit.html`,
+    buildReplayExhibitHtml(item),
+    'text/html;charset=utf-8',
+  )
+  shelfFeedback.value = props.copy.downloadSavedReplayExhibit
+}
+
 function pickPrimaryBranch(event: KeyEvent) {
   return event.branches.find((branch) => branch.visibility === 'primary')
     ?? event.branches[0]
@@ -921,6 +1053,22 @@ function buildReplayExcerpt() {
   return replayPacket.value?.authoredNote ?? ''
 }
 
+function buildReplayArtifactText(packet: ReplayPacket | SavedReplayPacket | null = replayPacket.value) {
+  if (!packet) return ''
+
+  return [
+    packet.artifact.title,
+    '',
+    packet.artifact.deck,
+    '',
+    packet.artifact.wallText,
+    '',
+    packet.artifact.pressureNote,
+    '',
+    packet.artifact.closingNote,
+  ].join('\n')
+}
+
 function buildReplayDossierMarkdown(packet: ReplayPacket | SavedReplayPacket | null = replayPacket.value) {
   if (!packet) return ''
 
@@ -951,6 +1099,17 @@ function buildReplayDossierMarkdown(packet: ReplayPacket | SavedReplayPacket | n
     `## ${props.copy.replayExcerpt}`,
     packet.authoredNote,
     '',
+    `## ${props.copy.replayArtifact}`,
+    packet.artifact.title,
+    '',
+    packet.artifact.deck,
+    '',
+    packet.artifact.wallText,
+    '',
+    packet.artifact.pressureNote,
+    '',
+    packet.artifact.closingNote,
+    '',
     `## ${props.copy.replayDossier}`,
     packet.dossier.summary,
     '',
@@ -975,6 +1134,158 @@ function buildReplayDossierMarkdown(packet: ReplayPacket | SavedReplayPacket | n
     `## ${props.copy.replayHistory}`,
     timeline,
   ].join('\n')
+}
+
+function buildReplayExhibitHtml(packet: ReplayPacket | SavedReplayPacket | null = replayPacket.value) {
+  if (!packet) return ''
+
+  const timelineMarkup = packet.timeline.map((entry) => `
+      <article class="timeline-entry">
+        <span class="meta">${escapeHtml(entry.index)} / ${escapeHtml(entry.stage)}</span>
+        <h3>${escapeHtml(entry.eventTitle)} / ${escapeHtml(entry.branchLabel)}</h3>
+        <p>${escapeHtml(entry.description)}</p>
+        <small>${escapeHtml(props.copy.upstreamTension)}: ${escapeHtml(entry.upstream.title)}</small>
+        <small>${escapeHtml(props.copy.downstreamDrift)}: ${escapeHtml(entry.downstream.title)}</small>
+      </article>
+    `).join('')
+
+  const tagMarkup = packet.artifact.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(packet.artifact.title)} / MIROWORLD</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #071117;
+        --panel: rgba(12, 24, 31, 0.92);
+        --line: rgba(139, 226, 248, 0.16);
+        --text: #e8efe9;
+        --muted: #8fa7b0;
+        --warm: #ffb979;
+        --ripple: #c3b4ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Aptos, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 18% 16%, rgba(195, 180, 255, 0.18), transparent 22%),
+          radial-gradient(circle at 84% 12%, rgba(255, 185, 121, 0.12), transparent 18%),
+          var(--bg);
+      }
+      main {
+        width: min(1120px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 2rem 0 3rem;
+        display: grid;
+        gap: 1rem;
+      }
+      .hero, .card, .timeline-entry {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+      }
+      .hero {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+        padding: 1.2rem;
+      }
+      .artifact {
+        padding: 1.3rem;
+        border-radius: 22px;
+        background:
+          radial-gradient(circle at 15% 18%, rgba(195, 180, 255, 0.16), transparent 24%),
+          radial-gradient(circle at 88% 14%, rgba(255, 185, 121, 0.14), transparent 22%),
+          linear-gradient(180deg, rgba(16, 28, 36, 0.94), rgba(9, 13, 18, 0.88));
+      }
+      .brand, .meta {
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
+      h1, h2, h3 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Palatino Linotype", serif;
+        line-height: 0.96;
+      }
+      h1 { font-size: clamp(2.2rem, 4vw, 3.8rem); max-width: 12ch; }
+      h2 { font-size: 1.3rem; margin-bottom: 0.6rem; }
+      h3 { font-size: 1.05rem; margin-bottom: 0.35rem; }
+      .deck { color: var(--warm); font-size: 1rem; }
+      .note { color: var(--ripple); }
+      .side, .timeline, .metrics { display: grid; gap: 0.75rem; }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      }
+      .card, .timeline-entry { padding: 1rem; }
+      .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .tag {
+        padding: 0.28rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        color: var(--muted);
+      }
+      @media (max-width: 920px) {
+        .hero, .grid, .timeline {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <article class="artifact">
+          <p class="brand">MIROWORLD</p>
+          <h1>${escapeHtml(packet.artifact.title)}</h1>
+          <p class="deck">${escapeHtml(packet.artifact.deck)}</p>
+          <p>${escapeHtml(packet.artifact.wallText)}</p>
+          <p class="note">${escapeHtml(packet.artifact.pressureNote)}</p>
+          <p>${escapeHtml(packet.artifact.closingNote)}</p>
+          <div class="tag-row">${tagMarkup}</div>
+        </article>
+        <aside class="side">
+          <div class="card">
+            <span class="meta">${escapeHtml(props.copy.replayExcerpt)}</span>
+            <p>${escapeHtml(packet.authoredNote)}</p>
+          </div>
+          <div class="card">
+            <span class="meta">${escapeHtml(props.copy.hingePressure)}</span>
+            <p>${escapeHtml(packet.dossier.hinge.title)}</p>
+            <small>${escapeHtml(packet.dossier.hinge.summary)}</small>
+          </div>
+        </aside>
+      </section>
+
+      <section class="grid">
+        <article class="card metrics">
+          <h2>${escapeHtml(props.copy.replayDossier)}</h2>
+          <p>${escapeHtml(packet.dossier.summary)}</p>
+          <small>${escapeHtml(props.copy.eventCount)}: ${packet.metrics.eventCount}</small>
+          <small>${escapeHtml(props.copy.setConfidence)}: ${escapeHtml(formatConfidence(packet.metrics.averageConfidence))}</small>
+          <small>${escapeHtml(props.copy.setPressure)}: ${escapeHtml(String(packet.metrics.averagePressure))}</small>
+          <small>${escapeHtml(props.copy.setAlternateCount)}: ${packet.metrics.alternateCount}</small>
+        </article>
+        <div class="timeline">${timelineMarkup}</div>
+      </section>
+    </main>
+  </body>
+</html>`
 }
 
 function loadReplayShelf() {
@@ -1016,6 +1327,15 @@ function fillTemplate(template: string, replacements: Record<string, string | nu
   return Object.entries(replacements).reduce((result, [key, value]) => (
     result.replaceAll(`{${key}}`, String(value))
   ), template)
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
 }
 
 function safeFileStem(value: string) {

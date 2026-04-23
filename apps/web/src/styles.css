@@ -1188,6 +1188,55 @@ li {
   margin-top: 0.85rem;
 }
 
+.ripple-authored-artifact-card {
+  background: linear-gradient(180deg, rgba(11, 21, 28, 0.9), rgba(7, 12, 17, 0.72));
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
+.ripple-authored-poster {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.2rem;
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(195, 180, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 88% 14%, rgba(255, 185, 121, 0.14), transparent 22%),
+    linear-gradient(180deg, rgba(16, 28, 36, 0.94), rgba(9, 13, 18, 0.88));
+}
+
+.ripple-authored-poster h3 {
+  margin: 0;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 0.96;
+  max-width: 14ch;
+}
+
+.ripple-authored-brand {
+  margin: 0;
+  color: var(--ripple);
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.ripple-authored-deck {
+  color: var(--warm);
+  font-size: 1.05rem;
+}
+
+.ripple-authored-pressure {
+  color: var(--ripple);
+}
+
+.ripple-authored-closing {
+  max-width: 48ch;
+}
+
 .ripple-replay-shelf-card {
   background: linear-gradient(180deg, rgba(9, 17, 23, 0.9), rgba(6, 10, 15, 0.74));
   border: 1px solid var(--line);

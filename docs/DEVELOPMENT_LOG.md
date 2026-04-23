@@ -518,3 +518,32 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
 - deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay authorship pass started)
+
+Planned in this iteration:
+
+- deepen the current replay dossier into a more authored replay artifact instead of leaving it mostly as a technical packet
+- add a portable replay exhibit export so the selected replay can travel as a more exhibition-ready object
+- keep the implementation frontend-only and contract-safe by deriving the authored replay artifact from the existing event and branch payload
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay authorship pass completed)
+
+Completed in this iteration:
+
+- deepened the current replay dossier into a more authored replay artifact instead of leaving it as a technical packet only
+- added a portable replay exhibit html export for the selected replay and for replay shelf items restored later
+- kept the implementation frontend-only and contract-safe by deriving the authored artifact entirely from the existing event and branch payload
+- extended frontend coverage so the authored replay artifact, copy action, and replay exhibit export path are exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
+- deepen Ripple further if persisted replay sets or more durable authored narration becomes necessary

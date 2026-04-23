@@ -177,16 +177,40 @@
                 setAlternateCount: copy.ripple.setAlternateCount,
                 replayDossier: copy.ripple.replayDossier,
                 replayDossierNote: copy.ripple.replayDossierNote,
+                replayArtifact: language === 'zh' ? '重演展签' : 'Replay Artifact',
+                replayArtifactNote: language === 'zh'
+                  ? '把当前重演读成一张可带走的展签，而不是只留在技术 dossier 里。'
+                  : 'Read the current replay as an exhibition label instead of leaving it inside a technical dossier only.',
                 replayExcerpt: language === 'zh' ? '重演摘录' : 'Replay Excerpt',
                 copyReplayExcerpt: language === 'zh' ? '复制重演摘录' : 'Copy Replay Excerpt',
+                copyReplayArtifact: language === 'zh' ? '复制重演展签' : 'Copy Replay Artifact',
                 downloadReplayDossier: language === 'zh' ? '导出 Replay Dossier' : 'Download Replay Dossier',
                 downloadReplayPacket: language === 'zh' ? '导出 Replay Packet' : 'Download Replay Packet',
+                downloadReplayExhibit: language === 'zh' ? '导出 Replay Exhibit' : 'Download Replay Exhibit',
                 replayDossierSummaryTemplate: language === 'zh'
                   ? '从 {entry} 进入，在 {hinge} 承压，并在 {terminal} 暴露尾迹。'
                   : 'Enters through {entry}, takes pressure at {hinge}, and exposes its tail at {terminal}.',
                 replayPacketIntroTemplate: language === 'zh'
                   ? '这份重演案卷以 {setLabel} 为视角，覆盖 {eventCount} 个事件，平均置信 {confidence}，平均压力 {pressure}。'
                   : 'This replay dossier reads through {setLabel}, covering {eventCount} events with {confidence} average confidence and {pressure} average pressure.',
+                replayArtifactDeckTemplate: language === 'zh'
+                  ? '从 {entry} 倾入，在 {hinge} 拐折，朝 {terminal} 留下余波。'
+                  : 'Pours in from {entry}, bends at {hinge}, and leaves its afterimage toward {terminal}.',
+                replayArtifactWallTemplate: language === 'zh'
+                  ? '这条 {setLabel} 重演跨越 {eventCount} 个事件，维持 {confidence} 有效置信，同时携带 {pressure} 可见压力，并把 {alternateCount} 次替代转向保留在画面里。'
+                  : 'This {setLabel} replay spans {eventCount} events, holds {confidence} effective confidence, carries {pressure} visible pressure, and keeps {alternateCount} alternate turns in frame.',
+                replayArtifactClosingTemplate: language === 'zh'
+                  ? '它在 {terminal} 留下的并不是一个无代价的结尾，因为整条线仍把 {alternateCount} 次替代转向压在背景里。'
+                  : 'What remains at {terminal} is not a free ending, because the line still keeps {alternateCount} alternate turns under pressure in the background.',
+                replayArtifactPressureHigh: language === 'zh'
+                  ? '这是一条高压读法：它主动停留在反证更密、代价更重的支路上。'
+                  : 'This is a high-pressure reading: it stays with the branch where counter-signals and costs remain most exposed.',
+                replayArtifactPressureMedium: language === 'zh'
+                  ? '这条线并未彻底失稳，但它持续把压力集中在转折节点附近。'
+                  : 'This line is not fully unstable, but it keeps pressure concentrated near the hinge.',
+                replayArtifactPressureLow: language === 'zh'
+                  ? '这是一条相对克制的读法：它让压力保持可见，却没有让整条线彻底断裂。'
+                  : 'This is a more restrained reading: it keeps pressure visible without letting the line fully tear open.',
                 replayShelf: language === 'zh' ? '重演架' : 'Replay Shelf',
                 replayShelfNote: language === 'zh'
                   ? '把当前重演包暂存到本地架上，之后可以回看、恢复和再次导出。'
@@ -201,6 +225,7 @@
                 savedFocus: language === 'zh' ? '聚焦锚点' : 'Saved Focus',
                 downloadSavedReplayDossier: language === 'zh' ? '导出已存 Dossier' : 'Download Saved Dossier',
                 downloadSavedReplayPacket: language === 'zh' ? '导出已存 Packet' : 'Download Saved Packet',
+                downloadSavedReplayExhibit: language === 'zh' ? '导出已存 Exhibit' : 'Download Saved Exhibit',
                 entryAnchor: copy.ripple.entryAnchor,
                 hingePressure: copy.ripple.hingePressure,
                 terminalExposure: copy.ripple.terminalExposure,
