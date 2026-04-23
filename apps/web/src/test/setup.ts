@@ -26,6 +26,7 @@ HTMLCanvasElement.prototype.getContext = (() => ({
   fillRect: () => undefined,
   beginPath: () => undefined,
   moveTo: () => undefined,
+  lineTo: () => undefined,
   bezierCurveTo: () => undefined,
   stroke: () => undefined,
   arc: () => undefined,

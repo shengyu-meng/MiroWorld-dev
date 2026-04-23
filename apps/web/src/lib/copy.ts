@@ -1,0 +1,283 @@
+import type { DisplayLanguage, InputType, KnowledgeLayer, SurfaceKey } from '@/lib/types'
+
+interface SurfaceCopy {
+  index: string
+  label: string
+  title: string
+  blurb: string
+}
+
+interface InputCopy {
+  label: string
+  note: string
+}
+
+interface LayerCopy {
+  title: string
+  note: string
+}
+
+export const appCopy = {
+  zh: {
+    brand: 'MIROWORLD',
+    currentFrame: 'CURRENT FRAME',
+    worldlineLens: 'WORLDLINE LENS',
+    noData: '这一层现在还没有可见信息。',
+    entry: {
+      title: 'PUBLIC ENTRY / LINE INJECTION',
+      headline: '把一个事件投进世界线场。',
+      subtitle: '先看到正在变化的线，再去读注解、代价和分歧。',
+      summary: '这里不是答案机器。它是一条可以被观察、纠正、介入、重演和校准的世界线。',
+      fixtureLabel: '选择一个策展好的公共情境，或者从一句 prompt 注入新的世界线。',
+      promptLabel: '写下一条要注入的事件、冲突或未来信号',
+      promptPlaceholder: '例如：一所大学在深夜发布争议声明，第二天早晨社交平台和校友网络开始出现分裂反应。',
+      primaryAction: '从 fixture 进入',
+      secondaryAction: '从 prompt 生成',
+      opening: '正在打开世界线...',
+      surfaceNote: '世界线先出现，注解随后跟上。小型奇点只是汇聚点，不再是主角。',
+      frameStats: [
+        { label: 'primary lines', value: '14' },
+        { label: 'alternate traces', value: '87' },
+        { label: 'singularity weight', value: 'small' },
+      ],
+    },
+    stage: {
+      sourcePrefix: 'MIROWORLD',
+      layerLabel: 'Knowledge Layers',
+      trackLabel: 'Worldline Track',
+      selectedBranch: 'Selected Branch',
+      selectedEvent: 'Selected Event',
+      visibleSignals: 'Visible Signals',
+      confidenceLabel: 'Effective Confidence',
+      replayLabel: 'Latest Replay',
+      archivePrompt: '把这一次判断留下来，方便之后校准。',
+      loading: '正在装配舞台...',
+      errorFallback: '舞台没有成功装配，请稍后再试。',
+      actionLine: '用户不是观众，而是会改变世界线权重的变量。',
+      submitAction: '运行重演',
+      replaying: '正在折弯世界线...',
+    },
+    surfaces: {
+      observatory: {
+        index: '01',
+        label: 'Observatory',
+        title: 'Read the knot before you touch it.',
+        blurb: '先读清主分支、替代分支和它们为什么成立。',
+      },
+      intervention: {
+        index: '02',
+        label: 'Intervention',
+        title: 'Intervene with declared intent.',
+        blurb: '每一种输入都对应不同的作用范围和后果。',
+      },
+      cost: {
+        index: '03',
+        label: 'Cost Lens',
+        title: 'See who absorbs the pressure.',
+        blurb: '概率不是价值判断，代价必须和分支同时出现。',
+      },
+      ripple: {
+        index: '04',
+        label: 'Ripple',
+        title: 'Watch the bend travel downstream.',
+        blurb: '重演不是刷新文案，而是看偏折如何继续传播。',
+      },
+      archive: {
+        index: '05',
+        label: 'Archive',
+        title: 'Share, log, and calibrate the afterimage.',
+        blurb: '留下策展文本、决策痕迹和真实结果的对照。',
+      },
+    } satisfies Record<SurfaceKey, SurfaceCopy>,
+    layers: {
+      FACT: {
+        title: '事实层',
+        note: '这层只处理已经可见的事件、对象和证据痕迹。',
+      },
+      INFERENCE: {
+        title: '推断层',
+        note: '这层解释为什么某个分支成立，以及它面临哪些反证。',
+      },
+      VALUE: {
+        title: '价值层',
+        note: '这层看谁承担代价、谁获得利益，以及伦理张力如何分布。',
+      },
+      ACTION: {
+        title: '行动层',
+        note: '这层决定你以什么方式介入，以及介入后会从哪里开始重演。',
+      },
+    } satisfies Record<KnowledgeLayer, LayerCopy>,
+    inputs: {
+      observation: {
+        label: 'Observation',
+        note: '只新增线索，不直接改写世界状态。',
+      },
+      correction: {
+        label: 'Correction',
+        note: '纠正事实层，迫使原有分支重新站稳或失衡。',
+      },
+      intervention: {
+        label: 'Intervention',
+        note: '真正改动世界线，从检查点之后重新展开。',
+      },
+      preference: {
+        label: 'Preference',
+        note: '表达价值排序，改变建议权重而不是事实本身。',
+      },
+    } satisfies Record<InputType, InputCopy>,
+    archive: {
+      share: '生成分享文本',
+      openCalibration: '打开校准',
+      hideCalibration: '收起校准',
+      saveCalibration: '保存校准',
+      actualOutcomePlaceholder: '写下后来真实发生了什么，以及它为什么偏离或命中了当前判断。',
+      decisionLog: 'Decision Log',
+      curatorNote: 'Curator Note',
+    },
+    labels: {
+      primary: '主分支',
+      alternate: '替代分支',
+      affected: '受影响对象',
+      premises: 'Premises',
+      signalsFor: 'Signals For',
+      signalsAgainst: 'Signals Against',
+      affectedGroups: 'Affected Groups',
+      ethicalNotes: 'Ethical Notes',
+      passiveFloor: 'Passive Floor',
+      actionVector: 'Action Vector',
+    },
+  },
+  en: {
+    brand: 'MIROWORLD',
+    currentFrame: 'CURRENT FRAME',
+    worldlineLens: 'WORLDLINE LENS',
+    noData: 'No visible material is attached to this lens yet.',
+    entry: {
+      title: 'PUBLIC ENTRY / LINE INJECTION',
+      headline: 'Drop an event into the worldline field.',
+      subtitle: 'See the moving lines first, then read the annotation, cost, and divergence.',
+      summary: 'This is not an answer machine. It is a worldline that can be observed, corrected, intervened in, replayed, and calibrated.',
+      fixtureLabel: 'Choose a curated public scenario, or inject a new worldline from a short prompt.',
+      promptLabel: 'Write the event, conflict, or future signal you want to inject',
+      promptPlaceholder: 'Example: a university releases a disputed late-night statement and the next morning the platform reaction splits across students, alumni, and media.',
+      primaryAction: 'Enter via fixture',
+      secondaryAction: 'Generate from prompt',
+      opening: 'Opening worldline...',
+      surfaceNote: 'Worldlines arrive first. Annotation follows. The singularity is only a knot, not the spectacle.',
+      frameStats: [
+        { label: 'primary lines', value: '14' },
+        { label: 'alternate traces', value: '87' },
+        { label: 'singularity weight', value: 'small' },
+      ],
+    },
+    stage: {
+      sourcePrefix: 'MIROWORLD',
+      layerLabel: 'Knowledge Layers',
+      trackLabel: 'Worldline Track',
+      selectedBranch: 'Selected Branch',
+      selectedEvent: 'Selected Event',
+      visibleSignals: 'Visible Signals',
+      confidenceLabel: 'Effective Confidence',
+      replayLabel: 'Latest Replay',
+      archivePrompt: 'Leave this judgment behind so later outcomes can calibrate it.',
+      loading: 'Assembling the stage...',
+      errorFallback: 'The stage could not be assembled. Please try again.',
+      actionLine: 'The user is not just watching. The user changes the weight of the line.',
+      submitAction: 'Run Replay',
+      replaying: 'Bending worldline...',
+    },
+    surfaces: {
+      observatory: {
+        index: '01',
+        label: 'Observatory',
+        title: 'Read the knot before you touch it.',
+        blurb: 'Start with the main branch, the alternates, and the evidence tension around them.',
+      },
+      intervention: {
+        index: '02',
+        label: 'Intervention',
+        title: 'Intervene with declared intent.',
+        blurb: 'Each input type changes a different layer of the worldline.',
+      },
+      cost: {
+        index: '03',
+        label: 'Cost Lens',
+        title: 'See who absorbs the pressure.',
+        blurb: 'Likelihood is not enough. Every branch needs an explicit cost surface.',
+      },
+      ripple: {
+        index: '04',
+        label: 'Ripple',
+        title: 'Watch the bend travel downstream.',
+        blurb: 'Replay is not a refresh. It is a visible downstream shear.',
+      },
+      archive: {
+        index: '05',
+        label: 'Archive',
+        title: 'Share, log, and calibrate the afterimage.',
+        blurb: 'Keep the share artifact, decision trace, and actual outcome together.',
+      },
+    } satisfies Record<SurfaceKey, SurfaceCopy>,
+    layers: {
+      FACT: {
+        title: 'Fact Layer',
+        note: 'This layer deals with visible events, actors, and evidence traces only.',
+      },
+      INFERENCE: {
+        title: 'Inference Layer',
+        note: 'This layer explains why a branch holds together and what pushes back against it.',
+      },
+      VALUE: {
+        title: 'Value Layer',
+        note: 'This layer asks who absorbs the cost, who benefits, and where the ethical tension sits.',
+      },
+      ACTION: {
+        title: 'Action Layer',
+        note: 'This layer decides how to intervene and where the replay should begin bending.',
+      },
+    } satisfies Record<KnowledgeLayer, LayerCopy>,
+    inputs: {
+      observation: {
+        label: 'Observation',
+        note: 'Adds evidence without directly mutating the world state.',
+      },
+      correction: {
+        label: 'Correction',
+        note: 'Corrects the fact layer and forces the existing branch to restabilize.',
+      },
+      intervention: {
+        label: 'Intervention',
+        note: 'Changes the worldline itself and replays from the checkpoint onward.',
+      },
+      preference: {
+        label: 'Preference',
+        note: 'Changes the ranking logic without pretending to rewrite facts.',
+      },
+    } satisfies Record<InputType, InputCopy>,
+    archive: {
+      share: 'Generate Share Text',
+      openCalibration: 'Open Calibration',
+      hideCalibration: 'Hide Calibration',
+      saveCalibration: 'Save Calibration',
+      actualOutcomePlaceholder: 'Write what actually happened and why it diverged from, or confirmed, the current branch.',
+      decisionLog: 'Decision Log',
+      curatorNote: 'Curator Note',
+    },
+    labels: {
+      primary: 'Primary',
+      alternate: 'Alternate',
+      affected: 'Affected',
+      premises: 'Premises',
+      signalsFor: 'Signals For',
+      signalsAgainst: 'Signals Against',
+      affectedGroups: 'Affected Groups',
+      ethicalNotes: 'Ethical Notes',
+      passiveFloor: 'Passive Floor',
+      actionVector: 'Action Vector',
+    },
+  },
+} as const
+
+export function getAppCopy(language: DisplayLanguage) {
+  return appCopy[language]
+}

@@ -1,10 +1,6 @@
 <template>
-  <section class="stage-surface" data-testid="observatory-section">
-    <div class="surface-heading">
-      <span class="surface-kicker">01 / Observatory</span>
-      <h2>Read the knot before you touch it.</h2>
-    </div>
-    <div class="event-list">
+  <section class="scene-section" data-testid="observatory-section">
+    <div class="event-list observatory-grid">
       <article
         v-for="event in events"
         :key="event.event_id"
@@ -15,7 +11,19 @@
           <span>{{ event.stage }}</span>
           <strong>{{ event.title }}</strong>
         </button>
+
         <p>{{ event.summary }}</p>
+
+        <div class="event-meta-list">
+          <span
+            v-for="entity in event.affected_entities.slice(0, 3)"
+            :key="`${event.event_id}-${entity}`"
+            class="event-meta-pill"
+          >
+            {{ labels.affected }} · {{ entity }}
+          </span>
+        </div>
+
         <div class="branch-list">
           <button
             v-for="branch in event.branches"
@@ -26,6 +34,7 @@
             @click="$emit('select-branch', event.event_id, branch.branch_id)"
           >
             <span>{{ branch.label }}</span>
+            <small>{{ branch.visibility === 'primary' ? labels.primary : labels.alternate }}</small>
             <span>{{ Math.round(branch.confidence * 100) }}%</span>
           </button>
         </div>
@@ -41,6 +50,11 @@ defineProps<{
   events: KeyEvent[]
   selectedEventId: string
   selectedBranchId: string
+  labels: {
+    primary: string
+    alternate: string
+    affected: string
+  }
 }>()
 
 defineEmits<{

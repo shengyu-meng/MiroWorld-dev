@@ -2,6 +2,7 @@ export type DisplayLanguage = 'zh' | 'en'
 export type InputType = 'observation' | 'correction' | 'intervention' | 'preference'
 export type EffectScope = 'evidence' | 'world_state' | 'ranking'
 export type SurfaceKey = 'observatory' | 'intervention' | 'cost' | 'ripple' | 'archive'
+export type KnowledgeLayer = 'FACT' | 'INFERENCE' | 'VALUE' | 'ACTION'
 
 export interface FixtureDescriptor {
   fixture_id: string

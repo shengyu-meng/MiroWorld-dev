@@ -1,52 +1,106 @@
 <template>
   <main class="entry-page">
-    <WorldlineCanvas active-surface="observatory" :events="[]" />
-    <div class="entry-shell">
-      <header class="entry-header">
-        <div>
-          <p class="eyebrow">MIROWORLD / PUBLIC SHELL</p>
-          <h1>Line-first futures for public audiences.</h1>
+    <WorldlineCanvas active-surface="observatory" :events="[]" scene="entry" />
+    <div class="entry-shell entry-shell--immersive">
+      <header class="entry-topbar">
+        <div class="entry-brand-block">
+          <p class="eyebrow">{{ copy.entry.title }}</p>
+          <span class="entry-brand-mark">{{ copy.brand }}</span>
         </div>
         <LanguageToggle v-model="language" />
       </header>
 
-      <section class="entry-copy">
-        <p>
-          {{ language === 'zh'
-            ? '这里不是答案机器，而是一条可以被观察、纠正、介入和校准的世界线。'
-            : 'This is not an answer machine. It is a worldline that can be observed, corrected, intervened in, and calibrated.' }}
-        </p>
-      </section>
+      <section class="entry-hero">
+        <div class="entry-hero-copy">
+          <h1>{{ copy.entry.headline }}</h1>
+          <p class="entry-dek">{{ copy.entry.subtitle }}</p>
+          <p class="entry-summary">{{ copy.entry.summary }}</p>
 
-      <FixtureGrid :fixtures="fixtures" :selected-fixture-id="selectedFixtureId" @select="selectedFixtureId = $event" />
-
-      <section class="prompt-station">
-        <label class="prompt-label" for="seedPrompt">
-          {{ language === 'zh' ? '或者写下一条新的世界线入口' : 'Or write a new worldline entry prompt' }}
-        </label>
-        <textarea id="seedPrompt" v-model="seedPrompt" class="intervention-input" data-testid="seed-prompt"></textarea>
-        <div class="entry-actions">
-          <button type="button" class="primary-action" :disabled="creating" @click="launchFixture">
-            {{ creating ? 'Opening…' : language === 'zh' ? '从 fixture 进入' : 'Enter via fixture' }}
-          </button>
-          <button type="button" class="secondary-action" :disabled="creating || !seedPrompt.trim()" @click="launchPrompt">
-            {{ language === 'zh' ? '从 prompt 生成' : 'Generate from prompt' }}
-          </button>
+          <div class="entry-stats">
+            <article v-for="stat in copy.entry.frameStats" :key="stat.label" class="entry-stat-card">
+              <span class="annotation-label">{{ stat.label }}</span>
+              <strong>{{ stat.value }}</strong>
+            </article>
+          </div>
         </div>
-        <p v-if="errorMessage" class="error-copy">{{ errorMessage }}</p>
+
+        <aside class="entry-hero-side">
+          <article class="annotation-block entry-note-card">
+            <span class="annotation-label">{{ copy.worldlineLens }}</span>
+            <p>{{ copy.entry.surfaceNote }}</p>
+          </article>
+          <article v-if="selectedFixture" class="annotation-block entry-note-card">
+            <span class="annotation-label">{{ copy.currentFrame }}</span>
+            <strong>{{ selectedFixture.fixture_id }}</strong>
+            <p>{{ selectedFixture.purpose }}</p>
+            <small>{{ selectedFixture.must_produce.join(' / ') }}</small>
+          </article>
+        </aside>
       </section>
+
+      <section class="entry-launch-grid">
+        <article class="entry-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">{{ copy.entry.primaryAction }}</p>
+            <h2>{{ copy.entry.fixtureLabel }}</h2>
+          </div>
+
+          <FixtureGrid
+            :fixtures="fixtures"
+            :selected-fixture-id="selectedFixtureId"
+            :language="language"
+            @select="selectedFixtureId = $event"
+          />
+
+          <div class="entry-actions">
+            <button type="button" class="primary-action" :disabled="creating" @click="launchFixture">
+              {{ creating ? copy.entry.opening : copy.entry.primaryAction }}
+            </button>
+          </div>
+        </article>
+
+        <article class="entry-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">{{ copy.entry.secondaryAction }}</p>
+            <h2>{{ copy.entry.promptLabel }}</h2>
+          </div>
+
+          <label class="prompt-label" for="seedPrompt">{{ copy.entry.promptLabel }}</label>
+          <textarea
+            id="seedPrompt"
+            v-model="seedPrompt"
+            class="intervention-input"
+            data-testid="seed-prompt"
+            :placeholder="copy.entry.promptPlaceholder"
+          ></textarea>
+
+          <div class="entry-actions">
+            <button
+              type="button"
+              class="secondary-action"
+              :disabled="creating || !seedPrompt.trim()"
+              @click="launchPrompt"
+            >
+              {{ copy.entry.secondaryAction }}
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <p v-if="errorMessage" class="error-copy entry-error">{{ errorMessage }}</p>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import FixtureGrid from '@/components/FixtureGrid.vue'
 import LanguageToggle from '@/components/LanguageToggle.vue'
 import WorldlineCanvas from '@/components/WorldlineCanvas.vue'
 import { createProject, listFixtures } from '@/lib/api'
+import { getAppCopy } from '@/lib/copy'
 import type { DisplayLanguage, FixtureDescriptor } from '@/lib/types'
 
 const router = useRouter()
@@ -57,11 +111,19 @@ const language = ref<DisplayLanguage>('zh')
 const creating = ref(false)
 const errorMessage = ref('')
 
+const copy = computed(() => getAppCopy(language.value))
+const selectedFixture = computed(() => fixtures.value.find((fixture) => fixture.fixture_id === selectedFixtureId.value) ?? null)
+
 onMounted(async () => {
-  const manifest = await listFixtures()
-  fixtures.value = manifest.fixtures
-  if (manifest.fixtures.length > 0) {
-    selectedFixtureId.value = manifest.fixtures[0].fixture_id
+  errorMessage.value = ''
+  try {
+    const manifest = await listFixtures()
+    fixtures.value = manifest.fixtures
+    if (manifest.fixtures.length > 0) {
+      selectedFixtureId.value = manifest.fixtures[0].fixture_id
+    }
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
   }
 })
 

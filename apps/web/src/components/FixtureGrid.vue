@@ -10,17 +10,19 @@
     >
       <span class="fixture-id">{{ fixture.fixture_id }}</span>
       <strong>{{ fixture.purpose }}</strong>
-      <span class="fixture-metrics">{{ fixture.must_produce.join(' · ') }}</span>
+      <span class="fixture-caption">{{ language === 'zh' ? '策展基线' : 'Curated baseline' }}</span>
+      <span class="fixture-metrics">{{ fixture.must_produce.join(' / ') }}</span>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { FixtureDescriptor } from '@/lib/types'
+import type { DisplayLanguage, FixtureDescriptor } from '@/lib/types'
 
 defineProps<{
   fixtures: FixtureDescriptor[]
   selectedFixtureId: string
+  language: DisplayLanguage
 }>()
 
 defineEmits<{

@@ -201,6 +201,7 @@ describe('app routes', () => {
 
     expect(wrapper.find('[data-testid="fixture-grid"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('literary-branching-world')
+    expect(wrapper.text()).toContain('MIROWORLD')
   })
 
   it('loads the stage route, allows branch selection, language switching, and archive drawer toggle', async () => {
@@ -228,6 +229,9 @@ describe('app routes', () => {
     await flushPromises()
     expect(fetchMock).toHaveBeenCalledTimes(2)
 
+    await wrapper.findAll('.surface-chip')[4]?.trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-testid="archive-section"]').exists()).toBe(true)
     await wrapper.find('[data-testid="archive-section"] .secondary-action').trigger('click')
     expect(wrapper.find('[data-testid="calibration-drawer"]').exists()).toBe(true)
   })

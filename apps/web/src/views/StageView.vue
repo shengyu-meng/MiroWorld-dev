@@ -5,91 +5,186 @@
       :events="stage?.observatory.key_events ?? []"
       :selected-event-id="selectedEventId"
       :selected-branch-id="selectedBranchId"
+      scene="stage"
     />
 
-    <div class="stage-shell">
+    <div class="stage-shell stage-shell--immersive">
       <header class="stage-header">
-        <div>
-          <p class="eyebrow">MiroWorld / {{ stage?.project_context.source_label }}</p>
-          <h1>{{ stage?.project_context.headline }}</h1>
-          <p class="stage-summary">{{ stage?.project_context.summary }}</p>
+        <div class="stage-heading">
+          <p class="eyebrow">{{ copy.stage.sourcePrefix }} / {{ stage?.project_context.source_label ?? 'fixture' }}</p>
+          <h1>{{ stage?.project_context.headline ?? copy.stage.loading }}</h1>
+          <p class="stage-summary">{{ stage?.project_context.summary ?? copy.stage.actionLine }}</p>
         </div>
-        <LanguageToggle v-model="language" />
+        <div class="stage-header-tools">
+          <LanguageToggle v-model="language" />
+          <p class="stage-action-line">{{ copy.stage.actionLine }}</p>
+        </div>
       </header>
 
-      <SurfaceRail :surfaces="surfaces" :active-surface="activeSurface" @select="activeSurface = $event" />
-
-      <section v-if="loading" class="status-card" data-testid="loading-state">Loading stage…</section>
+      <section v-if="loading" class="status-card" data-testid="loading-state">{{ copy.stage.loading }}</section>
       <section v-else-if="errorMessage" class="status-card error" data-testid="error-state">{{ errorMessage }}</section>
 
       <template v-else-if="stage && selectedEvent && selectedBranch && shareSnapshot">
+        <section class="stage-overview">
+          <article class="annotation-block stage-frame-card">
+            <span class="annotation-label">{{ copy.currentFrame }}</span>
+            <strong>{{ selectedEvent.title }}</strong>
+            <p>{{ selectedEvent.summary }}</p>
+          </article>
+
+          <article class="annotation-block layer-lens-card">
+            <span class="annotation-label">{{ copy.stage.layerLabel }}</span>
+            <div class="layer-chip-row">
+              <button
+                v-for="layer in availableLayers"
+                :key="layer"
+                type="button"
+                class="layer-chip"
+                :class="{ active: layer === selectedLayer }"
+                @click="selectedLayer = layer"
+              >
+                {{ layer }}
+              </button>
+            </div>
+            <strong>{{ copy.layers[selectedLayer].title }}</strong>
+            <p>{{ copy.layers[selectedLayer].note }}</p>
+            <ul class="layer-highlight-list">
+              <li v-for="item in layerHighlights" :key="item">{{ item }}</li>
+            </ul>
+          </article>
+        </section>
+
+        <SurfaceRail :surfaces="surfaces" :active-surface="activeSurface" @select="activeSurface = $event" />
+
         <div class="stage-grid">
-          <div class="stage-main">
+          <section class="scene-panel" :class="`scene-panel--${activeSurface}`">
+            <header class="scene-panel-header">
+              <div>
+                <span class="surface-kicker">{{ activeSurfaceCopy.index }} / {{ activeSurfaceCopy.label }}</span>
+                <h2>{{ activeSurfaceCopy.title }}</h2>
+              </div>
+              <p class="scene-panel-blurb">{{ activeSurfaceCopy.blurb }}</p>
+            </header>
+
             <ObservatorySection
+              v-if="activeSurface === 'observatory'"
               :events="stage.observatory.key_events"
               :selected-event-id="selectedEventId"
               :selected-branch-id="selectedBranchId"
+              :labels="copy.labels"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"
             />
+
             <InterventionSection
+              v-else-if="activeSurface === 'intervention'"
               :input-modes="stage.intervention.available_input_types"
               :current-input-type="currentInputType"
               :draft="draft"
               :is-submitting="submitting"
-              :placeholder="language === 'zh' ? '写下你的 observation / correction / intervention / preference' : 'Write your observation / correction / intervention / preference'"
+              :placeholder="inputPlaceholder"
+              :submit-label="copy.stage.submitAction"
+              :loading-label="copy.stage.replaying"
+              :input-copy="copy.inputs"
+              :branch-cards="stage.intervention.selected_branch_cards"
+              :empty-copy="copy.noData"
               @update:currentInputType="handleModeChange"
               @update:draft="draft = $event"
               @submit="submitInput"
             />
+
             <CostLensSection
+              v-else-if="activeSurface === 'cost'"
               :lenses="stage.cost_lens.lenses"
               :selected-branch-id="selectedBranchId"
               :passive-floor="stage.cost_lens.passive_floor"
+              :labels="copy.labels"
+              :empty-copy="copy.noData"
             />
-            <RippleSection :latest-bend="latestBend" :ripple-cards="stage.ripple.ripple_cards" />
+
+            <RippleSection
+              v-else-if="activeSurface === 'ripple'"
+              :latest-bend="latestBend"
+              :ripple-cards="stage.ripple.ripple_cards"
+              :empty-copy="copy.noData"
+            />
+
             <ArchiveSection
+              v-else
               :share-snapshot="shareSnapshot"
               :decision-log="stage.archive.player_decision_log"
               :calibration-summary="stage.archive.calibration_summary"
               :calibration-open="calibrationOpen"
               :calibration-draft="calibrationDraft"
               :calibration-result="calibrationResult"
+              :copy="copy.archive"
               @share="generateShare"
               @toggle-calibration="calibrationOpen = !calibrationOpen"
               @update:calibrationDraft="calibrationDraft = $event"
               @update:calibrationResult="handleCalibrationResult"
               @save-calibration="saveCalibration"
             />
-          </div>
+          </section>
 
           <aside class="annotation-rail">
             <div class="annotation-block">
-              <span class="annotation-label">Selected Branch</span>
+              <span class="annotation-label">{{ copy.stage.selectedBranch }}</span>
               <strong>{{ selectedBranch.label }}</strong>
               <p>{{ selectedBranch.description }}</p>
+              <small>{{ copy.stage.confidenceLabel }} · {{ formatConfidence(selectedBranch.effective_confidence ?? selectedBranch.confidence) }}</small>
             </div>
+
             <div class="annotation-block">
-              <span class="annotation-label">Premises</span>
+              <span class="annotation-label">{{ copy.stage.selectedEvent }}</span>
+              <strong>{{ selectedEvent.title }}</strong>
+              <p>{{ selectedEvent.stage }} · {{ selectedEvent.impact_level }}</p>
+              <ul>
+                <li v-for="entity in selectedEvent.affected_entities" :key="entity">{{ entity }}</li>
+              </ul>
+            </div>
+
+            <div class="annotation-block">
+              <span class="annotation-label">{{ copy.labels.premises }}</span>
               <ul>
                 <li v-for="premise in selectedBranch.premises" :key="premise">{{ premise }}</li>
               </ul>
             </div>
+
             <div class="annotation-block">
-              <span class="annotation-label">Signals For</span>
+              <span class="annotation-label">{{ copy.labels.signalsFor }}</span>
               <ul>
                 <li v-for="signal in selectedBranch.signals_for" :key="signal">{{ signal }}</li>
               </ul>
             </div>
+
             <div class="annotation-block">
-              <span class="annotation-label">Signals Against</span>
+              <span class="annotation-label">{{ copy.labels.signalsAgainst }}</span>
               <ul>
                 <li v-for="signal in selectedBranch.signals_against" :key="signal">{{ signal }}</li>
               </ul>
             </div>
-            <div class="annotation-block" v-if="replaySummary">
-              <span class="annotation-label">Latest Replay</span>
-              <p>{{ replaySummary }}</p>
+
+            <div class="annotation-block">
+              <span class="annotation-label">{{ copy.stage.trackLabel }}</span>
+              <div class="track-list">
+                <button
+                  v-for="track in stage.observatory.worldline_track"
+                  :key="track.event_id"
+                  type="button"
+                  class="track-node"
+                  :class="{ active: track.event_id === selectedEventId }"
+                  @click="handleSelectEvent(track.event_id)"
+                >
+                  <span>{{ track.stage }}</span>
+                  <strong>{{ track.title }}</strong>
+                  <small>{{ formatConfidence(track.confidence) }}</small>
+                </button>
+              </div>
+            </div>
+
+            <div class="annotation-block" v-if="latestBend">
+              <span class="annotation-label">{{ copy.stage.replayLabel }}</span>
+              <p>{{ latestBend }}</p>
             </div>
           </aside>
         </div>
@@ -100,7 +195,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import LanguageToggle from '@/components/LanguageToggle.vue'
 import SurfaceRail from '@/components/SurfaceRail.vue'
@@ -111,9 +206,11 @@ import InterventionSection from '@/components/sections/InterventionSection.vue'
 import ObservatorySection from '@/components/sections/ObservatorySection.vue'
 import RippleSection from '@/components/sections/RippleSection.vue'
 import { applyInput, buildShare, getStage, recordCalibration } from '@/lib/api'
-import type { Branch, DisplayLanguage, InputType, StageData, SurfaceKey } from '@/lib/types'
+import { getAppCopy } from '@/lib/copy'
+import type { Branch, DisplayLanguage, InputType, KnowledgeLayer, StageData, SurfaceKey } from '@/lib/types'
 
 const route = useRoute()
+const router = useRouter()
 const language = ref<DisplayLanguage>((route.query.lang as DisplayLanguage) || 'zh')
 const stage = ref<StageData | null>(null)
 const loading = ref(true)
@@ -121,6 +218,7 @@ const errorMessage = ref('')
 const activeSurface = ref<SurfaceKey>('observatory')
 const selectedEventId = ref('')
 const selectedBranchId = ref('')
+const selectedLayer = ref<KnowledgeLayer>('FACT')
 const currentInputType = ref<InputType>('intervention')
 const draft = ref('')
 const replaySummary = ref('')
@@ -130,28 +228,82 @@ const calibrationResult = ref<'hit' | 'partial' | 'miss' | 'insufficient_data'>(
 const submitting = ref(false)
 const shareSnapshot = ref<StageData['archive']['share_snapshot'] | null>(null)
 
-const surfaces: Array<{ key: SurfaceKey; index: string; label: string }> = [
-  { key: 'observatory', index: '01', label: 'Observatory' },
-  { key: 'intervention', index: '02', label: 'Intervention' },
-  { key: 'cost', index: '03', label: 'Cost Lens' },
-  { key: 'ripple', index: '04', label: 'Ripple' },
-  { key: 'archive', index: '05', label: 'Archive' },
-]
+const copy = computed(() => getAppCopy(language.value))
+const surfaceKeys: SurfaceKey[] = ['observatory', 'intervention', 'cost', 'ripple', 'archive']
+
+const surfaces = computed(() => surfaceKeys.map((key) => ({
+  key,
+  index: copy.value.surfaces[key].index,
+  label: copy.value.surfaces[key].label,
+  title: copy.value.surfaces[key].title,
+})))
 
 const selectedEvent = computed(() => stage.value?.observatory.key_events.find((event) => event.event_id === selectedEventId.value) ?? null)
 const selectedBranch = computed<Branch | null>(() => selectedEvent.value?.branches.find((branch) => branch.branch_id === selectedBranchId.value) ?? null)
 const latestBend = computed(() => replaySummary.value || stage.value?.ripple.latest_bend || '')
+const activeSurfaceCopy = computed(() => copy.value.surfaces[activeSurface.value])
+const selectedLenses = computed(() => stage.value?.cost_lens.lenses.filter((lens) => lens.target_branch_id === selectedBranchId.value) ?? [])
+
+const availableLayers = computed<KnowledgeLayer[]>(() => {
+  const layers = stage.value?.observatory.knowledge_layers ?? []
+  return layers.filter((layer): layer is KnowledgeLayer => layer in copy.value.layers)
+})
+
+const inputPlaceholder = computed(() => (
+  language.value === 'zh'
+    ? '写下你的 observation / correction / intervention / preference'
+    : 'Write your observation / correction / intervention / preference'
+))
+
+const layerHighlights = computed(() => {
+  if (!selectedEvent.value || !selectedBranch.value) return []
+
+  if (selectedLayer.value === 'FACT') {
+    return [...selectedEvent.value.affected_entities, ...selectedEvent.value.evidence_notes].slice(0, 4)
+  }
+
+  if (selectedLayer.value === 'INFERENCE') {
+    return [...selectedBranch.value.premises, ...selectedBranch.value.signals_for].slice(0, 4)
+  }
+
+  if (selectedLayer.value === 'VALUE') {
+    return [
+      ...selectedLenses.value.flatMap((lens) => lens.affected_groups),
+      ...selectedLenses.value.flatMap((lens) => lens.ethical_notes),
+      stage.value?.cost_lens.passive_floor.summary ?? '',
+    ].filter(Boolean).slice(0, 4)
+  }
+
+  return [
+    copy.value.inputs[currentInputType.value].note,
+    selectedBranch.value.player_influence,
+    latestBend.value || copy.value.stage.archivePrompt,
+  ].filter(Boolean).slice(0, 4)
+})
+
+watch(
+  () => language.value,
+  async () => {
+    if (route.query.lang !== language.value) {
+      await router.replace({
+        query: {
+          ...route.query,
+          lang: language.value,
+        },
+      })
+    }
+    await loadStage()
+  },
+  { immediate: true },
+)
 
 async function loadStage() {
   loading.value = true
   errorMessage.value = ''
   try {
     const projectId = route.params.projectId as string
-    stage.value = await getStage(projectId, language.value)
-    activeSurface.value = stage.value.surface_defaults.active_surface
-    selectedEventId.value = stage.value.surface_defaults.selected_event_id
-    selectedBranchId.value = stage.value.surface_defaults.selected_branch_id
-    shareSnapshot.value = stage.value.archive.share_snapshot
+    const nextStage = await getStage(projectId, language.value)
+    syncSelection(nextStage, nextStage.surface_defaults.active_surface)
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
   } finally {
@@ -159,13 +311,44 @@ async function loadStage() {
   }
 }
 
-watch(() => language.value, loadStage, { immediate: true })
+function syncSelection(nextStage: StageData, nextSurface = activeSurface.value) {
+  stage.value = nextStage
+  activeSurface.value = nextSurface
+  shareSnapshot.value = nextStage.archive.share_snapshot
+
+  const events = nextStage.observatory.key_events
+  const nextEvent = events.find((event) => event.event_id === selectedEventId.value)
+    ?? events.find((event) => event.event_id === nextStage.surface_defaults.selected_event_id)
+    ?? events[0]
+
+  selectedEventId.value = nextEvent?.event_id ?? ''
+
+  const nextBranch = nextEvent?.branches.find((branch) => branch.branch_id === selectedBranchId.value)
+    ?? nextEvent?.branches.find((branch) => branch.branch_id === nextStage.surface_defaults.selected_branch_id)
+    ?? nextEvent?.branches[0]
+
+  selectedBranchId.value = nextBranch?.branch_id ?? ''
+
+  if (!availableLayers.value.includes(selectedLayer.value)) {
+    selectedLayer.value = availableLayers.value[0] ?? 'FACT'
+  }
+
+  if (!nextStage.intervention.available_input_types.includes(currentInputType.value)) {
+    currentInputType.value = nextStage.intervention.available_input_types[0] ?? 'intervention'
+  }
+}
+
+function formatConfidence(value: number) {
+  return `${Math.round(value * 100)}%`
+}
 
 function handleSelectEvent(eventId: string) {
   selectedEventId.value = eventId
   const event = stage.value?.observatory.key_events.find((item) => item.event_id === eventId)
   if (event) {
-    selectedBranchId.value = event.branches[0].branch_id
+    selectedBranchId.value = event.branches.find((branch) => branch.branch_id === selectedBranchId.value)?.branch_id
+      ?? event.branches[0]?.branch_id
+      ?? ''
   }
 }
 
@@ -176,6 +359,7 @@ function handleSelectBranch(eventId: string, branchId: string) {
 
 function handleModeChange(mode: InputType) {
   currentInputType.value = mode
+  selectedLayer.value = 'ACTION'
 }
 
 function handleCalibrationResult(value: string) {
@@ -194,6 +378,7 @@ function effectScopeForMode(mode: InputType) {
 async function submitInput() {
   if (!selectedEvent.value || !selectedBranch.value || !draft.value.trim()) return
   submitting.value = true
+  errorMessage.value = ''
   try {
     const projectId = route.params.projectId as string
     const response = await applyInput(projectId, {
@@ -204,11 +389,9 @@ async function submitInput() {
       effect_scope: effectScopeForMode(currentInputType.value),
       language: language.value,
     })
-    stage.value = response.stage
-    shareSnapshot.value = response.stage.archive.share_snapshot
+    syncSelection(response.stage, response.replay_result ? 'ripple' : 'observatory')
     replaySummary.value = response.replay_result?.summary ?? ''
     draft.value = ''
-    activeSurface.value = response.replay_result ? 'ripple' : 'observatory'
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
   } finally {
@@ -225,6 +408,7 @@ async function generateShare() {
       branch_id: selectedBranchId.value,
     })
     shareSnapshot.value = artifact
+    activeSurface.value = 'archive'
     if (navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(artifact.share_text)
@@ -241,7 +425,7 @@ async function saveCalibration() {
   if (!selectedEvent.value || !selectedBranch.value || !calibrationDraft.value.trim()) return
   try {
     const projectId = route.params.projectId as string
-    stage.value = await recordCalibration(projectId, {
+    const nextStage = await recordCalibration(projectId, {
       event_id: selectedEvent.value.event_id,
       branch_id: selectedBranch.value.branch_id,
       result: calibrationResult.value,
@@ -249,7 +433,7 @@ async function saveCalibration() {
       note: '',
       language: language.value,
     })
-    shareSnapshot.value = stage.value.archive.share_snapshot
+    syncSelection(nextStage, 'archive')
     calibrationDraft.value = ''
     calibrationOpen.value = false
   } catch (error) {

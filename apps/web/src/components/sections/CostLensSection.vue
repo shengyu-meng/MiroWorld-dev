@@ -1,16 +1,22 @@
 <template>
-  <section class="stage-surface" data-testid="cost-section">
-    <div class="surface-heading">
-      <span class="surface-kicker">03 / Cost Lens</span>
-      <h2>See who absorbs the pressure.</h2>
-    </div>
+  <section class="scene-section" data-testid="cost-section">
     <div class="cost-grid">
       <article v-for="lens in visibleLenses" :key="lens.cost_lens_id" class="cost-card">
+        <span class="annotation-label">{{ labels.affectedGroups }}</span>
         <strong>{{ lens.affected_groups.join(' / ') }}</strong>
-        <p>{{ lens.first_order_costs[0] }}</p>
-        <small>{{ lens.second_order_costs[0] }}</small>
+        <p>{{ lens.first_order_costs.join(' · ') }}</p>
+        <small>{{ lens.second_order_costs.join(' · ') }}</small>
+        <ul class="cost-note-list">
+          <li v-for="note in lens.ethical_notes.slice(0, 2)" :key="note">{{ note }}</li>
+        </ul>
       </article>
-      <article class="cost-card muted">
+
+      <article v-if="visibleLenses.length === 0" class="cost-card muted">
+        <p>{{ emptyCopy }}</p>
+      </article>
+
+      <article class="cost-card muted passive-floor-card">
+        <span class="annotation-label">{{ labels.passiveFloor }}</span>
         <strong>{{ passiveFloor.title }}</strong>
         <p>{{ passiveFloor.summary }}</p>
       </article>
@@ -30,6 +36,11 @@ const props = defineProps<{
     title: string
     summary: string
   }
+  labels: {
+    affectedGroups: string
+    passiveFloor: string
+  }
+  emptyCopy: string
 }>()
 
 const visibleLenses = computed(() => props.lenses.filter((lens) => lens.target_branch_id === props.selectedBranchId).slice(0, 2))

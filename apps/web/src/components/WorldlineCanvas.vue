@@ -21,6 +21,7 @@ const props = defineProps<{
   events: KeyEvent[]
   selectedEventId?: string
   selectedBranchId?: string
+  scene?: 'entry' | 'stage'
 }>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -34,12 +35,14 @@ let precomputedLines: LineModel[] = []
 let dpr = Math.min(window.devicePixelRatio || 1, 2)
 
 const accent = computed(() => ({
-  observatory: 'rgba(123, 182, 181, 0.85)',
-  intervention: 'rgba(215, 177, 126, 0.92)',
-  cost: 'rgba(167, 93, 63, 0.9)',
-  ripple: 'rgba(173, 208, 225, 0.88)',
-  archive: 'rgba(196, 190, 165, 0.86)',
+  observatory: 'rgba(149, 224, 255, 0.92)',
+  intervention: 'rgba(255, 198, 103, 0.94)',
+  cost: 'rgba(255, 145, 109, 0.9)',
+  ripple: 'rgba(188, 180, 255, 0.9)',
+  archive: 'rgba(166, 255, 220, 0.88)',
 }[props.activeSurface]))
+
+const scene = computed(() => props.scene ?? 'stage')
 
 const windowedEvents = computed(() => {
   if (props.events.length <= 3) return props.events
@@ -49,33 +52,52 @@ const windowedEvents = computed(() => {
   return props.events.slice(start, start + 3)
 })
 
+const nodePosition = computed(() => {
+  if (scene.value === 'entry') {
+    return { x: 0.63, y: 0.58, radius: 16 }
+  }
+
+  return {
+    observatory: { x: 0.68, y: 0.56, radius: 13 },
+    intervention: { x: 0.61, y: 0.59, radius: 14 },
+    cost: { x: 0.72, y: 0.63, radius: 13 },
+    ripple: { x: 0.56, y: 0.52, radius: 14 },
+    archive: { x: 0.73, y: 0.5, radius: 12 },
+  }[props.activeSurface]
+})
+
 function buildLines(width: number, height: number) {
   const eventCount = Math.max(windowedEvents.value.length, 1)
-  const density = reducedMotion.matches ? 16 : width < 720 ? 24 : 42
+  const density = reducedMotion.matches ? 14 : scene.value === 'entry' ? (width < 720 ? 26 : 54) : width < 720 ? 22 : 40
   const lines: LineModel[] = []
+
   for (let eventIndex = 0; eventIndex < eventCount; eventIndex += 1) {
     const event = windowedEvents.value[eventIndex]
     const branchCount = Math.min(event?.branches.length ?? 1, 3)
     for (let branchIndex = 0; branchIndex < branchCount; branchIndex += 1) {
       const branch = event?.branches[branchIndex]
       for (let thread = 0; thread < Math.max(1, Math.floor(density / eventCount)); thread += 1) {
-        const baseY = ((eventIndex + 1) / (eventCount + 1)) * height
-        const drift = ((thread + 1) / density) * height * 0.45
+        const baseY = scene.value === 'entry'
+          ? height * (0.22 + (thread / density) * 0.62)
+          : ((eventIndex + 1) / (eventCount + 1)) * height
+        const drift = ((thread + 1) / density) * height * (scene.value === 'entry' ? 0.62 : 0.45)
         const focusBoost = branch?.branch_id === props.selectedBranchId ? 1.35 : 1
+
         lines.push({
           points: [
-            [width * -0.05, baseY - drift * 0.5],
-            [width * 0.24, baseY + drift * 0.2],
-            [width * 0.58, baseY - drift * 0.16],
-            [width * 1.04, baseY + drift * 0.08],
+            [width * -0.06, baseY - drift * (scene.value === 'entry' ? 0.18 : 0.5)],
+            [width * 0.24, baseY + drift * 0.16],
+            [width * (scene.value === 'entry' ? 0.58 : 0.54), baseY - drift * 0.14],
+            [width * 1.06, baseY + drift * 0.08],
           ],
-          color: branch?.visibility === 'primary' ? accent.value : 'rgba(152, 163, 160, 0.75)',
-          width: branch?.visibility === 'primary' ? 1.6 * focusBoost : 0.8,
-          opacity: branch?.branch_id === props.selectedBranchId ? 0.96 : branch?.visibility === 'primary' ? 0.54 : 0.22,
+          color: branch?.visibility === 'primary' ? accent.value : 'rgba(145, 176, 200, 0.72)',
+          width: branch?.visibility === 'primary' ? 1.55 * focusBoost : 0.78,
+          opacity: branch?.branch_id === props.selectedBranchId ? 0.98 : branch?.visibility === 'primary' ? 0.58 : 0.18,
         })
       }
     }
   }
+
   precomputedLines = lines
 }
 
@@ -94,23 +116,37 @@ function draw() {
   if (!canvasRef.value || !containerRef.value) return
   const ctx = canvasRef.value.getContext('2d')
   if (!ctx) return
+
   const width = containerRef.value.clientWidth
   const height = containerRef.value.clientHeight
+  const node = nodePosition.value
+
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, width, height)
 
   const gradient = ctx.createRadialGradient(
-    width * (0.24 + pointer.value.x * 0.14),
-    height * (0.2 + pointer.value.y * 0.14),
+    width * (scene.value === 'entry' ? 0.52 : 0.28 + pointer.value.x * 0.14),
+    height * (scene.value === 'entry' ? 0.48 : 0.2 + pointer.value.y * 0.14),
     0,
-    width * 0.28,
-    height * 0.28,
+    width * (scene.value === 'entry' ? 0.58 : 0.28),
+    height * (scene.value === 'entry' ? 0.52 : 0.28),
     width * 0.8,
   )
-  gradient.addColorStop(0, 'rgba(33, 72, 73, 0.25)')
+  gradient.addColorStop(0, scene.value === 'entry' ? 'rgba(34, 66, 82, 0.26)' : 'rgba(33, 72, 73, 0.25)')
   gradient.addColorStop(1, 'rgba(5, 9, 13, 0)')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
+
+  for (let i = 0; i < 7; i += 1) {
+    const y = height * (0.08 + i * 0.12 + pointer.value.y * 0.01)
+    const x = width * (0.08 + (i % 4) * 0.17)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + width * 0.09, y - (i % 2 === 0 ? 1 : -1))
+    ctx.strokeStyle = 'rgba(140, 220, 255, 0.32)'
+    ctx.lineWidth = 1
+    ctx.stroke()
+  }
 
   for (const line of precomputedLines) {
     ctx.beginPath()
@@ -129,13 +165,23 @@ function draw() {
     ctx.stroke()
   }
 
+  const ringBase = node.radius
+
   ctx.beginPath()
-  ctx.arc(width * 0.37, height * 0.52, 14, 0, Math.PI * 2)
+  ctx.arc(width * node.x, height * node.y, ringBase, 0, Math.PI * 2)
   ctx.fillStyle = 'rgba(9, 12, 14, 0.94)'
   ctx.fill()
   ctx.strokeStyle = accent.value
   ctx.lineWidth = 1.2
   ctx.stroke()
+
+  for (let ring = 1; ring <= 3; ring += 1) {
+    ctx.beginPath()
+    ctx.arc(width * node.x, height * node.y, ringBase + ring * 8 + pointer.value.x * 2, 0, Math.PI * 2)
+    ctx.strokeStyle = `rgba(144, 222, 255, ${0.14 / ring})`
+    ctx.lineWidth = 1
+    ctx.stroke()
+  }
 
   if (visible.value && !reducedMotion.matches) {
     frameId = requestAnimationFrame(draw)
@@ -167,13 +213,13 @@ onMounted(() => {
   resizeObserver.observe(containerRef.value)
   containerRef.value.addEventListener('pointermove', handlePointerMove)
   document.addEventListener('visibilitychange', handleVisibility)
-  reducedMotion.addEventListener('change', handleVisibility)
+  reducedMotion.addEventListener?.('change', handleVisibility)
   resizeCanvas()
   draw()
 })
 
 watch(
-  () => [props.activeSurface, props.selectedEventId, props.selectedBranchId, props.events],
+  () => [props.activeSurface, props.selectedEventId, props.selectedBranchId, props.events, props.scene],
   () => {
     resizeCanvas()
     cancelAnimationFrame(frameId)
@@ -187,6 +233,6 @@ onUnmounted(() => {
   resizeObserver?.disconnect()
   containerRef.value?.removeEventListener('pointermove', handlePointerMove)
   document.removeEventListener('visibilitychange', handleVisibility)
-  reducedMotion.removeEventListener('change', handleVisibility)
+  reducedMotion.removeEventListener?.('change', handleVisibility)
 })
 </script>
