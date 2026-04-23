@@ -88,7 +88,9 @@ This slice does include:
 - [ ] deepen calibration comparison across wider archive slices if the current atlas proves too shallow
 - [x] turn Ripple into a continuity explorer instead of a single replay strip
 - [x] deepen ripple continuity beyond the current replay track
-- [ ] broaden Ripple from one continuity chain into a stronger multi-path replay archive
+- [x] turn Ripple into a multi-path replay archive instead of a single continuity chain
+- [x] broaden Ripple from one continuity chain into a stronger multi-path replay archive
+- [ ] deepen Ripple from the current multi-path view into a richer replay-history archive
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 

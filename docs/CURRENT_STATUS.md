@@ -2,11 +2,11 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 exhibit html export pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 multi-path ripple archive pass complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, bundle, and self-contained exhibit artifacts while Ripple behaves more like an event-to-event explorer.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive exports poster/bundle/exhibit artifacts while Ripple now supports a clearer multi-path replay archive.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -17,6 +17,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - calibration no longer reads as a plain log; it now exposes dominant outcomes, recent tendency, and branch focus
 - Ripple now lets the viewer steer event focus and branch focus from inside the continuity surface itself
 - and the linefield opens wider on the Ripple surface so continuity reads across more events than before
+- Ripple now also lets the viewer compare active, primary, and alternate drift paths side by side
 - and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
@@ -97,6 +98,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the exhibit export packages poster copy, wall text, decision trace, and calibration snapshot into one offline file
 - frontend route tests now cover the additional export action
 
+### Frontend experience rebuild slice 4 (multi-path ripple archive pass)
+
+- Ripple now compares active, primary, and alternate drift paths side by side instead of staying on one continuity chain
+- each path node can directly retarget the stage to its event and branch
+- frontend route tests now cover the multi-path ripple archive interaction
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -107,10 +114,10 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ### Product / experience gaps
 
-- the linefield and Ripple now act more like an event continuity surface, but they are not yet a full multi-path explorer
+- the linefield and Ripple now act more like a multi-path continuity surface, but they are not yet a fuller replay archive across multiple synthesized histories
 - the archive now exports local poster, text, and exhibit html artifacts, but it does not yet generate richer saved multi-format bundles or image pipelines beyond SVG
 - calibration history is now comparative at a first pass, but it is not yet deeper across branch families, broader time windows, or decision types
-- ripple continuity is now event-aware, but it still needs a stronger broader archive of multiple replay paths
+- ripple continuity is now multi-path at a first pass, but it still needs a deeper archive of replay histories and richer path narration
 
 ### Content expression gaps
 
@@ -130,4 +137,4 @@ The next active slice is still `Experience Rebuild Slice 4`:
 - deepen the export path beyond local SVG / TXT into stronger artifact options
 - keep evolving the archive export path beyond the current HTML artifact if a richer bundle format becomes necessary
 - deepen calibration comparison beyond the current atlas into richer archive perspectives if needed
-- keep extending the linefield / ripple system toward a fuller multi-path explorer without regressing shell speed
+- keep extending the linefield / ripple system toward a deeper replay archive without regressing shell speed

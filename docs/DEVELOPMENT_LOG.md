@@ -226,3 +226,32 @@ Still open inside slice 4:
 - deepen the artifact path beyond the current HTML / SVG / TXT export set
 - extend calibration comparison if the current atlas proves too shallow in real use
 - broaden Ripple from a single continuity chain into a stronger multi-path replay archive
+
+## 2026-04-23 - Experience Rebuild Slice 4 (multi-path ripple archive pass started)
+
+Planned in this iteration:
+
+- turn Ripple from one continuity chain into a clearer multi-path replay archive
+- let the viewer compare active, primary, and alternate drift paths inside the ripple scene
+- keep interaction lightweight by reusing existing event and branch data without changing contracts
+
+## 2026-04-23 - Experience Rebuild Slice 4 (multi-path ripple archive pass completed)
+
+Completed in this iteration:
+
+- turned Ripple from one continuity chain into a side-by-side multi-path replay archive
+- added active, primary, and alternate drift path lanes that can retarget the stage directly
+- kept the implementation contract-safe by deriving the path archive from existing event and branch data
+- extended frontend coverage so the multi-path ripple archive interaction is exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- deepen the artifact path beyond the current HTML / SVG / TXT export set
+- extend calibration comparison if the current atlas proves too shallow in real use
+- deepen Ripple from the current multi-path view into a richer replay-history archive

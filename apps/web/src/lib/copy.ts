@@ -174,6 +174,11 @@ export const appCopy = {
       focusEvent: '焦点事件',
       branchSpread: '分支展开',
       evidenceDensity: '证据密度',
+      pathArchive: '路径档案',
+      pathArchiveNote: '把当前焦点路径、主路径和替代漂移路径并排看，才能真正看到世界线如何分叉。',
+      activePath: '当前路径',
+      primaryPath: '主路径',
+      alternateDrift: '替代漂移',
     },
     labels: {
       primary: '主分支',
@@ -345,6 +350,11 @@ export const appCopy = {
       focusEvent: 'Focus Event',
       branchSpread: 'Branch Spread',
       evidenceDensity: 'Evidence Density',
+      pathArchive: 'Path Archive',
+      pathArchiveNote: 'Read the active path, the primary path, and the alternate drift side by side to see where the worldline splits.',
+      activePath: 'Active Path',
+      primaryPath: 'Primary Path',
+      alternateDrift: 'Alternate Drift',
     },
     labels: {
       primary: 'Primary',

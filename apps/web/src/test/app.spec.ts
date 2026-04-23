@@ -342,8 +342,12 @@ describe('app routes', () => {
     await wrapper.findAll('.surface-chip')[3]?.trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="ripple-continuity-explorer"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="ripple-path-archive"]').exists()).toBe(true)
     await wrapper.find('[data-testid="ripple-event-node-evt_2"]').trigger('click')
     expect(wrapper.find('[data-testid="ripple-focus-card"]').text()).toContain('Event Two')
+    await wrapper.find('[data-testid="ripple-path-node-alternate-evt_2"]').trigger('click')
+    expect(wrapper.find('[data-testid="ripple-focus-card"]').text()).toContain('Event Two')
+    expect(wrapper.text()).toContain('Backlash branch')
 
     await wrapper.findAll('.surface-chip')[4]?.trigger('click')
     await flushPromises()

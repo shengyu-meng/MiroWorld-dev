@@ -80,6 +80,38 @@
         </article>
       </div>
     </div>
+
+    <div class="ripple-path-archive-card" data-testid="ripple-path-archive">
+      <header class="ripple-track-header">
+        <div>
+          <span class="annotation-label">{{ copy.pathArchive }}</span>
+          <p class="surface-callout">{{ copy.pathArchiveNote }}</p>
+        </div>
+      </header>
+
+      <div class="ripple-path-grid">
+        <article v-for="path in pathVariants" :key="path.key" class="ripple-path-column">
+          <span class="annotation-label">{{ path.label }}</span>
+          <div class="ripple-path-stack">
+            <button
+              v-for="node in path.nodes"
+              :key="`${path.key}-${node.event.event_id}`"
+              type="button"
+              class="ripple-path-node"
+              :class="{ active: node.event.event_id === selectedEventId && node.branch.branch_id === selectedBranchId }"
+              :data-testid="`ripple-path-node-${path.key}-${node.event.event_id}`"
+              @click="$emit('select-branch', node.event.event_id, node.branch.branch_id)"
+            >
+              <small>{{ node.event.stage }}</small>
+              <strong>{{ node.event.title }}</strong>
+              <span>{{ node.branch.label }}</span>
+              <small>{{ confidenceLabel }} / {{ formatConfidence(node.branch.effective_confidence ?? node.branch.confidence) }}</small>
+              <p>{{ node.branch.cost_hint || node.branch.description }}</p>
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -123,6 +155,11 @@ const props = defineProps<{
     focusEvent: string
     branchSpread: string
     evidenceDensity: string
+    pathArchive: string
+    pathArchiveNote: string
+    activePath: string
+    primaryPath: string
+    alternateDrift: string
   }
 }>()
 
@@ -169,7 +206,52 @@ const selectedEvent = computed(() => (
   ?? null
 ))
 
+const pathVariants = computed(() => {
+  const selectedEventBranch = props.events
+    .find((event) => event.event_id === props.selectedEventId)
+    ?.branches.find((branch) => branch.branch_id === props.selectedBranchId)
+
+  return [
+    {
+      key: 'active',
+      label: props.copy.activePath,
+      nodes: props.events.map((event) => ({
+        event,
+        branch: event.event_id === props.selectedEventId
+          ? selectedEventBranch ?? pickPrimaryBranch(event)
+          : pickPrimaryBranch(event),
+      })),
+    },
+    {
+      key: 'primary',
+      label: props.copy.primaryPath,
+      nodes: props.events.map((event) => ({
+        event,
+        branch: pickPrimaryBranch(event),
+      })),
+    },
+    {
+      key: 'alternate',
+      label: props.copy.alternateDrift,
+      nodes: props.events.map((event) => ({
+        event,
+        branch: pickAlternateBranch(event),
+      })),
+    },
+  ]
+})
+
 function formatConfidence(value: number) {
   return `${Math.round(value * 100)}%`
+}
+
+function pickPrimaryBranch(event: KeyEvent) {
+  return event.branches.find((branch) => branch.visibility === 'primary')
+    ?? event.branches[0]
+}
+
+function pickAlternateBranch(event: KeyEvent) {
+  return event.branches.find((branch) => branch.visibility === 'alternate')
+    ?? pickPrimaryBranch(event)
 }
 </script>

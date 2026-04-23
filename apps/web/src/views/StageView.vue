@@ -147,6 +147,11 @@
                 focusEvent: copy.ripple.focusEvent,
                 branchSpread: copy.ripple.branchSpread,
                 evidenceDensity: copy.ripple.evidenceDensity,
+                pathArchive: copy.ripple.pathArchive,
+                pathArchiveNote: copy.ripple.pathArchiveNote,
+                activePath: copy.ripple.activePath,
+                primaryPath: copy.ripple.primaryPath,
+                alternateDrift: copy.ripple.alternateDrift,
               }"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"
