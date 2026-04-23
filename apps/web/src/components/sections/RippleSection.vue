@@ -112,11 +112,82 @@
         </article>
       </div>
     </div>
+
+    <div class="ripple-history-archive-card" data-testid="ripple-replay-history">
+      <header class="ripple-track-header">
+        <div>
+          <span class="annotation-label">{{ copy.replayHistory }}</span>
+          <p class="surface-callout">{{ copy.replayHistoryNote }}</p>
+        </div>
+
+        <div class="ripple-history-mode-row">
+          <button
+            v-for="path in pathVariants"
+            :key="`${path.key}-history`"
+            type="button"
+            class="branch-chip ripple-history-mode"
+            :class="{ active: path.key === selectedHistoryMode }"
+            :data-testid="`ripple-history-mode-${path.key}`"
+            @click="selectedHistoryMode = path.key"
+          >
+            {{ path.label }}
+          </button>
+        </div>
+      </header>
+
+      <div class="ripple-history-stack">
+        <button
+          v-for="entry in historyEntries"
+          :key="entry.key"
+          type="button"
+          class="ripple-history-entry"
+          :class="{ active: entry.event.event_id === selectedEventId && entry.branch.branch_id === selectedBranchId }"
+          :data-testid="`ripple-history-entry-${entry.mode}-${entry.event.event_id}`"
+          @click="$emit('select-branch', entry.event.event_id, entry.branch.branch_id)"
+        >
+          <div class="ripple-history-header">
+            <small>{{ entry.index }}</small>
+            <span>{{ confidenceLabel }} / {{ formatConfidence(entry.confidence) }}</span>
+          </div>
+
+          <div class="ripple-history-copy">
+            <strong>{{ entry.event.title }}</strong>
+            <p>{{ entry.branch.description || entry.event.summary || entry.branch.cost_hint }}</p>
+          </div>
+
+          <div class="ripple-history-meta">
+            <span class="event-meta-pill">{{ entry.event.stage }}</span>
+            <span class="event-meta-pill">{{ entry.branch.label }}</span>
+            <span class="event-meta-pill">{{ copy.counterSignalDensity }} / {{ entry.counterSignalCount }}</span>
+          </div>
+
+          <div class="ripple-history-sections">
+            <div class="ripple-history-section">
+              <span class="annotation-label">{{ copy.upstreamTension }}</span>
+              <strong>{{ entry.upstream.title }}</strong>
+              <p>{{ entry.upstream.summary }}</p>
+            </div>
+
+            <div class="ripple-history-section">
+              <span class="annotation-label">{{ copy.hingeBranch }}</span>
+              <strong>{{ entry.branch.label }}</strong>
+              <p>{{ entry.branch.cost_hint || entry.branch.description }}</p>
+            </div>
+
+            <div class="ripple-history-section">
+              <span class="annotation-label">{{ copy.downstreamDrift }}</span>
+              <strong>{{ entry.downstream.title }}</strong>
+              <p>{{ entry.downstream.summary }}</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import type { KeyEvent } from '@/lib/types'
 
@@ -128,6 +199,8 @@ interface WorldlineTrackNode {
   primary_branch_label: string
   confidence: number
 }
+
+type HistoryMode = 'active' | 'primary' | 'alternate'
 
 const props = defineProps<{
   latestBend: string
@@ -160,6 +233,16 @@ const props = defineProps<{
     activePath: string
     primaryPath: string
     alternateDrift: string
+    replayHistory: string
+    replayHistoryNote: string
+    upstreamTension: string
+    hingeBranch: string
+    downstreamDrift: string
+    archiveOrigin: string
+    archiveOriginNote: string
+    archiveOpenEnd: string
+    archiveOpenEndNote: string
+    counterSignalDensity: string
   }
 }>()
 
@@ -206,7 +289,16 @@ const selectedEvent = computed(() => (
   ?? null
 ))
 
-const pathVariants = computed(() => {
+const selectedHistoryMode = ref<HistoryMode>('active')
+
+const pathVariants = computed<Array<{
+  key: HistoryMode
+  label: string
+  nodes: Array<{
+    event: KeyEvent
+    branch: KeyEvent['branches'][number]
+  }>
+}>>(() => {
   const selectedEventBranch = props.events
     .find((event) => event.event_id === props.selectedEventId)
     ?.branches.find((branch) => branch.branch_id === props.selectedBranchId)
@@ -240,6 +332,54 @@ const pathVariants = computed(() => {
     },
   ]
 })
+
+const historyEntries = computed(() => {
+  const activePath = pathVariants.value.find((path) => path.key === selectedHistoryMode.value)
+    ?? pathVariants.value[0]
+
+  return activePath.nodes.map((node, index) => {
+    const upstreamNode = activePath.nodes[index - 1]
+    const downstreamNode = activePath.nodes[index + 1]
+    const confidence = node.branch.effective_confidence ?? node.branch.confidence
+
+    return {
+      key: `${activePath.key}-${node.event.event_id}`,
+      mode: activePath.key,
+      index: `ARCHIVE ${String(index + 1).padStart(2, '0')}`,
+      event: node.event,
+      branch: node.branch,
+      confidence,
+      counterSignalCount: node.branch.signals_against.length,
+      upstream: upstreamNode
+        ? {
+            title: `${upstreamNode.event.title} / ${upstreamNode.branch.label}`,
+            summary: upstreamNode.branch.cost_hint || upstreamNode.event.summary || upstreamNode.branch.description,
+          }
+        : {
+            title: props.copy.archiveOrigin,
+            summary: props.copy.archiveOriginNote,
+          },
+      downstream: downstreamNode
+        ? {
+            title: `${downstreamNode.event.title} / ${downstreamNode.branch.label}`,
+            summary: downstreamNode.branch.cost_hint || downstreamNode.event.summary || downstreamNode.branch.description,
+          }
+        : {
+            title: props.copy.archiveOpenEnd,
+            summary: props.copy.archiveOpenEndNote,
+          },
+    }
+  })
+})
+
+watch(
+  () => props.selectedBranchId,
+  () => {
+    selectedHistoryMode.value = pathVariants.value.some((path) => path.key === selectedHistoryMode.value)
+      ? selectedHistoryMode.value
+      : 'active'
+  },
+)
 
 function formatConfidence(value: number) {
   return `${Math.round(value * 100)}%`

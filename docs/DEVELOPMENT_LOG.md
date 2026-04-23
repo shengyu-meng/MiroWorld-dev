@@ -255,3 +255,32 @@ Still open inside slice 4:
 - deepen the artifact path beyond the current HTML / SVG / TXT export set
 - extend calibration comparison if the current atlas proves too shallow in real use
 - deepen Ripple from the current multi-path view into a richer replay-history archive
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay-history archive pass started)
+
+Planned in this iteration:
+
+- deepen Ripple from a side-by-side path comparison into a more archive-like replay history surface
+- make each replay snapshot readable as upstream tension, hinge branch, and downstream drift without changing contracts
+- keep the interaction lightweight by deriving archive cards from the existing stage payload
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay-history archive pass completed)
+
+Completed in this iteration:
+
+- deepened Ripple from a side-by-side path comparison into a more archive-like replay history surface
+- added replay-history slices that read as upstream tension, hinge branch, and downstream drift for the selected path
+- kept the implementation contract-safe by deriving archive entries from the existing event and branch payload
+- extended frontend coverage so the replay-history archive interaction is exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- deepen the artifact path beyond the current HTML / SVG / TXT export set
+- extend calibration comparison if the current atlas proves too shallow in real use
+- extend the replay-history archive from derived in-stage slices into richer saved replay sets if needed

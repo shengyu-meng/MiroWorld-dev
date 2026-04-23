@@ -1054,6 +1054,83 @@ li {
   background: linear-gradient(180deg, rgba(53, 33, 24, 0.94), rgba(18, 15, 14, 0.8));
 }
 
+.ripple-history-archive-card {
+  background: linear-gradient(180deg, rgba(11, 21, 28, 0.9), rgba(7, 12, 17, 0.72));
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
+.ripple-history-mode-row,
+.ripple-history-stack,
+.ripple-history-sections {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.ripple-history-mode-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0.8rem;
+}
+
+.ripple-history-mode {
+  justify-content: center;
+}
+
+.ripple-history-entry {
+  display: grid;
+  gap: 0.85rem;
+  text-align: left;
+  padding: 1rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(180, 230, 243, 0.16);
+  background:
+    linear-gradient(180deg, rgba(16, 32, 43, 0.92), rgba(7, 12, 17, 0.8)),
+    radial-gradient(circle at top right, rgba(188, 230, 243, 0.12), transparent 52%);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.ripple-history-entry:hover {
+  border-color: rgba(180, 230, 243, 0.42);
+  transform: translateY(-1px);
+}
+
+.ripple-history-entry.active {
+  border-color: rgba(195, 180, 255, 0.72);
+  box-shadow: 0 18px 44px rgba(9, 14, 19, 0.34);
+}
+
+.ripple-history-header,
+.ripple-history-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.ripple-history-copy {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.ripple-history-sections {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ripple-history-section {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.8rem 0.85rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(180, 230, 243, 0.12);
+  background: rgba(9, 14, 19, 0.36);
+}
+
 .ripple-track-header {
   margin-bottom: 0.9rem;
 }
@@ -1142,6 +1219,11 @@ li {
   }
 
   .ripple-path-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ripple-history-mode-row,
+  .ripple-history-sections {
     grid-template-columns: 1fr;
   }
 

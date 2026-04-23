@@ -152,6 +152,16 @@
                 activePath: copy.ripple.activePath,
                 primaryPath: copy.ripple.primaryPath,
                 alternateDrift: copy.ripple.alternateDrift,
+                replayHistory: copy.ripple.replayHistory,
+                replayHistoryNote: copy.ripple.replayHistoryNote,
+                upstreamTension: copy.ripple.upstreamTension,
+                hingeBranch: copy.ripple.hingeBranch,
+                downstreamDrift: copy.ripple.downstreamDrift,
+                archiveOrigin: copy.ripple.archiveOrigin,
+                archiveOriginNote: copy.ripple.archiveOriginNote,
+                archiveOpenEnd: copy.ripple.archiveOpenEnd,
+                archiveOpenEndNote: copy.ripple.archiveOpenEndNote,
+                counterSignalDensity: copy.ripple.counterSignalDensity,
               }"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"

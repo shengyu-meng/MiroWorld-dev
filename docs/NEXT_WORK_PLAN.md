@@ -90,7 +90,9 @@ This slice does include:
 - [x] deepen ripple continuity beyond the current replay track
 - [x] turn Ripple into a multi-path replay archive instead of a single continuity chain
 - [x] broaden Ripple from one continuity chain into a stronger multi-path replay archive
-- [ ] deepen Ripple from the current multi-path view into a richer replay-history archive
+- [x] deepen Ripple from the current multi-path view into a richer replay-history archive
+- [x] add replay-history archive strata so each replay snapshot reads as upstream tension, hinge branch, and downstream drift
+- [ ] extend the replay-history archive from in-stage derived slices into richer saved replay sets if this first pass proves too shallow
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 
