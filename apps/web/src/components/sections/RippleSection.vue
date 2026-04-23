@@ -204,6 +204,51 @@
       </div>
     </div>
 
+    <div class="ripple-replay-shelf-card" data-testid="ripple-replay-shelf">
+      <header class="ripple-track-header ripple-track-header--dossier">
+        <div>
+          <span class="annotation-label">{{ copy.replayShelf }}</span>
+          <p class="surface-callout">{{ copy.replayShelfNote }}</p>
+        </div>
+        <button type="button" class="ghost-action" data-testid="save-replay-shelf" @click="saveReplayToShelf">
+          {{ copy.saveReplayShelf }}
+        </button>
+      </header>
+
+      <small v-if="shelfFeedback" class="copy-feedback">{{ shelfFeedback }}</small>
+      <p v-if="replayShelf.length === 0" class="surface-callout">{{ copy.emptyReplayShelf }}</p>
+
+      <div v-else class="ripple-shelf-stack">
+        <article v-for="item in replayShelf" :key="item.shelfId" class="ripple-shelf-entry">
+          <div class="ripple-shelf-copy">
+            <span class="annotation-label">{{ item.replaySetLabel }}</span>
+            <strong>{{ item.dossier.hinge.title }}</strong>
+            <p>{{ item.authoredNote }}</p>
+          </div>
+
+          <div class="ripple-shelf-meta">
+            <span class="event-meta-pill">{{ copy.savedAtLabel }} / {{ formatTimestamp(item.savedAt) }}</span>
+            <span class="event-meta-pill">{{ copy.savedFocus }} / {{ item.focus.eventTitle }} / {{ item.focus.branchLabel }}</span>
+          </div>
+
+          <div class="ripple-dossier-actions">
+            <button type="button" class="ghost-action" data-testid="restore-saved-replay" @click="restoreReplayFromShelf(item)">
+              {{ copy.restoreReplayShelf }}
+            </button>
+            <button type="button" class="ghost-action" data-testid="download-saved-replay-dossier" @click="downloadSavedReplayDossier(item)">
+              {{ copy.downloadSavedReplayDossier }}
+            </button>
+            <button type="button" class="ghost-action" data-testid="download-saved-replay-packet" @click="downloadSavedReplayPacket(item)">
+              {{ copy.downloadSavedReplayPacket }}
+            </button>
+            <button type="button" class="ghost-action" data-testid="remove-saved-replay" @click="removeReplayFromShelf(item.shelfId)">
+              {{ copy.removeReplayShelf }}
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+
     <div class="ripple-history-archive-card" data-testid="ripple-replay-history">
       <header class="ripple-track-header">
         <div>
@@ -280,6 +325,60 @@ interface WorldlineTrackNode {
 type HistoryMode = 'active' | 'primary' | 'alternate'
 type ReplaySetKey = 'current' | 'stabilizing' | 'pressure'
 
+interface ReplayFocus {
+  eventId: string
+  eventTitle: string
+  branchId: string
+  branchLabel: string
+}
+
+interface ReplayDossierCard {
+  title: string
+  summary: string
+}
+
+interface ReplayDossierData {
+  summary: string
+  entry: ReplayDossierCard
+  hinge: ReplayDossierCard
+  terminal: ReplayDossierCard
+}
+
+interface ReplayTimelineEntry {
+  index: string
+  stage: string
+  eventTitle: string
+  branchLabel: string
+  confidence: number
+  counterSignalCount: number
+  description: string
+  upstream: ReplayDossierCard
+  downstream: ReplayDossierCard
+  focus: ReplayFocus
+}
+
+interface ReplayPacket {
+  projectId: string
+  replaySetKey: ReplaySetKey
+  replaySetLabel: string
+  replaySetNote: string
+  authoredNote: string
+  focus: ReplayFocus
+  metrics: {
+    eventCount: number
+    averageConfidence: number
+    averagePressure: number
+    alternateCount: number
+  }
+  dossier: ReplayDossierData
+  timeline: ReplayTimelineEntry[]
+}
+
+interface SavedReplayPacket extends ReplayPacket {
+  shelfId: string
+  savedAt: string
+}
+
 const props = defineProps<{
   projectId: string
   latestBend: string
@@ -342,13 +441,23 @@ const props = defineProps<{
     downloadReplayPacket: string
     replayDossierSummaryTemplate: string
     replayPacketIntroTemplate: string
+    replayShelf: string
+    replayShelfNote: string
+    saveReplayShelf: string
+    restoreReplayShelf: string
+    removeReplayShelf: string
+    emptyReplayShelf: string
+    savedAtLabel: string
+    savedFocus: string
+    downloadSavedReplayDossier: string
+    downloadSavedReplayPacket: string
     entryAnchor: string
     hingePressure: string
     terminalExposure: string
   }
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'select-event': [eventId: string]
   'select-branch': [eventId: string, branchId: string]
 }>()
@@ -435,6 +544,9 @@ const pathVariants = computed<Array<{
 
 const selectedReplaySetKey = ref<ReplaySetKey>('current')
 const dossierFeedback = ref('')
+const shelfFeedback = ref('')
+const replayShelf = ref<SavedReplayPacket[]>([])
+const replayStorageKey = computed(() => `miroworld:ripple-shelf:${safeFileStem(props.projectId)}`)
 
 const replaySets = computed<Array<{
   key: ReplaySetKey
@@ -565,8 +677,11 @@ const replayDossierSummary = computed(() => {
   })
 })
 
-const replayPacket = computed(() => {
+const replayPacket = computed<ReplayPacket | null>(() => {
   if (!selectedReplaySet.value || !replayDossier.value) return null
+
+  const selectedEvent = props.events.find((event) => event.event_id === props.selectedEventId)
+  const selectedBranch = selectedEvent?.branches.find((branch) => branch.branch_id === props.selectedBranchId)
 
   return {
     projectId: props.projectId,
@@ -582,13 +697,22 @@ const replayPacket = computed(() => {
       }),
       replayDossierSummary.value,
     ].join(' '),
+    focus: {
+      eventId: selectedEvent?.event_id ?? props.selectedEventId,
+      eventTitle: selectedEvent?.title ?? replayDossier.value.hinge.title,
+      branchId: selectedBranch?.branch_id ?? props.selectedBranchId,
+      branchLabel: selectedBranch?.label ?? replayDossier.value.hinge.title,
+    },
     metrics: {
       eventCount: selectedReplaySet.value.eventCount,
       averageConfidence: selectedReplaySet.value.averageConfidence,
       averagePressure: selectedReplaySet.value.averagePressure,
       alternateCount: selectedReplaySet.value.alternateCount,
     },
-    dossier: replayDossier.value,
+    dossier: {
+      ...replayDossier.value,
+      summary: replayDossierSummary.value,
+    },
     timeline: historyEntries.value.map((entry) => ({
       index: entry.index,
       stage: entry.event.stage,
@@ -599,6 +723,12 @@ const replayPacket = computed(() => {
       description: entry.branch.description || entry.event.summary || entry.branch.cost_hint,
       upstream: entry.upstream,
       downstream: entry.downstream,
+      focus: {
+        eventId: entry.event.event_id,
+        eventTitle: entry.event.title,
+        branchId: entry.branch.branch_id,
+        branchLabel: entry.branch.label,
+      },
     })),
   }
 })
@@ -610,12 +740,24 @@ watch(
       ? selectedReplaySetKey.value
       : 'current'
     dossierFeedback.value = ''
+    shelfFeedback.value = ''
   },
 )
 
 watch(selectedReplaySetKey, () => {
   dossierFeedback.value = ''
+  shelfFeedback.value = ''
 })
+
+watch(
+  () => props.projectId,
+  () => {
+    replayShelf.value = loadReplayShelf()
+    dossierFeedback.value = ''
+    shelfFeedback.value = ''
+  },
+  { immediate: true },
+)
 
 function formatConfidence(value: number) {
   return `${Math.round(value * 100)}%`
@@ -655,6 +797,69 @@ function downloadReplayPacket() {
     'application/json;charset=utf-8',
   )
   dossierFeedback.value = props.copy.downloadReplayPacket
+}
+
+function saveReplayToShelf() {
+  if (!replayPacket.value) return
+
+  shelfFeedback.value = ''
+  const savedPacket: SavedReplayPacket = {
+    ...replayPacket.value,
+    shelfId: `${Date.now()}-${replayPacket.value.replaySetKey}`,
+    savedAt: new Date().toISOString(),
+  }
+
+  replayShelf.value = [
+    savedPacket,
+    ...replayShelf.value.filter((item) => !isSameReplayFocus(item, savedPacket)),
+  ].slice(0, 8)
+  persistReplayShelf()
+  shelfFeedback.value = props.copy.saveReplayShelf
+}
+
+function restoreReplayFromShelf(item: SavedReplayPacket) {
+  shelfFeedback.value = ''
+  selectedReplaySetKey.value = replaySets.value.some((set) => set.key === item.replaySetKey)
+    ? item.replaySetKey
+    : 'current'
+
+  const event = props.events.find((candidate) => candidate.event_id === item.focus.eventId)
+  const branch = event?.branches.find((candidate) => candidate.branch_id === item.focus.branchId)
+
+  if (event && branch) {
+    emit('select-branch', event.event_id, branch.branch_id)
+  } else if (event) {
+    emit('select-event', event.event_id)
+  }
+
+  shelfFeedback.value = props.copy.restoreReplayShelf
+}
+
+function removeReplayFromShelf(shelfId: string) {
+  shelfFeedback.value = ''
+  replayShelf.value = replayShelf.value.filter((item) => item.shelfId !== shelfId)
+  persistReplayShelf()
+  shelfFeedback.value = props.copy.removeReplayShelf
+}
+
+function downloadSavedReplayDossier(item: SavedReplayPacket) {
+  shelfFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-${safeFileStem(item.shelfId)}-replay-dossier.md`,
+    buildReplayDossierMarkdown(item),
+    'text/markdown;charset=utf-8',
+  )
+  shelfFeedback.value = props.copy.downloadSavedReplayDossier
+}
+
+function downloadSavedReplayPacket(item: SavedReplayPacket) {
+  shelfFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-${safeFileStem(item.shelfId)}-replay-packet.json`,
+    JSON.stringify(item, null, 2),
+    'application/json;charset=utf-8',
+  )
+  shelfFeedback.value = props.copy.downloadSavedReplayPacket
 }
 
 function pickPrimaryBranch(event: KeyEvent) {
@@ -716,10 +921,10 @@ function buildReplayExcerpt() {
   return replayPacket.value?.authoredNote ?? ''
 }
 
-function buildReplayDossierMarkdown() {
-  if (!replayPacket.value || !selectedReplaySet.value || !replayDossier.value) return ''
+function buildReplayDossierMarkdown(packet: ReplayPacket | SavedReplayPacket | null = replayPacket.value) {
+  if (!packet) return ''
 
-  const timeline = replayPacket.value.timeline
+  const timeline = packet.timeline
     .map((entry) => [
       `### ${entry.index}`,
       `${entry.eventTitle} / ${entry.branchLabel}`,
@@ -739,37 +944,72 @@ function buildReplayDossierMarkdown() {
   return [
     '# MIROWORLD REPLAY DOSSIER',
     '',
-    `Project: ${props.projectId}`,
-    `Replay Set: ${selectedReplaySet.value.label} (${selectedReplaySet.value.key})`,
-    `Set Note: ${selectedReplaySet.value.note}`,
+    `Project: ${packet.projectId}`,
+    `Replay Set: ${packet.replaySetLabel} (${packet.replaySetKey})`,
+    `Set Note: ${packet.replaySetNote}`,
     '',
     `## ${props.copy.replayExcerpt}`,
-    replayPacket.value.authoredNote,
+    packet.authoredNote,
     '',
     `## ${props.copy.replayDossier}`,
-    replayDossierSummary.value,
+    packet.dossier.summary,
     '',
     `## ${props.copy.entryAnchor}`,
-    replayDossier.value.entry.title,
-    replayDossier.value.entry.summary,
+    packet.dossier.entry.title,
+    packet.dossier.entry.summary,
     '',
     `## ${props.copy.hingePressure}`,
-    replayDossier.value.hinge.title,
-    replayDossier.value.hinge.summary,
+    packet.dossier.hinge.title,
+    packet.dossier.hinge.summary,
     '',
     `## ${props.copy.terminalExposure}`,
-    replayDossier.value.terminal.title,
-    replayDossier.value.terminal.summary,
+    packet.dossier.terminal.title,
+    packet.dossier.terminal.summary,
     '',
     '## Metrics',
-    `- ${props.copy.eventCount}: ${selectedReplaySet.value.eventCount}`,
-    `- ${props.copy.setConfidence}: ${formatConfidence(selectedReplaySet.value.averageConfidence)}`,
-    `- ${props.copy.setPressure}: ${selectedReplaySet.value.averagePressure}`,
-    `- ${props.copy.setAlternateCount}: ${selectedReplaySet.value.alternateCount}`,
+    `- ${props.copy.eventCount}: ${packet.metrics.eventCount}`,
+    `- ${props.copy.setConfidence}: ${formatConfidence(packet.metrics.averageConfidence)}`,
+    `- ${props.copy.setPressure}: ${packet.metrics.averagePressure}`,
+    `- ${props.copy.setAlternateCount}: ${packet.metrics.alternateCount}`,
     '',
     `## ${props.copy.replayHistory}`,
     timeline,
   ].join('\n')
+}
+
+function loadReplayShelf() {
+  if (!hasBrowserStorage()) return []
+
+  try {
+    const raw = window.localStorage.getItem(replayStorageKey.value)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed as SavedReplayPacket[] : []
+  } catch {
+    return []
+  }
+}
+
+function persistReplayShelf() {
+  if (!hasBrowserStorage()) return
+
+  window.localStorage.setItem(replayStorageKey.value, JSON.stringify(replayShelf.value))
+}
+
+function formatTimestamp(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString()
+}
+
+function hasBrowserStorage() {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+}
+
+function isSameReplayFocus(left: SavedReplayPacket, right: SavedReplayPacket) {
+  return left.replaySetKey === right.replaySetKey
+    && left.focus.eventId === right.focus.eventId
+    && left.focus.branchId === right.focus.branchId
 }
 
 function fillTemplate(template: string, replacements: Record<string, string | number>) {

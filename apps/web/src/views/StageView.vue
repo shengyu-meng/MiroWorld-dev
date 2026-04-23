@@ -187,6 +187,20 @@
                 replayPacketIntroTemplate: language === 'zh'
                   ? '这份重演案卷以 {setLabel} 为视角，覆盖 {eventCount} 个事件，平均置信 {confidence}，平均压力 {pressure}。'
                   : 'This replay dossier reads through {setLabel}, covering {eventCount} events with {confidence} average confidence and {pressure} average pressure.',
+                replayShelf: language === 'zh' ? '重演架' : 'Replay Shelf',
+                replayShelfNote: language === 'zh'
+                  ? '把当前重演包暂存到本地架上，之后可以回看、恢复和再次导出。'
+                  : 'Keep authored replay packets on a local shelf so they can be revisited, restored, and exported again.',
+                saveReplayShelf: language === 'zh' ? '保存到 Replay Shelf' : 'Save To Replay Shelf',
+                restoreReplayShelf: language === 'zh' ? '恢复重演' : 'Restore Replay',
+                removeReplayShelf: language === 'zh' ? '移除' : 'Remove',
+                emptyReplayShelf: language === 'zh'
+                  ? '当前项目还没有保存的 replay packet。'
+                  : 'No replay packets have been saved for this project yet.',
+                savedAtLabel: language === 'zh' ? '保存时间' : 'Saved At',
+                savedFocus: language === 'zh' ? '聚焦锚点' : 'Saved Focus',
+                downloadSavedReplayDossier: language === 'zh' ? '导出已存 Dossier' : 'Download Saved Dossier',
+                downloadSavedReplayPacket: language === 'zh' ? '导出已存 Packet' : 'Download Saved Packet',
                 entryAnchor: copy.ripple.entryAnchor,
                 hingePressure: copy.ripple.hingePressure,
                 terminalExposure: copy.ripple.terminalExposure,

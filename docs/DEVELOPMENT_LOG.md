@@ -430,3 +430,32 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
 - deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay shelf pass started)
+
+Planned in this iteration:
+
+- turn the current replay packet into a small persisted local replay shelf instead of leaving it as a one-off export path
+- keep the implementation frontend-only and contract-safe by saving replay packets in browser storage rather than changing the backend
+- let saved replay packets be restored and re-exported so authored replay states can accumulate across a session
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay shelf pass completed)
+
+Completed in this iteration:
+
+- turned the current replay packet into a small persisted local replay shelf inside Ripple
+- added save, restore, remove, and re-export actions so authored replay states can accumulate locally per project
+- kept the implementation frontend-only and contract-safe by using browser storage instead of changing backend contracts
+- extended frontend coverage so the replay shelf save/restore/export/remove flow is exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
+- deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary

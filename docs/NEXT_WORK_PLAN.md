@@ -102,6 +102,7 @@ This slice does include:
 - [ ] deepen the replay set library if later we need persisted or more authored replay sets
 - [x] add a replay dossier layer so each replay set carries clearer narrative anchors and turning points
 - [x] add replay dossier export actions so the selected replay set can leave Ripple as a lightweight local packet
+- [x] add a persisted local replay shelf so authored replay packets can be saved, revisited, and re-exported inside Ripple
 - [ ] deepen the replay dossier further if later we need persisted replay sets or more authored writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration

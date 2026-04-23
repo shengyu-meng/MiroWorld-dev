@@ -1188,6 +1188,35 @@ li {
   margin-top: 0.85rem;
 }
 
+.ripple-replay-shelf-card {
+  background: linear-gradient(180deg, rgba(9, 17, 23, 0.9), rgba(6, 10, 15, 0.74));
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.ripple-shelf-stack {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.ripple-shelf-entry {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ripple-shelf-copy,
+.ripple-shelf-meta {
+  display: grid;
+  gap: 0.45rem;
+}
+
 .ripple-history-archive-card {
   background: linear-gradient(180deg, rgba(11, 21, 28, 0.9), rgba(7, 12, 17, 0.72));
   border: 1px solid var(--line);
