@@ -284,3 +284,32 @@ Still open inside slice 4:
 - deepen the artifact path beyond the current HTML / SVG / TXT export set
 - extend calibration comparison if the current atlas proves too shallow in real use
 - extend the replay-history archive from derived in-stage slices into richer saved replay sets if needed
+
+## 2026-04-23 - Experience Rebuild Slice 4 (artifact bundle and image export pass started)
+
+Planned in this iteration:
+
+- deepen Archive beyond fragmented SVG / TXT / HTML exports into a more bundle-like artifact output
+- add a browser-side image export path so the poster can leave the UI as more than SVG alone
+- keep every export frontend-only and contract-safe so no secret handling or backend flow changes
+
+## 2026-04-23 - Experience Rebuild Slice 4 (artifact bundle and image export pass completed)
+
+Completed in this iteration:
+
+- extended Archive export so the poster can leave the UI as a browser-side PNG instead of SVG alone
+- added a richer artifact bundle JSON that packages share state, logs, calibration, and embedded export surfaces together
+- kept the implementation frontend-only and contract-safe so no backend flow or secret handling changed
+- extended frontend coverage so the new export actions are exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
+- extend calibration comparison if the current atlas proves too shallow in real use
+- extend the replay-history archive from derived in-stage slices into richer saved replay sets if needed

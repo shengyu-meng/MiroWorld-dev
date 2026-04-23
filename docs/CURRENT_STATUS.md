@@ -2,11 +2,11 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 replay-history archive pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 artifact bundle and image export pass complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive exports poster/bundle/exhibit artifacts while Ripple now supports both a multi-path comparison view and a deeper replay-history archive.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, png, bundle, and exhibit artifacts while Ripple supports both a multi-path comparison view and a deeper replay-history archive.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -14,6 +14,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - and the archive can now leave the UI as a self-contained exhibit HTML artifact instead of only fragmented exports
+- and the archive poster can now also leave the UI as a browser-side PNG while the whole artifact set can be saved as a single bundle
 - calibration no longer reads as a plain log; it now exposes dominant outcomes, recent tendency, and branch focus
 - Ripple now lets the viewer steer event focus and branch focus from inside the continuity surface itself
 - and the linefield opens wider on the Ripple surface so continuity reads across more events than before
@@ -111,6 +112,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - each replay-history slice reads as upstream tension, hinge branch, and downstream drift for the chosen path
 - replay-history entries can retarget the stage directly and frontend route tests now cover the new interaction
 
+### Frontend experience rebuild slice 4 (artifact bundle and image export pass)
+
+- Archive can now export the poster as a browser-side PNG instead of relying on SVG alone
+- Archive can now export a richer artifact bundle JSON that carries the share snapshot, logs, calibration state, and embedded export surfaces together
+- frontend route tests now cover the extended export actions without changing backend contracts or secret handling
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -122,7 +129,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Product / experience gaps
 
 - the linefield and Ripple now act more like a multi-path replay surface, but they are not yet a fuller replay archive across multiple synthesized histories or saved replay sets
-- the archive now exports local poster, text, and exhibit html artifacts, but it does not yet generate richer saved multi-format bundles or image pipelines beyond SVG
+- the archive now exports local svg, png, text, exhibit html, and artifact bundle outputs, but it still does not yet generate richer image pipelines or packaged media sets beyond those first formats
 - calibration history is now comparative at a first pass, but it is not yet deeper across branch families, broader time windows, or decision types
 - ripple continuity now includes a first replay-history archive pass, but it still needs richer saved histories and more authored path narration
 
@@ -142,6 +149,6 @@ The main product risk is no longer "can it run." It is "how far the public exper
 The next active slice is still `Experience Rebuild Slice 4`:
 
 - deepen the export path beyond local SVG / TXT into stronger artifact options
-- keep evolving the archive export path beyond the current HTML artifact if a richer bundle format becomes necessary
+- keep evolving the archive export path beyond the current SVG / PNG / TXT / HTML / JSON set if richer packaged media becomes necessary
 - deepen calibration comparison beyond the current atlas into richer archive perspectives if needed
 - keep extending the linefield / ripple system toward saved replay histories and richer path narration without regressing shell speed

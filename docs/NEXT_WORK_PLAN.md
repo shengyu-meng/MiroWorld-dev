@@ -82,7 +82,10 @@ This slice does include:
 
 - [x] add local export actions for archive poster and share bundle
 - [x] add a self-contained exhibit HTML export for archive artifacts
-- [ ] turn the archive poster layer into a stronger export-ready artifact flow
+- [x] turn the archive poster layer into a stronger export-ready artifact flow
+- [x] add a browser-side image export path beyond SVG for the poster artifact
+- [x] add a richer saved artifact bundle that carries multiple export surfaces in one package
+- [ ] keep extending the archive bundle beyond the current SVG / PNG / TXT / HTML / JSON set if a denser media packet becomes valuable
 - [x] turn calibration pattern into a comparative archive atlas
 - [x] compare calibration records by pattern and tendency, not only chronology
 - [ ] deepen calibration comparison across wider archive slices if the current atlas proves too shallow

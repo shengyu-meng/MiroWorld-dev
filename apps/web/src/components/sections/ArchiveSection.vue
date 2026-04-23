@@ -11,11 +11,17 @@
         <button type="button" class="ghost-action" data-testid="download-poster" @click="downloadPoster">
           {{ copy.downloadPoster }}
         </button>
+        <button type="button" class="ghost-action" data-testid="download-poster-png" @click="downloadPosterPng">
+          {{ copy.downloadPosterPng }}
+        </button>
         <button type="button" class="ghost-action" data-testid="download-bundle" @click="downloadBundle">
           {{ copy.downloadBundle }}
         </button>
         <button type="button" class="ghost-action" data-testid="download-exhibit" @click="downloadExhibitHtml">
           {{ copy.downloadExhibitHtml }}
+        </button>
+        <button type="button" class="ghost-action" data-testid="download-artifact-bundle" @click="downloadArtifactBundle">
+          {{ copy.downloadArtifactBundle }}
         </button>
       </div>
     </div>
@@ -240,8 +246,10 @@ const props = defineProps<{
     copyShareText: string
     calibrationPattern: string
     downloadPoster: string
+    downloadPosterPng: string
     downloadBundle: string
     downloadExhibitHtml: string
+    downloadArtifactBundle: string
     calibrationAtlas: string
     dominantOutcome: string
     recentTendency: string
@@ -364,6 +372,17 @@ function downloadPoster() {
   archiveFeedback.value = props.copy.downloadPoster
 }
 
+async function downloadPosterPng() {
+  archiveFeedback.value = ''
+  try {
+    const pngDataUrl = await buildPosterPngDataUrl()
+    downloadDataUrl(`${safeFileStem(props.projectId)}-poster.png`, pngDataUrl)
+    archiveFeedback.value = props.copy.downloadPosterPng
+  } catch {
+    downloadPoster()
+  }
+}
+
 function downloadBundle() {
   archiveFeedback.value = ''
   downloadFile(`${safeFileStem(props.projectId)}-share.txt`, buildShareBundle(), 'text/plain;charset=utf-8')
@@ -374,6 +393,16 @@ function downloadExhibitHtml() {
   archiveFeedback.value = ''
   downloadFile(`${safeFileStem(props.projectId)}-exhibit.html`, buildExhibitHtml(), 'text/html;charset=utf-8')
   archiveFeedback.value = props.copy.downloadExhibitHtml
+}
+
+function downloadArtifactBundle() {
+  archiveFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-artifact-bundle.json`,
+    buildArtifactBundle(),
+    'application/json;charset=utf-8',
+  )
+  archiveFeedback.value = props.copy.downloadArtifactBundle
 }
 
 function formatTimestamp(value: string) {
@@ -474,6 +503,30 @@ function buildShareBundle() {
     `${props.copy.calibrationHistory}:`,
     calibrations.trimEnd(),
   ].join('\n')
+}
+
+function buildArtifactBundle() {
+  return JSON.stringify({
+    schema_version: 1,
+    project_id: props.projectId,
+    exported_at: new Date().toISOString(),
+    manifest: {
+      artifact_count: 4,
+      includes: ['poster_svg', 'poster_png', 'share_bundle_text', 'exhibit_html'],
+      decision_log_count: props.decisionLog.length,
+      calibration_record_count: sortedCalibrationRecords.value.length,
+    },
+    share_snapshot: props.shareSnapshot,
+    decision_log: props.decisionLog,
+    calibration_summary: props.calibrationSummary,
+    calibration_records: sortedCalibrationRecords.value,
+    artifacts: {
+      poster_svg: buildPosterSvg(),
+      share_bundle_text: buildShareBundle(),
+      exhibit_html: buildExhibitHtml(),
+      suggested_png_filename: `${safeFileStem(props.projectId)}-poster.png`,
+    },
+  }, null, 2)
 }
 
 function buildExhibitHtml() {
@@ -697,6 +750,54 @@ function downloadFile(filename: string, content: string, mimeType: string) {
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+}
+
+async function buildPosterPngDataUrl() {
+  const svgBlob = new Blob([buildPosterSvg()], { type: 'image/svg+xml;charset=utf-8' })
+  const svgUrl = URL.createObjectURL(svgBlob)
+
+  try {
+    const image = await loadImage(svgUrl)
+    const scale = 2
+    const canvas = document.createElement('canvas')
+    canvas.width = 1280 * scale
+    canvas.height = 720 * scale
+
+    const context = canvas.getContext('2d')
+    if (!context) {
+      throw new Error('Canvas context unavailable')
+    }
+
+    context.fillStyle = '#071117'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(image, 0, 0, canvas.width, canvas.height)
+
+    if (typeof canvas.toDataURL !== 'function') {
+      throw new Error('Canvas export unavailable')
+    }
+
+    return canvas.toDataURL('image/png')
+  } finally {
+    URL.revokeObjectURL(svgUrl)
+  }
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('Image export unavailable'))
+    image.src = src
+  })
+}
+
+function downloadDataUrl(filename: string, dataUrl: string) {
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 }
 
 function wrapLines(value: string, lineLength: number) {

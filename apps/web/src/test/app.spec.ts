@@ -267,6 +267,7 @@ function makeRouter(initialPath: string) {
 describe('app routes', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('loads the entry route and renders fixtures', async () => {
@@ -306,6 +307,27 @@ describe('app routes', () => {
     const createObjectURLMock = vi.fn(() => 'blob:miroworld')
     const revokeObjectURLMock = vi.fn()
     const anchorClickMock = vi.fn()
+    const canvasToDataURLMock = vi.fn(() => 'data:image/png;base64,miroworld')
+    const canvasFillRectMock = vi.fn()
+    const canvasDrawImageMock = vi.fn()
+    const canvasContext = {
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 1,
+      setTransform: vi.fn(),
+      clearRect: vi.fn(),
+      createRadialGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
+      fillRect: canvasFillRectMock,
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
+      bezierCurveTo: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+    }
     Object.defineProperty(global.URL, 'createObjectURL', {
       writable: true,
       value: createObjectURLMock,
@@ -314,7 +336,29 @@ describe('app routes', () => {
       writable: true,
       value: revokeObjectURLMock,
     })
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      writable: true,
+      value: vi.fn(() => ({
+        ...canvasContext,
+        drawImage: canvasDrawImageMock,
+      })),
+    })
+    Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
+      writable: true,
+      value: canvasToDataURLMock,
+    })
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(anchorClickMock)
+    class FakeImage {
+      onload: null | (() => void) = null
+      onerror: null | (() => void) = null
+
+      set src(_value: string) {
+        Promise.resolve().then(() => {
+          this.onload?.()
+        })
+      }
+    }
+    vi.stubGlobal('Image', FakeImage)
     fetchMock
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
@@ -364,8 +408,16 @@ describe('app routes', () => {
     expect(createObjectURLMock).toHaveBeenCalledTimes(2)
     await wrapper.find('[data-testid="download-exhibit"]').trigger('click')
     expect(createObjectURLMock).toHaveBeenCalledTimes(3)
-    expect(anchorClickMock).toHaveBeenCalledTimes(3)
-    expect(revokeObjectURLMock).toHaveBeenCalledTimes(3)
+    await wrapper.find('[data-testid="download-poster-png"]').trigger('click')
+    await flushPromises()
+    expect(canvasToDataURLMock).toHaveBeenCalledTimes(1)
+    expect(createObjectURLMock).toHaveBeenCalledTimes(4)
+    await wrapper.find('[data-testid="download-artifact-bundle"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(5)
+    expect(anchorClickMock).toHaveBeenCalledTimes(5)
+    expect(revokeObjectURLMock).toHaveBeenCalledTimes(5)
+    expect(canvasFillRectMock).toHaveBeenCalled()
+    expect(canvasDrawImageMock).toHaveBeenCalledTimes(1)
     await wrapper.find('[data-testid="archive-section"] .secondary-action').trigger('click')
     expect(wrapper.find('[data-testid="calibration-drawer"]').exists()).toBe(true)
   })
