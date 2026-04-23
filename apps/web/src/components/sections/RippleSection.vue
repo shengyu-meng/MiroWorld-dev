@@ -182,6 +182,28 @@
             rows="3"
           />
         </label>
+
+        <label class="ripple-author-field">
+          <span class="annotation-label">{{ copy.authorDeckLine }}</span>
+          <input
+            v-model="authorDeckLineDraft"
+            class="calibration-field"
+            data-testid="author-deck-line-input"
+            :placeholder="copy.authorDeckLinePlaceholder"
+            type="text"
+          />
+        </label>
+
+        <label class="ripple-author-field">
+          <span class="annotation-label">{{ copy.authorClosingLine }}</span>
+          <textarea
+            v-model="authorClosingDraft"
+            class="calibration-field"
+            data-testid="author-closing-input"
+            :placeholder="copy.authorClosingPlaceholder"
+            rows="2"
+          />
+        </label>
       </div>
     </div>
 
@@ -560,8 +582,12 @@ const props = defineProps<{
     replayDossierNote: string
     authorDeck: string
     authorDeckNote: string
+    authorDeckLine: string
+    authorClosingLine: string
     authorTitlePlaceholder: string
     authorNotePlaceholder: string
+    authorDeckLinePlaceholder: string
+    authorClosingPlaceholder: string
     resetAuthorDeck: string
     replayArtifact: string
     replayArtifactNote: string
@@ -695,6 +721,8 @@ const artifactFeedback = ref('')
 const shelfFeedback = ref('')
 const authorLabelDraft = ref('')
 const authorNoteDraft = ref('')
+const authorDeckLineDraft = ref('')
+const authorClosingDraft = ref('')
 const replayShelf = computed(() => props.savedReplaySets.map(mapSavedReplaySet))
 
 const replaySets = computed<Array<{
@@ -835,6 +863,33 @@ const replayDossierSummary = computed(() => {
   })
 })
 
+const derivedReplayDeckLine = computed(() => {
+  if (!replayDossier.value) return ''
+
+  return fillTemplate(props.copy.replayArtifactDeckTemplate, {
+    entry: replayDossier.value.entry.title,
+    hinge: replayDossier.value.hinge.title,
+    terminal: replayDossier.value.terminal.title,
+  })
+})
+
+const derivedReplayClosingNote = computed(() => {
+  if (!selectedReplaySet.value || !replayDossier.value) return ''
+
+  return fillTemplate(props.copy.replayArtifactClosingTemplate, {
+    alternateCount: selectedReplaySet.value.alternateCount,
+    terminal: replayDossier.value.terminal.title,
+  })
+})
+
+const authoredReplayDeckLine = computed(() => (
+  authorDeckLineDraft.value.trim() || derivedReplayDeckLine.value
+))
+
+const authoredReplayClosingNote = computed(() => (
+  authorClosingDraft.value.trim() || derivedReplayClosingNote.value
+))
+
 const replayArtifact = computed<ReplayArtifactData | null>(() => {
   if (!selectedReplaySet.value || !replayDossier.value) return null
 
@@ -847,11 +902,7 @@ const replayArtifact = computed<ReplayArtifactData | null>(() => {
 
   return {
     title: `${authoredReplaySetLabel.value} / ${replayDossier.value.hinge.title}`,
-    deck: fillTemplate(props.copy.replayArtifactDeckTemplate, {
-      entry: replayDossier.value.entry.title,
-      hinge: replayDossier.value.hinge.title,
-      terminal: replayDossier.value.terminal.title,
-    }),
+    deck: authoredReplayDeckLine.value,
     wallText: [
       fillTemplate(props.copy.replayArtifactWallTemplate, {
         setLabel: authoredReplaySetLabel.value,
@@ -865,10 +916,7 @@ const replayArtifact = computed<ReplayArtifactData | null>(() => {
       authoredReplaySetNote.value,
     ].filter(Boolean).join(' '),
     pressureNote,
-    closingNote: fillTemplate(props.copy.replayArtifactClosingTemplate, {
-      alternateCount: selectedReplaySet.value.alternateCount,
-      terminal: replayDossier.value.terminal.title,
-    }),
+    closingNote: authoredReplayClosingNote.value,
     tags: [
       authoredReplaySetLabel.value,
       replayDossier.value.hinge.title,
@@ -891,9 +939,9 @@ const replayPacket = computed<ReplayPacket | null>(() => {
     authoredNote: [
       fillTemplate(props.copy.replayPacketIntroTemplate, {
         setLabel: authoredReplaySetLabel.value,
-      eventCount: selectedReplaySet.value.eventCount,
-      confidence: formatConfidence(selectedReplaySet.value.averageConfidence),
-      pressure: selectedReplaySet.value.averagePressure,
+        eventCount: selectedReplaySet.value.eventCount,
+        confidence: formatConfidence(selectedReplaySet.value.averageConfidence),
+        pressure: selectedReplaySet.value.averagePressure,
       }),
       authoredReplaySetNote.value,
       replayDossierSummary.value,
@@ -951,7 +999,12 @@ watch(
   selectedReplaySet,
   (set) => {
     if (!set) return
-    seedAuthorDeck(set.label, set.note)
+    seedAuthorDeck({
+      label: set.label,
+      note: set.note,
+      deckLine: derivedReplayDeckLine.value,
+      closingNote: derivedReplayClosingNote.value,
+    })
   },
   { immediate: true },
 )
@@ -1062,7 +1115,12 @@ function restoreReplayFromShelf(item: SavedReplayPacket) {
     ? item.replaySetKey
     : 'current'
   void nextTick(() => {
-    seedAuthorDeck(item.replaySetLabel, item.replaySetNote)
+    seedAuthorDeck({
+      label: item.replaySetLabel,
+      note: item.replaySetNote,
+      deckLine: item.artifact.deck,
+      closingNote: item.artifact.closingNote,
+    })
   })
 
   const event = props.events.find((candidate) => candidate.event_id === item.focus.eventId)
@@ -1598,12 +1656,24 @@ function buildSavedReplaySetDraft(packet: ReplayPacket): SavedReplaySetDraft {
 
 function resetAuthorDeck() {
   if (!selectedReplaySet.value) return
-  seedAuthorDeck(selectedReplaySet.value.label, selectedReplaySet.value.note)
+  seedAuthorDeck({
+    label: selectedReplaySet.value.label,
+    note: selectedReplaySet.value.note,
+    deckLine: derivedReplayDeckLine.value,
+    closingNote: derivedReplayClosingNote.value,
+  })
 }
 
-function seedAuthorDeck(label: string, note: string) {
-  authorLabelDraft.value = label
-  authorNoteDraft.value = note
+function seedAuthorDeck(payload: {
+  label: string
+  note: string
+  deckLine: string
+  closingNote: string
+}) {
+  authorLabelDraft.value = payload.label
+  authorNoteDraft.value = payload.note
+  authorDeckLineDraft.value = payload.deckLine
+  authorClosingDraft.value = payload.closingNote
 }
 
 function mapSavedReplaySet(savedReplaySet: SavedReplaySet): SavedReplayPacket {

@@ -181,12 +181,20 @@
                 replayDossierNote: copy.ripple.replayDossierNote,
                 authorDeck: language === 'zh' ? '重演作者台' : 'Replay Author Deck',
                 authorDeckNote: language === 'zh'
-                  ? '在保存和导出之前，为当前重演写下你自己的标题和策展注记。'
-                  : 'Write a title and curator note for the current replay before you save or export it.',
+                  ? '在保存和导出之前，为当前重演写下标题、策展注记、导语和收束尾句。'
+                  : 'Write the title, curator note, deck line, and closing note for the current replay before you save or export it.',
+                authorDeckLine: language === 'zh' ? '展签导语' : 'Deck Line',
+                authorClosingLine: language === 'zh' ? '收束尾句' : 'Closing Note',
                 authorTitlePlaceholder: language === 'zh' ? '例如：裂缝中的共振线' : 'For example: Resonance Through The Fracture',
                 authorNotePlaceholder: language === 'zh'
                   ? '写下这一版重演为什么值得被保存、展示或带走。'
                   : 'Write why this replay cut deserves to be saved, exhibited, or carried away.',
+                authorDeckLinePlaceholder: language === 'zh'
+                  ? '例如：从裂缝内部折返，朝公共表面留下余波。'
+                  : 'For example: Bends inward through the fracture and leaves an afterimage on the public surface.',
+                authorClosingPlaceholder: language === 'zh'
+                  ? '写下这一版重演最后留给观众的一句收束。'
+                  : 'Write the final line this replay should leave with the audience.',
                 resetAuthorDeck: language === 'zh' ? '恢复派生文案' : 'Reset To Derived Copy',
                 replayArtifact: language === 'zh' ? '重演展签' : 'Replay Artifact',
                 replayArtifactNote: language === 'zh'

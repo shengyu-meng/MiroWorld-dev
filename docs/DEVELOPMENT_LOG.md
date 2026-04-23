@@ -640,3 +640,34 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
 - deepen Ripple beyond title-and-note authorship into richer authored replay collections or stronger long-form narration if needed
 - continue polishing Observatory density and wording if the public shell needs tighter reading cues
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay curation field pass started)
+
+Planned in this iteration:
+
+- widen the replay author deck beyond title and note so richer curatorial fields can shape the replay artifact before save and export
+- keep persisted replay restoration faithful to the authored replay version instead of falling back to derived text only
+- preserve the existing replay shelf, atlas, dossier, and exhibit flows while making the author deck denser
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay curation field pass completed)
+
+Completed in this iteration:
+
+- widened the replay author deck beyond title and note by adding editable deck-line and closing-note fields
+- wired the wider curatorial fields through replay artifact preview, replay packet export, exhibit export, and persisted replay restoration
+- kept the persisted replay shelf and replay atlas flow stable while making the authored replay layer denser
+- extended frontend route coverage so the richer curatorial fields and restore path are exercised in tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+- `git diff --check` passed
+- secret pattern scan returned no matches for the provided MiniMax key fragment
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
+- deepen Ripple beyond the current curatorial field set into saved authored collections or stronger long-form narration if needed
+- continue polishing Observatory density and wording if the public shell needs tighter reading cues

@@ -266,10 +266,10 @@ const savedReplaySetResponse = [
     language: 'en',
     artifact: {
       title: 'Pressure Chronicle / Event Two / Backlash',
-      deck: 'Pours in from Event One / Alternate, bends at Event Two / Backlash, and leaves its afterimage toward Event Two / Backlash.',
+      deck: 'Bends inward and stains the civic surface.',
       wall_text: 'This Pressure Chronicle replay spans 2 events, holds 27% effective confidence, carries 2.7 visible pressure, and keeps 2 alternate turns in frame. Hold the hinge open.',
       pressure_note: 'This is a high-pressure reading: it stays with the branch where counter-signals and costs remain most exposed.',
-      closing_note: 'What remains at Event Two / Backlash is not a free ending, because the line still keeps 2 alternate turns under pressure in the background.',
+      closing_note: 'Leave the fracture visible on the way out.',
       tags: ['Pressure Chronicle', 'Event Two / Backlash', '2 Event Count'],
     },
     focus: {
@@ -506,10 +506,14 @@ describe('app routes', () => {
     expect(wrapper.find('[data-testid="replay-author-deck"]').exists()).toBe(true)
     await wrapper.find('[data-testid="author-title-input"]').setValue('Pressure Chronicle')
     await wrapper.find('[data-testid="author-note-input"]').setValue('Hold the hinge open.')
+    await wrapper.find('[data-testid="author-deck-line-input"]').setValue('Bends inward and stains the civic surface.')
+    await wrapper.find('[data-testid="author-closing-input"]').setValue('Leave the fracture visible on the way out.')
     expect(wrapper.find('[data-testid="ripple-replay-dossier"]').text()).toContain('Hinge Pressure')
     expect(wrapper.find('[data-testid="ripple-authored-artifact"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Replay Artifact')
     expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Pressure Chronicle')
+    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Bends inward and stains the civic surface.')
+    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Leave the fracture visible on the way out.')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Enters through')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Hold the hinge open.')
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).not.toContain(' 路 ')
@@ -544,6 +548,7 @@ describe('app routes', () => {
     await wrapper.find('[data-testid="restore-saved-replay"]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Pressure Chronicle')
+    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Bends inward and stains the civic surface.')
     await wrapper.find('[data-testid="remove-saved-replay"]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('No replay packets')
