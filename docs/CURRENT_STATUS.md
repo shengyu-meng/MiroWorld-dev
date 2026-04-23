@@ -2,17 +2,18 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 2 complete`
+Phase: `experience-first rebuild / scene-shell slice 3 complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a first scene-based public shell rebuild.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell that has moved into a stronger archive/export presentation layer.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
 - the shell now reads as a scene-based worldline interface instead of a long panel stack
-- but the linefield can still become a stronger storytelling actor
-- and the archive/share space still needs a deeper curator-facing presentation
+- the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
+- but the linefield can still become a stronger event-to-event storytelling actor
+- and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
 
@@ -61,6 +62,13 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - Observatory gained an at-a-glance comparison board for the selected event's branches
 - stage copy cleaned up and centralized so the visible shell no longer relies on scattered inline wording
 
+### Frontend experience rebuild slice 3
+
+- Archive gained a visual poster/export layer rather than relying on text-first share output alone
+- share text can now be copied from a clearer export-focused chamber layout
+- calibration history gained a first pass pattern view so recent outcomes read at a glance
+- Ripple now reads more like a propagation track than a single latest-bend note
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -72,15 +80,15 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Product / experience gaps
 
 - the linefield now acts as a branch field for the current event, but it is not yet a full event-to-event explorer
-- share output is still text-first today and does not yet produce richer visual export artifacts
-- calibration history is visible, but its visualization is still list-based rather than patterned or comparative
-- ripple history still foregrounds the latest bend more than a multi-step replay trail
+- the archive now presents a visual artifact, but it does not yet generate downloadable poster/image outputs or saved multi-format share bundles
+- calibration history is now patterned, but it is not yet comparative across branch families, time windows, or decision types
+- ripple history is now more track-like, but it still centers one replay chain more than a broader event-to-event archive
 
 ### Content expression gaps
 
 - the layer lens is now visible, but its depth is still mostly presentation-layer driven rather than fully model-driven
 - cost narration can become more comparative across branches, not just branch-local
-- ripple history currently foregrounds the latest bend more than a multi-step replay trail
+- archive artifacts can become more authored and less template-like as share formats mature
 
 ### Documentation gaps
 
@@ -89,8 +97,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice is `Experience Rebuild Slice 3`:
+The next active slice is `Experience Rebuild Slice 4`:
 
-- evolve share/export from text-first output toward a more visual artifact layer
-- decide whether calibration should become a stronger visual record instead of a list
-- deepen ripple history beyond the latest bend without regressing the current shell
+- turn the archive poster layer into a stronger exportable artifact path
+- make calibration more comparative, not only pattern-readable
+- keep extending the linefield / ripple system toward a fuller event-to-event explorer without regressing shell speed

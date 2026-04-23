@@ -129,6 +129,10 @@
               :latest-bend="latestBend"
               :ripple-cards="stage.ripple.ripple_cards"
               :empty-copy="copy.noData"
+              :copy="{
+                rippleTrack: copy.archive.rippleTrack,
+                latestBendLabel: copy.archive.latestBendLabel,
+              }"
             />
 
             <ArchiveSection

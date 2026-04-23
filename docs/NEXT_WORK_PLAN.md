@@ -2,7 +2,7 @@
 
 Updated: 2026-04-23
 Status: Active
-Current slice: `Experience Rebuild Slice 3`
+Current slice: `Experience Rebuild Slice 4`
 
 ## Goal
 
@@ -23,9 +23,9 @@ This slice intentionally stays inside the existing MVP boundary:
 
 This slice does include:
 
-- richer share/export presentation
-- stronger calibration visualization
-- deeper ripple-history expression
+- stronger exportable artifact output
+- more comparative calibration reading
+- deeper event-to-event ripple and branch exploration
 - further documentation sync after each iteration
 
 ## Slice 1 Completed
@@ -52,6 +52,21 @@ This slice does include:
 - ripple history exposes more than only the latest bend
 - the current shell remains fast and the public contracts stay unchanged
 
+## Slice 3 Completed
+
+- [x] share/export presentation is richer and no longer purely text-first
+- [x] Archive contains a visual poster/export layer without changing public contracts
+- [x] calibration history is easier to read than a plain chronological list
+- [x] ripple history now exposes a track instead of only the latest bend
+- [x] build, tests, smoke, and docs stayed aligned after the iteration
+
+## Slice 4 Acceptance Criteria
+
+- the archive artifact becomes export-ready beyond in-app presentation alone
+- calibration can be read comparatively across recent records, not only as isolated dots
+- the linefield / ripple system reveals more event-to-event continuity without becoming heavy
+- the public shell keeps startup and interaction responsiveness inside the current MVP baseline
+
 ## Checklist
 
 ### Completed before this slice
@@ -65,17 +80,17 @@ This slice does include:
 
 ### In progress now
 
-- [ ] improve share artifact presentation beyond text-first copy
-- [ ] explore poster/export image generation
-- [ ] revisit calibration visualization now that archive structure is stronger
-- [ ] deepen ripple history beyond the latest bend
+- [ ] turn the archive poster layer into a stronger export-ready artifact flow
+- [ ] compare calibration records by pattern and tendency, not only chronology
+- [ ] deepen ripple continuity beyond the current replay track
+- [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 
 ### Deferred after this slice
 
-- [ ] decide whether the branch-field overlay should remain in-shell or become a dedicated future scene
 - [ ] continue polishing Observatory density and wording
-- [ ] revisit calibration visualization if the visual artifact pass changes archive layout again
+- [ ] revisit whether the branch-field overlay should remain in-shell or become a dedicated future scene
+- [ ] consider model-driven layer narration once the public shell expression stabilizes
 
 ## Verification Plan
 
