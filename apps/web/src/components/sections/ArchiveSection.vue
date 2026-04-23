@@ -219,6 +219,46 @@
               </div>
             </article>
           </div>
+
+          <span class="annotation-label">{{ copy.decisionSlices }}</span>
+          <div class="calibration-window-slice-grid" data-testid="calibration-decision-slices">
+            <article v-for="slice in calibrationDecisionCards" :key="slice.label" class="calibration-window-slice-card">
+              <span class="annotation-label">{{ slice.label }}</span>
+              <strong>{{ slice.value }}</strong>
+              <p>{{ slice.note }}</p>
+              <div class="calibration-comparison-bar">
+                <span
+                  v-for="segment in slice.segments"
+                  :key="`${slice.label}-${segment.key}`"
+                  class="calibration-comparison-segment"
+                  :class="`result-${segment.key}`"
+                  :style="{ flexGrow: segment.count || 1 }"
+                >
+                  <small>{{ segment.count }}</small>
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <span class="annotation-label">{{ copy.longitudinalSlices }}</span>
+          <div class="calibration-window-slice-grid" data-testid="calibration-longitudinal-slices">
+            <article v-for="slice in calibrationLongitudinalCards" :key="slice.label" class="calibration-window-slice-card">
+              <span class="annotation-label">{{ slice.label }}</span>
+              <strong>{{ slice.value }}</strong>
+              <p>{{ slice.note }}</p>
+              <div class="calibration-comparison-bar">
+                <span
+                  v-for="segment in slice.segments"
+                  :key="`${slice.label}-${segment.key}`"
+                  class="calibration-comparison-segment"
+                  :class="`result-${segment.key}`"
+                  :style="{ flexGrow: segment.count || 1 }"
+                >
+                  <small>{{ segment.count }}</small>
+                </span>
+              </div>
+            </article>
+          </div>
           <p>{{ calibrationSummary.summary }}</p>
         </article>
 
@@ -259,6 +299,8 @@
 import { computed, ref } from 'vue'
 
 import type { CalibrationRecord, ShareArtifact } from '@/lib/types'
+
+type DecisionTypeKey = 'observation' | 'correction' | 'intervention' | 'preference' | 'unknown'
 
 const props = defineProps<{
   shareSnapshot: ShareArtifact
@@ -309,12 +351,22 @@ const props = defineProps<{
     calibrationAtlas: string
     windowSlices: string
     branchSlices: string
+    decisionSlices: string
+    longitudinalSlices: string
     dominantOutcome: string
     recentTendency: string
     mostTestedBranch: string
     recentWindow: string
     priorWindow: string
     fullArchive: string
+    originWindow: string
+    hingeWindow: string
+    latestWindow: string
+    observationType: string
+    correctionType: string
+    interventionType: string
+    preferenceType: string
+    unknownDecisionType: string
     tendencyStrengthening: string
     tendencySlipping: string
     tendencyHolding: string
@@ -338,6 +390,10 @@ defineEmits<{
 const copyFeedback = ref('')
 const archiveFeedback = ref('')
 
+const sortedDecisionLog = computed(() => [...props.decisionLog].sort((left, right) => (
+  new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
+)))
+
 const sortedCalibrationRecords = computed(() => [...props.calibrationRecords].sort((left, right) => (
   new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
 )))
@@ -345,6 +401,7 @@ const sortedCalibrationRecords = computed(() => [...props.calibrationRecords].so
 const recentCalibrationRecords = computed(() => sortedCalibrationRecords.value.slice(0, 4))
 const priorCalibrationRecords = computed(() => sortedCalibrationRecords.value.slice(4, 8))
 const branchLabels = computed(() => new Map(props.decisionLog.map((entry) => [entry.branch_id, entry.branch_label])))
+const chronologicalCalibrationRecords = computed(() => [...sortedCalibrationRecords.value].reverse())
 
 const calibrationSegments = computed(() => {
   return buildResultSegments(sortedCalibrationRecords.value)
@@ -429,6 +486,52 @@ const calibrationBranchCards = computed(() => {
     .slice(0, 3)
 })
 
+const calibrationDecisionCards = computed(() => {
+  const grouped = new Map<DecisionTypeKey, CalibrationRecord[]>()
+
+  for (const record of sortedCalibrationRecords.value) {
+    const key = resolveDecisionType(record)
+    const current = grouped.get(key) ?? []
+    current.push(record)
+    grouped.set(key, current)
+  }
+
+  return [...grouped.entries()]
+    .map(([key, records]) => {
+      const dominant = dominantSegmentFor(records)
+      return {
+        label: mapDecisionTypeLabel(key),
+        value: records.length ? dominant.label : props.copy.thinArchive,
+        note: records.length
+          ? `${props.copy.dominantOutcome}: ${dominant.label} / ${records.length}`
+          : props.calibrationSummary.summary,
+        segments: buildResultSegments(records),
+      }
+    })
+    .sort((left, right) => totalSegmentCount(right.segments) - totalSegmentCount(left.segments))
+})
+
+const calibrationLongitudinalCards = computed(() => {
+  const slices = splitIntoWindows(chronologicalCalibrationRecords.value, 3)
+  const labels = [props.copy.originWindow, props.copy.hingeWindow, props.copy.latestWindow]
+
+  return slices.map((records, index) => {
+    const dominant = dominantSegmentFor(records)
+    const score = scoreWindow(records)
+    const previousScore = index > 0 ? scoreWindow(slices[index - 1]) : score
+    const delta = score - previousScore
+
+    return {
+      label: labels[index] ?? `${props.copy.fullArchive} ${index + 1}`,
+      value: records.length ? dominant.label : props.copy.thinArchive,
+      note: records.length
+        ? `${props.copy.recentTendency}: ${describeTendency(delta, records.length)} / ${records.length}`
+        : props.calibrationSummary.summary,
+      segments: buildResultSegments(records),
+    }
+  })
+})
+
 function buildResultSegments(records: CalibrationRecord[]) {
   const counts = {
     hit: 0,
@@ -447,6 +550,71 @@ function buildResultSegments(records: CalibrationRecord[]) {
     { key: 'miss', count: counts.miss, label: props.copy.miss },
     { key: 'insufficient_data', count: counts.insufficient_data, label: props.copy.insufficient_data },
   ] as const
+}
+
+function resolveDecisionType(record: CalibrationRecord): DecisionTypeKey {
+  const recordTime = new Date(record.created_at).getTime()
+
+  const exactMatch = sortedDecisionLog.value.find((entry) => (
+    entry.event_id === record.event_id
+    && entry.branch_id === record.branch_id
+    && new Date(entry.created_at).getTime() <= recordTime
+  ))
+  if (exactMatch) return normalizeDecisionType(exactMatch.input_type)
+
+  const branchMatch = sortedDecisionLog.value.find((entry) => (
+    entry.branch_id === record.branch_id
+    && new Date(entry.created_at).getTime() <= recordTime
+  ))
+  if (branchMatch) return normalizeDecisionType(branchMatch.input_type)
+
+  const eventMatch = sortedDecisionLog.value.find((entry) => (
+    entry.event_id === record.event_id
+    && new Date(entry.created_at).getTime() <= recordTime
+  ))
+  if (eventMatch) return normalizeDecisionType(eventMatch.input_type)
+
+  return 'unknown'
+}
+
+function normalizeDecisionType(value: string): DecisionTypeKey {
+  if (value === 'observation' || value === 'correction' || value === 'intervention' || value === 'preference') {
+    return value
+  }
+  return 'unknown'
+}
+
+function mapDecisionTypeLabel(value: DecisionTypeKey) {
+  const labels: Record<DecisionTypeKey, string> = {
+    observation: props.copy.observationType,
+    correction: props.copy.correctionType,
+    intervention: props.copy.interventionType,
+    preference: props.copy.preferenceType,
+    unknown: props.copy.unknownDecisionType,
+  }
+
+  return labels[value]
+}
+
+function splitIntoWindows<T>(items: T[], bucketCount: number) {
+  if (!items.length) return Array.from({ length: bucketCount }, () => [] as T[])
+
+  const size = Math.max(1, Math.ceil(items.length / bucketCount))
+  const buckets: T[][] = []
+
+  for (let index = 0; index < bucketCount; index += 1) {
+    buckets.push(items.slice(index * size, index * size + size))
+  }
+
+  while (buckets.length < bucketCount) {
+    buckets.push([])
+  }
+
+  return buckets.slice(0, bucketCount)
+}
+
+function totalSegmentCount(segments: ReadonlyArray<{ count: number }>) {
+  return segments.reduce((sum, segment) => sum + segment.count, 0)
 }
 
 function dominantSegmentFor(records: CalibrationRecord[]) {

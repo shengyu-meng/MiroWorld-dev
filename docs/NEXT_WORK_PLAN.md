@@ -90,6 +90,7 @@ This slice does include:
 - [x] compare calibration records by pattern and tendency, not only chronology
 - [x] deepen calibration comparison across wider archive slices if the current atlas proves too shallow
 - [x] add wider calibration window slices and branch-family slices so comparison does not stop at recent-vs-full
+- [x] deepen calibration into decision-type and longer-horizon longitudinal slices so the archive can compare how different intervention modes age
 - [ ] deepen calibration beyond the current slice deck into decision-type or longer-horizon views if needed
 - [x] turn Ripple into a continuity explorer instead of a single replay strip
 - [x] deepen ripple continuity beyond the current replay track

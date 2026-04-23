@@ -219,7 +219,19 @@
               :calibration-draft="calibrationDraft"
               :calibration-result="calibrationResult"
               :project-id="stage.project_context.project_id"
-              :copy="copy.archive"
+              :copy="{
+                ...copy.archive,
+                decisionSlices: language === 'zh' ? '决策切片' : 'Decision Slices',
+                longitudinalSlices: language === 'zh' ? '纵深切片' : 'Longitudinal Slices',
+                originWindow: language === 'zh' ? '起始窗口' : 'Origin Window',
+                hingeWindow: language === 'zh' ? '中段窗口' : 'Hinge Window',
+                latestWindow: language === 'zh' ? '最新窗口' : 'Latest Window',
+                observationType: copy.inputs.observation.label,
+                correctionType: copy.inputs.correction.label,
+                interventionType: copy.inputs.intervention.label,
+                preferenceType: copy.inputs.preference.label,
+                unknownDecisionType: language === 'zh' ? '未映射输入' : 'Unmapped Input',
+              }"
               @share="generateShare"
               @toggle-calibration="calibrationOpen = !calibrationOpen"
               @update:calibrationDraft="calibrationDraft = $event"

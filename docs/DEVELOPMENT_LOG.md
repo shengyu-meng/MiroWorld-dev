@@ -459,3 +459,33 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
 - deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (calibration longitudinal pass started)
+
+Planned in this iteration:
+
+- deepen calibration beyond branch and window slices into decision-type and longer-horizon longitudinal readings
+- keep the implementation contract-safe by deriving the extra views from existing calibration records plus the decision log
+- preserve the archive as a readable art shell instead of turning it into an analytics dashboard
+
+## 2026-04-23 - Experience Rebuild Slice 4 (calibration longitudinal pass completed)
+
+Completed in this iteration:
+
+- deepened calibration beyond branch and window slices into decision-type and longer-horizon longitudinal readings
+- added derived decision-type cards so the archive can compare how different intervention modes age against later outcomes
+- added chronological longitudinal windows so the archive can compare earlier, middle, and latest calibration phases
+- kept the implementation contract-safe by deriving every extra view from the existing calibration records plus decision log
+- extended frontend coverage so the decision-type and longitudinal calibration views are exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
+- deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
