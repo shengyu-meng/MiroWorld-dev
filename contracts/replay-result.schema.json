@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/replay-result.schema.json",
+  "title": "ReplayResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "replay_id",
+    "checkpoint_id",
+    "before_branch_id",
+    "after_branch_id",
+    "changed_events",
+    "changed_branches",
+    "cost_changes",
+    "summary"
+  ],
+  "properties": {
+    "replay_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "before_branch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "after_branch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_style": {
+      "type": "string",
+      "enum": [
+        "observation",
+        "correction",
+        "intervention",
+        "preference"
+      ]
+    },
+    "impact_mode": {
+      "type": "string",
+      "enum": [
+        "visibility_shift",
+        "premise_rewrite",
+        "worldline_write",
+        "value_reweight"
+      ]
+    },
+    "changed_events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "changed_branches": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cost_changes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "fixture_id": "campus-public-opinion",
+      "file": "campus-public-opinion.json",
+      "purpose": "Public-event and organization-response baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "primary_branch>=1",
+        "alternate_branches>=2",
+        "cost_lens>=1"
+      ]
+    },
+    {
+      "fixture_id": "brand-crisis-response",
+      "file": "brand-crisis-response.json",
+      "purpose": "Brand apology, platform reaction, and replay baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "replay_result",
+        "cost_lens>=1",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "literary-branching-world",
+      "file": "literary-branching-world.json",
+      "purpose": "Authorial and non-news branching-world baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "alternate_branches>=2",
+        "intervention_path",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "public-policy-debate",
+      "file": "public-policy-debate.json",
+      "purpose": "Policy announcement, public reaction, and implementation-trust baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "alternate_branches>=2",
+        "cost_lens>=1",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "art-exhibition-backlash",
+      "file": "art-exhibition-backlash.json",
+      "purpose": "Art institution controversy and curatorial-response baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "primary_branch>=1",
+        "alternate_branches>=2",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "family-care-decision",
+      "file": "family-care-decision.json",
+      "purpose": "Intimate relationship and family-system branching baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "alternate_branches>=2",
+        "cost_lens>=1",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "creator-fandom-split",
+      "file": "creator-fandom-split.json",
+      "purpose": "Creator apology, fandom fracture, and platform-memory baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "alternate_branches>=2",
+        "cost_lens>=1",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "startup-whistleblower-thread",
+      "file": "startup-whistleblower-thread.json",
+      "purpose": "Startup culture leak, founder response, and trust-collapse baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "primary_branch>=1",
+        "alternate_branches>=2",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "gig-worker-strike-wave",
+      "file": "gig-worker-strike-wave.json",
+      "purpose": "Platform labor protest, public sympathy, and service-disruption baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "alternate_branches>=2",
+        "cost_lens>=1",
+        "share_artifact"
+      ]
+    },
+    {
+      "fixture_id": "museum-repatriation-dispute",
+      "file": "museum-repatriation-dispute.json",
+      "purpose": "Museum collection ethics, repatriation pressure, and institutional-identity baseline",
+      "must_produce": [
+        "world_headline",
+        "key_events>=3",
+        "primary_branch>=1",
+        "alternate_branches>=2",
+        "share_artifact"
+      ]
+    }
+  ]
+}

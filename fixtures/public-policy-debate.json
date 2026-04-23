@@ -1,0 +1,23 @@
+{
+  "fixture_id": "public-policy-debate",
+  "title": "Public policy trust fracture",
+  "source_type": "policy-debate",
+  "summary": "A city announces a new public safety policy. Officials, neighborhood groups, delivery workers, and media framing push the policy into diverging futures of trust, compliance, and backlash.",
+  "seed_materials": [
+    "policy release draft",
+    "press conference highlights",
+    "community meeting excerpts",
+    "street-level enforcement notes"
+  ],
+  "expected_world_feel": [
+    "high-stakes civic debate",
+    "tradeoff between order and legitimacy",
+    "visible gap between official narrative and lived experience"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "alternate_branches_per_event": 2,
+    "requires_cost_lens": true,
+    "requires_share_artifact": true
+  }
+}

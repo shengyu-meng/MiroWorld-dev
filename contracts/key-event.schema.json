@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/key-event.schema.json",
+  "title": "KeyEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "world_state_id",
+    "title",
+    "summary",
+    "stage",
+    "impact_level",
+    "fold_state",
+    "branches",
+    "evidence_ids"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1 },
+    "world_state_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "depends_on_event_id": { "type": "string" },
+    "causal_note": { "type": "string" },
+    "causal_strength": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "collapse_hint": { "type": "string" },
+    "stage": { "type": "string", "minLength": 1 },
+    "impact_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "fold_state": {
+      "type": "string",
+      "enum": ["collapsed", "expanded"]
+    },
+    "branches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "./branch.schema.json"
+      }
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "affected_entities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

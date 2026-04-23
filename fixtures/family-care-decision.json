@@ -1,0 +1,23 @@
+{
+  "fixture_id": "family-care-decision",
+  "title": "Family care burden split",
+  "source_type": "family-system",
+  "summary": "A family faces a care decision after an elder's health crisis. Sibling dynamics, money, housing distance, and emotional history produce diverging futures of solidarity, resentment, and quiet sacrifice.",
+  "seed_materials": [
+    "medical update summary",
+    "family chat fragments",
+    "financial constraint notes",
+    "care schedule proposals"
+  ],
+  "expected_world_feel": [
+    "intimate but high-pressure",
+    "care as moral and logistical conflict",
+    "small decisions causing long emotional shadows"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "alternate_branches_per_event": 2,
+    "requires_cost_lens": true,
+    "requires_share_artifact": true
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/world-state.schema.json",
+  "title": "WorldState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "world_state_id",
+    "project_id",
+    "session_id",
+    "version",
+    "status",
+    "headline",
+    "summary",
+    "source_mode",
+    "source_label",
+    "disclaimer",
+    "share_context",
+    "share_artifact",
+    "entities",
+    "key_events",
+    "cost_lenses",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "world_state_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "replayed", "reviewed"]
+    },
+    "headline": { "type": "string" },
+    "summary": { "type": "string" },
+    "source_mode": {
+      "type": "string",
+      "enum": ["fixture", "project_graph", "simulation_timeline", "v2_branch_kernel"]
+    },
+    "source_label": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "share_context": { "type": "string" },
+    "share_artifact": { "$ref": "./share-artifact.schema.json" },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entity_id", "entity_kind", "name", "description"],
+        "properties": {
+          "entity_id": { "type": "string" },
+          "entity_kind": {
+            "type": "string",
+            "enum": ["agent", "system", "constraint", "environment"]
+          },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "key_events": {
+      "type": "array",
+      "items": { "$ref": "./key-event.schema.json" }
+    },
+    "cost_lenses": {
+      "type": "array",
+      "items": { "$ref": "./cost-lens.schema.json" }
+    },
+    "knowledge_items": {
+      "type": "array",
+      "items": { "$ref": "./knowledge-item.schema.json" }
+    },
+    "confidence_updates": {
+      "type": "array",
+      "items": { "$ref": "./confidence-update.schema.json" }
+    },
+    "player_inputs": {
+      "type": "array",
+      "items": { "$ref": "./user-input-record.schema.json" }
+    },
+    "player_decision_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entry_id",
+          "created_at",
+          "input_type",
+          "event_id",
+          "event_title",
+          "branch_id",
+          "branch_label",
+          "content",
+          "replay_summary",
+          "cost_changes"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "created_at": { "type": "string" },
+          "input_type": {
+            "type": "string",
+            "enum": ["observation", "correction", "intervention", "preference"]
+          },
+          "event_id": { "type": "string" },
+          "event_title": { "type": "string" },
+          "branch_id": { "type": "string" },
+          "branch_label": { "type": "string" },
+          "content": { "type": "string" },
+          "replay_summary": { "type": "string" },
+          "cost_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "replay_trace": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trace_id",
+          "event_id",
+          "event_title",
+          "branch_id",
+          "branch_label",
+          "summary"
+        ],
+        "properties": {
+          "trace_id": { "type": "string" },
+          "event_id": { "type": "string" },
+          "event_title": { "type": "string" },
+          "branch_id": { "type": "string" },
+          "branch_label": { "type": "string" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "calibration_records": {
+      "type": "array",
+      "items": { "$ref": "./calibration-record.schema.json" }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

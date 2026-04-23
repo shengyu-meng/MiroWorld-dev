@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/stage-response.schema.json",
+  "title": "StageResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project_context", "surface_defaults", "observatory", "intervention", "cost_lens", "ripple", "archive", "version"],
+  "properties": {
+    "project_context": {
+      "type": "object",
+      "required": ["project_id", "headline", "summary", "status", "source_label", "display_language"],
+      "additionalProperties": false,
+      "properties": {
+        "project_id": { "type": "string" },
+        "headline": { "type": "string" },
+        "summary": { "type": "string" },
+        "status": { "type": "string" },
+        "source_label": { "type": "string" },
+        "display_language": { "type": "string", "enum": ["zh", "en"] }
+      }
+    },
+    "surface_defaults": { "type": "object" },
+    "observatory": { "type": "object" },
+    "intervention": { "type": "object" },
+    "cost_lens": { "type": "object" },
+    "ripple": { "type": "object" },
+    "archive": { "type": "object" },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

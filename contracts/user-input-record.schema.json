@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/user-input-record.schema.json",
+  "title": "UserInputRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input_id", "input_type", "content", "target_event_id", "target_branch_id", "effect_scope", "created_at"],
+  "properties": {
+    "input_id": { "type": "string" },
+    "input_type": {
+      "type": "string",
+      "enum": ["observation", "correction", "intervention", "preference"]
+    },
+    "content": { "type": "string" },
+    "target_event_id": { "type": "string" },
+    "target_branch_id": { "type": "string" },
+    "effect_scope": {
+      "type": "string",
+      "enum": ["evidence", "world_state", "ranking"]
+    },
+    "created_at": { "type": "string" }
+  }
+}

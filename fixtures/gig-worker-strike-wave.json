@@ -1,0 +1,23 @@
+{
+  "fixture_id": "gig-worker-strike-wave",
+  "title": "Gig worker strike wave",
+  "source_type": "labor-platform",
+  "summary": "A coordinated strike by delivery and ride-hailing workers collides with platform messaging, customer inconvenience, and media narratives about flexibility, precarity, and public sympathy.",
+  "seed_materials": [
+    "worker statement thread",
+    "platform service notice",
+    "customer complaint snapshots",
+    "local press interviews"
+  ],
+  "expected_world_feel": [
+    "service disruption becoming moral argument",
+    "labor visibility versus algorithmic invisibility",
+    "short-term inconvenience exposing structural dependence"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "alternate_branches_per_event": 2,
+    "requires_cost_lens": true,
+    "requires_share_artifact": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/confidence-update.schema.json",
+  "title": "ConfidenceUpdate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["update_id", "target_type", "target_id", "before", "after", "reason", "method", "created_at"],
+  "properties": {
+    "update_id": { "type": "string" },
+    "target_type": {
+      "type": "string",
+      "enum": ["event", "branch"]
+    },
+    "target_id": { "type": "string" },
+    "before": { "type": "number", "minimum": 0, "maximum": 1 },
+    "after": { "type": "number", "minimum": 0, "maximum": 1 },
+    "reason": { "type": "string" },
+    "method": { "type": "string" },
+    "created_at": { "type": "string" }
+  }
+}

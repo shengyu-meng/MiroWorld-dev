@@ -1,0 +1,24 @@
+{
+  "fixture_id": "art-exhibition-backlash",
+  "title": "Exhibition backlash machine",
+  "source_type": "art-controversy",
+  "summary": "A contemporary art institution opens a politically charged exhibition. Curatorial language, artist response, sponsor pressure, and audience interpretation fracture the world into multiple cultural outcomes.",
+  "seed_materials": [
+    "curatorial statement",
+    "opening-night reactions",
+    "sponsor communication",
+    "artist interview fragments"
+  ],
+  "expected_world_feel": [
+    "cultural prestige under pressure",
+    "meaning contested in public view",
+    "institutional caution versus artistic autonomy"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "primary_branches_per_event": 1,
+    "alternate_branches_per_event": 2,
+    "requires_share_artifact": true,
+    "requires_intervention_flow": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/calibration-record.schema.json",
+  "title": "CalibrationRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["calibration_id", "event_id", "branch_id", "result", "actual_outcome", "note", "created_at"],
+  "properties": {
+    "calibration_id": { "type": "string" },
+    "event_id": { "type": "string" },
+    "branch_id": { "type": "string" },
+    "result": {
+      "type": "string",
+      "enum": ["hit", "partial", "miss", "insufficient_data"]
+    },
+    "actual_outcome": { "type": "string" },
+    "note": { "type": "string" },
+    "created_at": { "type": "string" }
+  }
+}

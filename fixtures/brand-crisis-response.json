@@ -1,0 +1,23 @@
+{
+  "fixture_id": "brand-crisis-response",
+  "title": "Brand apology chain reaction",
+  "source_type": "brand-crisis",
+  "summary": "A consumer brand faces backlash after a product safety rumor. Public response, platform amplification, and leadership choices create diverging trust outcomes.",
+  "seed_materials": [
+    "rumor summary",
+    "brand response draft",
+    "comment clusters",
+    "platform traffic trend snapshot"
+  ],
+  "expected_world_feel": [
+    "branching response paths",
+    "tradeoff between speed and credibility",
+    "consequence visibility for different stakeholder groups"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "requires_replay_result": true,
+    "requires_cost_lens": true,
+    "requires_share_artifact": true
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "fixture_id": "literary-branching-world",
+  "title": "Lost ending branching world",
+  "source_type": "literary-world",
+  "summary": "A literary narrative world is seeded from source chapters and then explored as a branching system of motives, constraints, and possible endings.",
+  "seed_materials": [
+    "source chapters",
+    "character relations",
+    "major unresolved tensions",
+    "authorial notes or thematic constraints"
+  ],
+  "expected_world_feel": [
+    "less news-like and more atmospheric",
+    "character desire versus structural constraint",
+    "shareable authorial surprise"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "alternate_branches_per_event": 2,
+    "requires_intervention_flow": true,
+    "requires_share_artifact": true
+  }
+}

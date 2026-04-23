@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/cost-lens.schema.json",
+  "title": "CostLens",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cost_lens_id",
+    "target_branch_id",
+    "first_order_costs",
+    "second_order_costs",
+    "affected_groups",
+    "ethical_notes"
+  ],
+  "properties": {
+    "cost_lens_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_branch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "first_order_costs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "second_order_costs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "affected_groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ethical_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

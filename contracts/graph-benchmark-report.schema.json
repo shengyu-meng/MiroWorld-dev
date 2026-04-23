@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/graph-benchmark-report.schema.json",
+  "title": "GraphBenchmarkReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "benchmark_id",
+    "benchmark_started_at",
+    "benchmark_finished_at",
+    "project",
+    "backends"
+  ],
+  "properties": {
+    "benchmark_id": { "type": "string", "minLength": 1 },
+    "benchmark_started_at": { "type": "string", "format": "date-time" },
+    "benchmark_finished_at": { "type": "string", "format": "date-time" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "name",
+        "project_mode",
+        "source_mode",
+        "graph_backend",
+        "simulation_requirement",
+        "text_length",
+        "chunk_size",
+        "chunk_overlap",
+        "event_seed_backfilled",
+        "source_records_backfilled"
+      ],
+      "properties": {
+        "project_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "project_mode": { "type": "string" },
+        "source_mode": { "type": "string" },
+        "graph_backend": { "type": "string" },
+        "simulation_requirement": { "type": "string", "minLength": 1 },
+        "text_length": { "type": "integer", "minimum": 0 },
+        "chunk_size": { "type": "integer", "minimum": 1 },
+        "chunk_overlap": { "type": "integer", "minimum": 0 },
+        "event_seed_backfilled": { "type": "boolean" },
+        "source_records_backfilled": { "type": "boolean" }
+      }
+    },
+    "backends": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "backend",
+          "status"
+        ],
+        "properties": {
+          "backend": { "type": "string", "minLength": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "failed", "skipped"]
+          },
+          "duration_seconds": { "type": "number", "minimum": 0 },
+          "graph_id": { "type": "string" },
+          "chunk_count": { "type": "integer", "minimum": 0 },
+          "node_count": { "type": "integer", "minimum": 0 },
+          "edge_count": { "type": "integer", "minimum": 0 },
+          "relation_breakdown": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "quality_gate_passed": { "type": "boolean" },
+          "event_seed_backfilled": { "type": "boolean" },
+          "source_records_backfilled": { "type": "boolean" },
+          "world_build_error": { "type": ["string", "null"] },
+          "artifacts_path": { "type": ["string", "null"] },
+          "error": { "type": "string" }
+        }
+      }
+    },
+    "comparison": {
+      "type": ["object", "null"]
+    },
+    "verdict": {
+      "type": ["object", "null"]
+    }
+  }
+}

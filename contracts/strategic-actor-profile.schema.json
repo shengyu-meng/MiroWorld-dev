@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/strategic-actor-profile.schema.json",
+  "title": "StrategicActorProfile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actor_id",
+    "name",
+    "actor_kind",
+    "role_summary",
+    "strategic_posture",
+    "goals",
+    "constraints",
+    "resources",
+    "authorities",
+    "dependencies",
+    "observation_scope",
+    "action_capabilities",
+    "coordination_targets",
+    "risk_tolerance",
+    "time_horizon",
+    "geographic_scope",
+    "source_entity_id",
+    "source_entity_kind",
+    "available_actions"
+  ],
+  "properties": {
+    "actor_id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "actor_kind": {
+      "type": "string",
+      "enum": [
+        "state",
+        "regulator",
+        "company",
+        "system_operator",
+        "risk_org",
+        "researcher",
+        "expert",
+        "civil_society",
+        "infrastructure_operator",
+        "market_actor",
+        "community",
+        "media",
+        "military",
+        "general_actor"
+      ]
+    },
+    "role_summary": { "type": "string" },
+    "strategic_posture": { "type": "string" },
+    "goals": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "resources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "authorities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "observation_scope": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "action_capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "coordination_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risk_tolerance": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "time_horizon": { "type": "string", "minLength": 1 },
+    "geographic_scope": { "type": "string" },
+    "source_entity_id": { "type": "string" },
+    "source_entity_kind": { "type": "string", "minLength": 1 },
+    "available_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "./actor-action.schema.json"
+      }
+    }
+  }
+}

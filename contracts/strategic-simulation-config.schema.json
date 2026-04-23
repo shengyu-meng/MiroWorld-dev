@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/strategic-simulation-config.schema.json",
+  "title": "StrategicSimulationConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "simulation_requirement",
+    "profile_mode",
+    "decision_cycles",
+    "cycle_hours",
+    "evaluation_axes",
+    "actor_configs",
+    "non_actor_update_policy",
+    "branch_policy",
+    "trigger_markers",
+    "reasoning",
+    "generated_at"
+  ],
+  "properties": {
+    "project_id": { "type": "string", "minLength": 1 },
+    "simulation_requirement": { "type": "string", "minLength": 1 },
+    "profile_mode": {
+      "type": "string",
+      "enum": ["world_interaction"]
+    },
+    "decision_cycles": { "type": "integer", "minimum": 1 },
+    "cycle_hours": { "type": "integer", "minimum": 1 },
+    "evaluation_axes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "actor_configs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "actor_id",
+          "actor_kind",
+          "priority_actions",
+          "max_actions_per_turn",
+          "escalation_bias",
+          "coordination_bias",
+          "observation_scope"
+        ],
+        "properties": {
+          "actor_id": { "type": "string", "minLength": 1 },
+          "actor_kind": { "type": "string", "minLength": 1 },
+          "priority_actions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "max_actions_per_turn": { "type": "integer", "minimum": 1 },
+          "escalation_bias": { "type": "number", "minimum": 0, "maximum": 1 },
+          "coordination_bias": { "type": "number", "minimum": 0, "maximum": 1 },
+          "observation_scope": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "non_actor_update_policy": {
+      "type": "object"
+    },
+    "branch_policy": {
+      "type": "object"
+    },
+    "trigger_markers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reasoning": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" }
+  }
+}

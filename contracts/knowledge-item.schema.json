@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/knowledge-item.schema.json",
+  "title": "KnowledgeItem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "layer", "content", "source_type", "confidence"],
+  "properties": {
+    "id": { "type": "string" },
+    "layer": {
+      "type": "string",
+      "enum": ["FACT", "INFERENCE", "VALUE", "ACTION"]
+    },
+    "content": { "type": "string" },
+    "source_type": { "type": "string" },
+    "source_ref": { "type": ["string", "null"] },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

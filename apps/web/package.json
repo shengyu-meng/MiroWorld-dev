@@ -1,0 +1,31 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4173",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "^3.5.32",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.12.2",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^27.0.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.10",
+    "vitest": "^4.0.8",
+    "vue-tsc": "^3.2.7"
+  }
+}

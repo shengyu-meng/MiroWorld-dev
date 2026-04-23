@@ -1,0 +1,24 @@
+{
+  "fixture_id": "campus-public-opinion",
+  "title": "Campus public opinion spiral",
+  "source_type": "public-event",
+  "summary": "A university releases a first statement after a controversy. Media, students, alumni, and platform dynamics push the story into multiple possible futures.",
+  "seed_materials": [
+    "timeline of the incident",
+    "first official statement",
+    "student discussion excerpts",
+    "platform moderation notes"
+  ],
+  "expected_world_feel": [
+    "fast escalation",
+    "visible reputation consequences",
+    "clear platform and institution constraints"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "primary_branches_per_event": 1,
+    "alternate_branches_per_event": 2,
+    "requires_cost_lens": true,
+    "requires_intervention_flow": true
+  }
+}

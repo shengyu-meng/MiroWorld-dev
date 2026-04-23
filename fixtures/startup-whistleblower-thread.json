@@ -1,0 +1,24 @@
+{
+  "fixture_id": "startup-whistleblower-thread",
+  "title": "Startup whistleblower thread",
+  "source_type": "startup-leak",
+  "summary": "An employee publishes a viral thread about a startup's internal culture and product risks. Founder response, investor silence, and hiring-market reaction create multiple futures of denial, accountability, and collapse.",
+  "seed_materials": [
+    "viral thread screenshots",
+    "internal memo summary",
+    "founder statement draft",
+    "candidate and investor reaction notes"
+  ],
+  "expected_world_feel": [
+    "fast trust collapse under public scrutiny",
+    "founder charisma versus operational reality",
+    "private culture becoming public evidence"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "primary_branches_per_event": 1,
+    "alternate_branches_per_event": 2,
+    "requires_share_artifact": true,
+    "requires_intervention_flow": true
+  }
+}

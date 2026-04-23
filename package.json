@@ -1,0 +1,27 @@
+{
+  "name": "miroworld-dev",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MiroWorld-dev experience-first rebuild monorepo",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:api dev:web",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:api": "python -m uvicorn --app-dir apps/api/src main:app --reload --host 127.0.0.1 --port 8000",
+    "build": "npm run build:web",
+    "build:web": "npm --workspace apps/web run build",
+    "test": "npm-run-all test:api test:web",
+    "test:api": "python -m pytest apps/api/tests",
+    "test:web": "npm --workspace apps/web run test",
+    "lint": "npm --workspace apps/web run lint",
+    "smoke": "npm --workspace apps/web run test:e2e"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}

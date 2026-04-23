@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miroworld.local/contracts/branch.schema.json",
+  "title": "Branch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "branch_id",
+    "event_id",
+    "label",
+    "description",
+    "confidence",
+    "premises",
+    "signals_for",
+    "signals_against",
+    "visibility",
+    "state"
+  ],
+  "properties": {
+    "branch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "premises": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "signals_for": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "signals_against": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "primary",
+        "alternate"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "selected",
+        "replayed",
+        "invalidated"
+      ]
+    },
+    "cost_hint": {
+      "type": "string"
+    },
+    "player_memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "latest_input_type",
+        "latest_created_at",
+        "latest_summary"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "latest_input_type": {
+          "type": "string"
+        },
+        "latest_created_at": {
+          "type": "string"
+        },
+        "latest_summary": {
+          "type": "string"
+        }
+      }
+    },
+    "player_memory_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "player_memory_note": {
+      "type": "string"
+    },
+    "memory_confidence_delta": {
+      "type": "number"
+    },
+    "cascade_confidence_delta": {
+      "type": "number"
+    },
+    "effective_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "player_influence": {
+      "type": "string",
+      "enum": [
+        "reinforced",
+        "contested",
+        "pressured",
+        "neutral"
+      ]
+    },
+    "player_influence_note": {
+      "type": "string"
+    },
+    "cascade_influence_note": {
+      "type": "string"
+    },
+    "state_carryover_cost_pressure": {
+      "type": "number",
+      "minimum": 0
+    },
+    "state_carryover_cost_note": {
+      "type": "string"
+    },
+    "state_transition_cost_pressure": {
+      "type": "number",
+      "minimum": 0
+    },
+    "state_transition_cost_note": {
+      "type": "string"
+    },
+    "state_transition_boost": {
+      "type": "number",
+      "minimum": 0
+    },
+    "state_transition_note": {
+      "type": "string"
+    },
+    "state_transition_reranked": {
+      "type": "boolean"
+    }
+  }
+}

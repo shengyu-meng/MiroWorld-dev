@@ -1,0 +1,24 @@
+{
+  "fixture_id": "museum-repatriation-dispute",
+  "title": "Museum repatriation dispute",
+  "source_type": "institutional-ethics",
+  "summary": "A museum faces public pressure to return contested artifacts. Curators, source communities, donors, and national press pull the institution into conflicting futures of delay, repair, and symbolic performance.",
+  "seed_materials": [
+    "collection provenance notes",
+    "open letter from source community",
+    "museum trustee comments",
+    "press coverage highlights"
+  ],
+  "expected_world_feel": [
+    "slow institutional ethics under sudden visibility",
+    "prestige colliding with historical debt",
+    "repair, delay, and symbolism competing for legitimacy"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "primary_branches_per_event": 1,
+    "alternate_branches_per_event": 2,
+    "requires_share_artifact": true,
+    "requires_intervention_flow": true
+  }
+}

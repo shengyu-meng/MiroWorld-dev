@@ -1,0 +1,57 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local agent / temp
+.codex-temp/
+.claude/
+.cursor/
+AGENTS.md
+agent.md
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+!.env.example
+
+# Node
+node_modules/
+dist/
+coverage/
+.vite/
+playwright-report/
+test-results/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime artifacts
+data/
+logs/
+*.log
+screenshots/
+artifacts/
+uploads/
+tmp/
+*.tmp
+
+# Build / cache
+.cache/
+*.tsbuildinfo
