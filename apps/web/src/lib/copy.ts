@@ -133,6 +133,10 @@ export const appCopy = {
       actualOutcomePlaceholder: '写下后来真实发生了什么，以及它为什么偏离或命中了当前判断。',
       decisionLog: 'Decision Log',
       curatorNote: 'Curator Note',
+      shareText: 'Share Text',
+      wallLabel: 'Wall Label',
+      archiveSummary: 'Archive Summary',
+      calibrationHistory: 'Calibration History',
     },
     labels: {
       primary: '主分支',
@@ -262,6 +266,10 @@ export const appCopy = {
       actualOutcomePlaceholder: 'Write what actually happened and why it diverged from, or confirmed, the current branch.',
       decisionLog: 'Decision Log',
       curatorNote: 'Curator Note',
+      shareText: 'Share Text',
+      wallLabel: 'Wall Label',
+      archiveSummary: 'Archive Summary',
+      calibrationHistory: 'Calibration History',
     },
     labels: {
       primary: 'Primary',

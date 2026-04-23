@@ -14,6 +14,10 @@
 
         <p>{{ event.summary }}</p>
 
+        <ul class="event-note-list">
+          <li v-for="note in event.evidence_notes.slice(0, 2)" :key="`${event.event_id}-${note}`">{{ note }}</li>
+        </ul>
+
         <div class="event-meta-list">
           <span
             v-for="entity in event.affected_entities.slice(0, 3)"

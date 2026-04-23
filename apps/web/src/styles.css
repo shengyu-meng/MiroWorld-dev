@@ -475,6 +475,10 @@ li {
   gap: 1rem;
 }
 
+.archive-section {
+  gap: 1.1rem;
+}
+
 .observatory-grid,
 .cost-grid {
   display: grid;
@@ -509,6 +513,16 @@ li {
   flex-wrap: wrap;
   gap: 0.55rem;
   margin: 0.8rem 0;
+}
+
+.event-note-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1rem;
+  color: var(--muted);
+}
+
+.event-note-list li + li {
+  margin-top: 0.35rem;
 }
 
 .event-meta-pill {
@@ -559,6 +573,73 @@ li {
   display: grid;
 }
 
+.archive-grid,
+.share-detail-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.archive-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.9fr);
+}
+
+.archive-main,
+.archive-side {
+  display: grid;
+  gap: 1rem;
+}
+
+.share-card--hero {
+  gap: 0.65rem;
+}
+
+.share-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.share-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.share-tag {
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.share-text-card {
+  min-height: 220px;
+}
+
+.share-text-body {
+  white-space: pre-wrap;
+}
+
+.archive-panel {
+  gap: 0.85rem;
+}
+
+.calibration-record-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.calibration-record {
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.archive-empty {
+  color: var(--muted);
+}
+
 .track-list {
   display: grid;
   gap: 0.75rem;
@@ -583,7 +664,8 @@ li {
 @media (max-width: 1120px) {
   .entry-hero,
   .stage-grid,
-  .intervention-layout {
+  .intervention-layout,
+  .archive-grid {
     grid-template-columns: 1fr;
   }
 
@@ -601,7 +683,8 @@ li {
   .entry-topbar,
   .stage-header,
   .entry-launch-grid,
-  .stage-overview {
+  .stage-overview,
+  .share-detail-grid {
     grid-template-columns: 1fr;
   }
 

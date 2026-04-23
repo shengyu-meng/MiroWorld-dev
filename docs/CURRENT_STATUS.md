@@ -2,7 +2,7 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 1 complete`
+Phase: `experience-first rebuild / scene-shell slice 2 in progress`
 
 ## One-line Summary
 
@@ -82,9 +82,9 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The current best next slice after this completed round is `Experience Rebuild Slice 2`:
+The current active slice is `Experience Rebuild Slice 2`:
 
-- deepen the `Archive / Share / Debrief` chamber
-- make branch comparison inside Observatory more immediate
-- decide whether to add a dedicated branch-explorer scene or richer linefield overlays
-- continue tightening performance and visual rhythm without changing public contracts
+- Archive has now moved toward a fuller `Share / Debrief` chamber with richer share text, wall label, archive summary, and calibration history
+- Observatory now exposes evidence notes earlier in the reading flow
+- the next highest-value remaining step is still deciding how far to push branch comparison and linefield overlays
+- performance and contract stability remain intact after the second frontend pass

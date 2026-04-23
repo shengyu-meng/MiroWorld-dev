@@ -41,3 +41,22 @@ Follow-on opportunities identified during this slice:
 - deepen Archive into a fuller `Debrief / Share / Export` destination
 - strengthen Observatory branch-comparison density
 - decide whether the linefield should gain a dedicated branch-explorer mode
+
+## 2026-04-23 - Experience Rebuild Slice 2 (archive and observatory pass)
+
+Completed in this iteration:
+
+- expanded Archive into a richer chamber with wall label, archive summary, share text, decision trace, and calibration history
+- surfaced evidence notes earlier inside Observatory cards for faster branch reading
+- kept replay/share/calibration behavior and public contracts unchanged
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 2:
+
+- decide whether branch comparison should become its own scene or a stronger overlay inside the existing linefield
+- continue polishing share/export presentation beyond text-first output

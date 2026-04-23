@@ -114,6 +114,7 @@
               :share-snapshot="shareSnapshot"
               :decision-log="stage.archive.player_decision_log"
               :calibration-summary="stage.archive.calibration_summary"
+              :calibration-records="stage.archive.calibration_records"
               :calibration-open="calibrationOpen"
               :calibration-draft="calibrationDraft"
               :calibration-result="calibrationResult"

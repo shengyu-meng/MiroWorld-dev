@@ -59,8 +59,8 @@ This slice does include:
 
 ### In progress now
 
-- [ ] redesign Archive into a fuller `Debrief / Share / Export` chamber
-- [ ] improve Observatory branch comparison density
+- [x] redesign Archive into a fuller `Debrief / Share / Export` chamber
+- [x] improve Observatory branch comparison density
 - [ ] decide whether to add a dedicated branch-explorer scene or richer scene overlays
 - [ ] keep docs, tests, and smoke aligned with each iteration
 
