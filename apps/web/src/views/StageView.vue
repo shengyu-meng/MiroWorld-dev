@@ -211,6 +211,14 @@
                 replayArtifactPressureLow: language === 'zh'
                   ? '这是一条相对克制的读法：它让压力保持可见，却没有让整条线彻底断裂。'
                   : 'This is a more restrained reading: it keeps pressure visible without letting the line fully tear open.',
+                replayAtlas: language === 'zh' ? '重演图册' : 'Replay Atlas',
+                replayAtlasNote: language === 'zh'
+                  ? '把已保存的 replay set 读成一组可浏览、可恢复、可整体导出的重演目录。'
+                  : 'Read saved replay sets as a browsable atlas that can be restored and exported as one object.',
+                downloadReplayAtlas: language === 'zh' ? '导出 Replay Atlas' : 'Download Replay Atlas',
+                pressureHighBand: language === 'zh' ? '高压' : 'High Pressure',
+                pressureMediumBand: language === 'zh' ? '中压' : 'Medium Pressure',
+                pressureLowBand: language === 'zh' ? '低压' : 'Low Pressure',
                 replayShelf: language === 'zh' ? '重演架' : 'Replay Shelf',
                 replayShelfNote: language === 'zh'
                   ? '把当前重演包暂存到本地架上，之后可以回看、恢复和再次导出。'

@@ -547,3 +547,33 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
 - deepen Ripple further if persisted replay sets or more durable authored narration becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay atlas pass started)
+
+Planned in this iteration:
+
+- turn the local replay shelf into a more legible replay atlas instead of leaving saved replay sets as a plain restore list
+- add a bundled replay atlas export so saved replay sets can leave Ripple as one exhibition-ready object
+- keep the implementation frontend-only and contract-safe by deriving the atlas from the existing saved replay shelf state
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay atlas pass completed)
+
+Completed in this iteration:
+
+- turned the local replay shelf into a more legible replay atlas instead of leaving saved replay sets as a plain restore list
+- added atlas cards that can quickly restore saved replay sets while surfacing their pressure and confidence at a glance
+- added a bundled replay atlas html export so saved replay sets can leave Ripple together as one exhibition-ready object
+- kept the implementation frontend-only and contract-safe by deriving the atlas from the existing saved replay shelf state
+- extended frontend coverage so the replay atlas view and export path are exercised alongside the existing replay shelf flow
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison still proves too shallow later
+- deepen Ripple further if persisted replay sets or more durable authored narration becomes necessary

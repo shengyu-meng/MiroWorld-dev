@@ -240,15 +240,54 @@
           <span class="annotation-label">{{ copy.replayShelf }}</span>
           <p class="surface-callout">{{ copy.replayShelfNote }}</p>
         </div>
-        <button type="button" class="ghost-action" data-testid="save-replay-shelf" @click="saveReplayToShelf">
-          {{ copy.saveReplayShelf }}
-        </button>
+        <div class="ripple-dossier-actions">
+          <button type="button" class="ghost-action" data-testid="save-replay-shelf" @click="saveReplayToShelf">
+            {{ copy.saveReplayShelf }}
+          </button>
+          <button
+            v-if="replayShelf.length > 0"
+            type="button"
+            class="ghost-action"
+            data-testid="download-replay-atlas"
+            @click="downloadReplayAtlas"
+          >
+            {{ copy.downloadReplayAtlas }}
+          </button>
+        </div>
       </header>
 
       <small v-if="shelfFeedback" class="copy-feedback">{{ shelfFeedback }}</small>
       <p v-if="replayShelf.length === 0" class="surface-callout">{{ copy.emptyReplayShelf }}</p>
 
-      <div v-else class="ripple-shelf-stack">
+      <template v-else>
+        <div class="ripple-track-header">
+          <div>
+            <span class="annotation-label">{{ copy.replayAtlas }}</span>
+            <p class="surface-callout">{{ copy.replayAtlasNote }}</p>
+          </div>
+        </div>
+        <div class="ripple-shelf-atlas-grid" data-testid="ripple-shelf-atlas">
+          <button
+            v-for="item in replayShelf"
+            :key="`atlas-${item.shelfId}`"
+            type="button"
+            class="ripple-shelf-atlas-card"
+            :class="{ active: isShelfItemActive(item) }"
+            :data-testid="`ripple-shelf-atlas-${item.replaySetKey}`"
+            @click="restoreReplayFromShelf(item)"
+          >
+            <span class="annotation-label">{{ item.replaySetLabel }}</span>
+            <strong>{{ item.artifact.title }}</strong>
+            <p>{{ item.artifact.deck }}</p>
+            <div class="ripple-shelf-atlas-meta">
+              <span class="event-meta-pill">{{ copy.setConfidence }} / {{ formatConfidence(item.metrics.averageConfidence) }}</span>
+              <span class="event-meta-pill">{{ copy.setPressure }} / {{ item.metrics.averagePressure }}</span>
+              <span class="event-meta-pill">{{ pressureBandForValue(item.metrics.averagePressure) }}</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="ripple-shelf-stack">
         <article v-for="item in replayShelf" :key="item.shelfId" class="ripple-shelf-entry">
           <div class="ripple-shelf-copy">
             <span class="annotation-label">{{ item.replaySetLabel }}</span>
@@ -279,7 +318,8 @@
             </button>
           </div>
         </article>
-      </div>
+        </div>
+      </template>
     </div>
 
     <div class="ripple-history-archive-card" data-testid="ripple-replay-history">
@@ -495,6 +535,12 @@ const props = defineProps<{
     replayArtifactPressureHigh: string
     replayArtifactPressureMedium: string
     replayArtifactPressureLow: string
+    replayAtlas: string
+    replayAtlasNote: string
+    downloadReplayAtlas: string
+    pressureHighBand: string
+    pressureMediumBand: string
+    pressureLowBand: string
     replayShelf: string
     replayShelfNote: string
     saveReplayShelf: string
@@ -921,6 +967,18 @@ function downloadReplayExhibit() {
   artifactFeedback.value = props.copy.downloadReplayExhibit
 }
 
+function downloadReplayAtlas() {
+  if (replayShelf.value.length === 0) return
+
+  shelfFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-replay-atlas.html`,
+    buildReplayAtlasHtml(),
+    'text/html;charset=utf-8',
+  )
+  shelfFeedback.value = props.copy.downloadReplayAtlas
+}
+
 function saveReplayToShelf() {
   if (!replayPacket.value) return
 
@@ -994,6 +1052,12 @@ function downloadSavedReplayExhibit(item: SavedReplayPacket) {
   shelfFeedback.value = props.copy.downloadSavedReplayExhibit
 }
 
+function isShelfItemActive(item: SavedReplayPacket) {
+  return item.replaySetKey === selectedReplaySetKey.value
+    && item.focus.eventId === props.selectedEventId
+    && item.focus.branchId === props.selectedBranchId
+}
+
 function pickPrimaryBranch(event: KeyEvent) {
   return event.branches.find((branch) => branch.visibility === 'primary')
     ?? event.branches[0]
@@ -1051,6 +1115,12 @@ function buildReplaySet(
 
 function buildReplayExcerpt() {
   return replayPacket.value?.authoredNote ?? ''
+}
+
+function pressureBandForValue(value: number) {
+  if (value >= 2.2) return props.copy.pressureHighBand
+  if (value >= 1.4) return props.copy.pressureMediumBand
+  return props.copy.pressureLowBand
 }
 
 function buildReplayArtifactText(packet: ReplayPacket | SavedReplayPacket | null = replayPacket.value) {
@@ -1283,6 +1353,123 @@ function buildReplayExhibitHtml(packet: ReplayPacket | SavedReplayPacket | null 
         </article>
         <div class="timeline">${timelineMarkup}</div>
       </section>
+    </main>
+  </body>
+</html>`
+}
+
+function buildReplayAtlasHtml(items: SavedReplayPacket[] = replayShelf.value) {
+  const shelfItems = items.slice(0, 8)
+  if (!shelfItems.length) return ''
+
+  const cardsMarkup = shelfItems.map((item) => `
+      <article class="atlas-card">
+        <span class="meta">${escapeHtml(item.replaySetLabel)} / ${escapeHtml(formatTimestamp(item.savedAt))}</span>
+        <h2>${escapeHtml(item.artifact.title)}</h2>
+        <p class="deck">${escapeHtml(item.artifact.deck)}</p>
+        <p>${escapeHtml(item.artifact.wallText)}</p>
+        <div class="tag-row">
+          <span class="tag">${escapeHtml(props.copy.setConfidence)} / ${escapeHtml(formatConfidence(item.metrics.averageConfidence))}</span>
+          <span class="tag">${escapeHtml(props.copy.setPressure)} / ${escapeHtml(String(item.metrics.averagePressure))}</span>
+          <span class="tag">${escapeHtml(pressureBandForValue(item.metrics.averagePressure))}</span>
+        </div>
+      </article>
+    `).join('')
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(props.projectId)} / Replay Atlas</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #071117;
+        --panel: rgba(12, 24, 31, 0.92);
+        --line: rgba(139, 226, 248, 0.16);
+        --text: #e8efe9;
+        --muted: #8fa7b0;
+        --warm: #ffb979;
+        --ripple: #c3b4ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Aptos, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 18% 16%, rgba(195, 180, 255, 0.18), transparent 22%),
+          radial-gradient(circle at 84% 12%, rgba(255, 185, 121, 0.12), transparent 18%),
+          var(--bg);
+      }
+      main {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 2rem 0 3rem;
+        display: grid;
+        gap: 1rem;
+      }
+      .hero, .atlas-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+      }
+      .hero {
+        padding: 1.2rem;
+        display: grid;
+        gap: 0.8rem;
+      }
+      .brand, .meta {
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
+      h1, h2 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Palatino Linotype", serif;
+        line-height: 0.96;
+      }
+      h1 { font-size: clamp(2.2rem, 4vw, 3.8rem); max-width: 14ch; }
+      h2 { font-size: 1.3rem; }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .atlas-card {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+      .deck { color: var(--warm); }
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .tag {
+        padding: 0.28rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        color: var(--muted);
+      }
+      @media (max-width: 920px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <p class="brand">MIROWORLD</p>
+        <h1>${escapeHtml(props.copy.replayAtlas)}</h1>
+        <p>${escapeHtml(props.copy.replayAtlasNote)}</p>
+        <p>${escapeHtml(props.projectId)} / ${shelfItems.length} ${escapeHtml(props.copy.replaySetLibrary)}</p>
+      </section>
+      <section class="grid">${cardsMarkup}</section>
     </main>
   </body>
 </html>`

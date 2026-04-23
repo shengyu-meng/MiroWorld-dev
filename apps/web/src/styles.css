@@ -1251,6 +1251,44 @@ li {
   gap: 0.85rem;
 }
 
+.ripple-shelf-atlas-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ripple-shelf-atlas-card {
+  display: grid;
+  gap: 0.65rem;
+  text-align: left;
+  padding: 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(180, 230, 243, 0.12);
+  background:
+    linear-gradient(180deg, rgba(16, 32, 43, 0.92), rgba(7, 12, 17, 0.8)),
+    radial-gradient(circle at top right, rgba(188, 230, 243, 0.1), transparent 56%);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.ripple-shelf-atlas-card:hover {
+  border-color: rgba(180, 230, 243, 0.42);
+  transform: translateY(-1px);
+}
+
+.ripple-shelf-atlas-card.active {
+  border-color: rgba(195, 180, 255, 0.72);
+  box-shadow: 0 18px 44px rgba(9, 14, 19, 0.34);
+}
+
+.ripple-shelf-atlas-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
 .ripple-shelf-entry {
   display: grid;
   gap: 0.75rem;
@@ -1435,6 +1473,7 @@ li {
   }
 
   .ripple-replay-set-grid,
+  .ripple-shelf-atlas-grid,
   .ripple-dossier-grid,
   .ripple-history-mode-row,
   .ripple-history-sections {
