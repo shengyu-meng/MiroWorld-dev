@@ -126,6 +126,7 @@
 
             <RippleSection
               v-else-if="activeSurface === 'ripple'"
+              :project-id="stage.project_context.project_id"
               :latest-bend="latestBend"
               :events="stage.observatory.key_events"
               :worldline-track="stage.observatory.worldline_track"
@@ -176,6 +177,16 @@
                 setAlternateCount: copy.ripple.setAlternateCount,
                 replayDossier: copy.ripple.replayDossier,
                 replayDossierNote: copy.ripple.replayDossierNote,
+                replayExcerpt: language === 'zh' ? '重演摘录' : 'Replay Excerpt',
+                copyReplayExcerpt: language === 'zh' ? '复制重演摘录' : 'Copy Replay Excerpt',
+                downloadReplayDossier: language === 'zh' ? '导出 Replay Dossier' : 'Download Replay Dossier',
+                downloadReplayPacket: language === 'zh' ? '导出 Replay Packet' : 'Download Replay Packet',
+                replayDossierSummaryTemplate: language === 'zh'
+                  ? '从 {entry} 进入，在 {hinge} 承压，并在 {terminal} 暴露尾迹。'
+                  : 'Enters through {entry}, takes pressure at {hinge}, and exposes its tail at {terminal}.',
+                replayPacketIntroTemplate: language === 'zh'
+                  ? '这份重演案卷以 {setLabel} 为视角，覆盖 {eventCount} 个事件，平均置信 {confidence}，平均压力 {pressure}。'
+                  : 'This replay dossier reads through {setLabel}, covering {eventCount} events with {confidence} average confidence and {pressure} average pressure.',
                 entryAnchor: copy.ripple.entryAnchor,
                 hingePressure: copy.ripple.hingePressure,
                 terminalExposure: copy.ripple.terminalExposure,

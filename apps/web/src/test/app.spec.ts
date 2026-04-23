@@ -307,6 +307,7 @@ describe('app routes', () => {
     const createObjectURLMock = vi.fn(() => 'blob:miroworld')
     const revokeObjectURLMock = vi.fn()
     const anchorClickMock = vi.fn()
+    const clipboardWriteTextMock = vi.fn().mockResolvedValue(undefined)
     const canvasToDataURLMock = vi.fn(() => 'data:image/png;base64,miroworld')
     const canvasFillRectMock = vi.fn()
     const canvasDrawImageMock = vi.fn()
@@ -335,6 +336,12 @@ describe('app routes', () => {
     Object.defineProperty(global.URL, 'revokeObjectURL', {
       writable: true,
       value: revokeObjectURLMock,
+    })
+    Object.defineProperty(global.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: clipboardWriteTextMock,
+      },
     })
     Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
       writable: true,
@@ -398,6 +405,15 @@ describe('app routes', () => {
     await wrapper.find('[data-testid="replay-set-pressure"]').trigger('click')
     expect(wrapper.find('[data-testid="ripple-replay-set-library"]').text()).toContain('Pressure Set')
     expect(wrapper.find('[data-testid="ripple-replay-dossier"]').text()).toContain('Hinge Pressure')
+    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Enters through')
+    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).not.toContain(' 路 ')
+    await wrapper.find('[data-testid="copy-replay-excerpt"]').trigger('click')
+    expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1)
+    expect(clipboardWriteTextMock).toHaveBeenCalledWith(expect.stringContaining('Enters through'))
+    await wrapper.find('[data-testid="download-replay-dossier"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(1)
+    await wrapper.find('[data-testid="download-replay-packet"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(2)
     await wrapper.find('[data-testid="ripple-history-entry-pressure-evt_2"]').trigger('click')
     expect(wrapper.text()).toContain('Counter-Signal Density')
     expect(wrapper.text()).toContain('Backlash')
@@ -410,19 +426,19 @@ describe('app routes', () => {
     expect(wrapper.find('[data-testid="calibration-branch-slices"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="calibration-branch-slices"]').text()).toContain('Primary')
     await wrapper.find('[data-testid="download-poster"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(1)
-    await wrapper.find('[data-testid="download-bundle"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(2)
-    await wrapper.find('[data-testid="download-exhibit"]').trigger('click')
     expect(createObjectURLMock).toHaveBeenCalledTimes(3)
+    await wrapper.find('[data-testid="download-bundle"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(4)
+    await wrapper.find('[data-testid="download-exhibit"]').trigger('click')
+    expect(createObjectURLMock).toHaveBeenCalledTimes(5)
     await wrapper.find('[data-testid="download-poster-png"]').trigger('click')
     await flushPromises()
     expect(canvasToDataURLMock).toHaveBeenCalledTimes(1)
-    expect(createObjectURLMock).toHaveBeenCalledTimes(4)
+    expect(createObjectURLMock).toHaveBeenCalledTimes(6)
     await wrapper.find('[data-testid="download-artifact-bundle"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(5)
-    expect(anchorClickMock).toHaveBeenCalledTimes(5)
-    expect(revokeObjectURLMock).toHaveBeenCalledTimes(5)
+    expect(createObjectURLMock).toHaveBeenCalledTimes(7)
+    expect(anchorClickMock).toHaveBeenCalledTimes(7)
+    expect(revokeObjectURLMock).toHaveBeenCalledTimes(7)
     expect(canvasFillRectMock).toHaveBeenCalled()
     expect(canvasDrawImageMock).toHaveBeenCalledTimes(1)
     await wrapper.find('[data-testid="archive-section"] .secondary-action').trigger('click')

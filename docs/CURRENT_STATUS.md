@@ -2,7 +2,7 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 replay dossier pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 replay export pass complete`
 
 ## One-line Summary
 
@@ -23,6 +23,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and Ripple can now read the selected path as replay-history slices of upstream tension, hinge branch, and downstream drift
 - and Ripple can now switch between named replay sets such as current, stabilizing, and pressure readings without leaving the surface
 - and Ripple can now read each replay set through clearer dossier anchors such as entry, hinge pressure, and terminal exposure
+- and Ripple can now turn the selected replay dossier into a portable local packet instead of leaving it as an in-scene reading only
 - and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
@@ -150,6 +151,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Product / experience gaps
 
 - the linefield and Ripple now act more like a multi-path replay surface with named replay sets, but they are not yet a fuller replay archive across multiple synthesized histories or backend-saved replay sets
+- Ripple now exposes replay sets, dossier anchors, and local replay packet export, but it still does not yet persist authored replay sets beyond the current in-memory stage
 - the archive now exports local svg, png, text, exhibit html, and artifact bundle outputs, but it still does not yet generate richer image pipelines or packaged media sets beyond those first formats
 - calibration history is now more comparative across wider windows and branch slices, but it is not yet deeper across decision types or richer longitudinal cuts
 - ripple continuity now includes a replay set library and dossier layer, but it still may need persisted replay sets or deeper authored narration later
@@ -172,4 +174,5 @@ The next active slice is still `Experience Rebuild Slice 4`:
 - deepen the export path beyond local SVG / TXT into stronger artifact options
 - keep evolving the archive export path beyond the current SVG / PNG / TXT / HTML / JSON set if richer packaged media becomes necessary
 - deepen calibration comparison beyond the current slice deck into richer decision-type or longer-horizon archive perspectives if needed
+- deepen Ripple beyond the current local replay packet into richer saved replay sets or more authored replay narration if needed
 - keep extending the linefield / ripple system toward richer authored or persisted replay sets without regressing shell speed

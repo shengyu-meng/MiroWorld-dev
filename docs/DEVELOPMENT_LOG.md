@@ -400,3 +400,33 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
 - deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
 - deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay export pass started)
+
+Planned in this iteration:
+
+- turn the selected replay dossier into a portable local artifact instead of leaving it only inside the Ripple surface
+- keep the implementation frontend-only and contract-safe by deriving the replay packet from the existing event and branch payload
+- clean up the dossier narration so it stays locale-safe instead of mixing hard-coded connector text into every language
+
+## 2026-04-23 - Experience Rebuild Slice 4 (replay export pass completed)
+
+Completed in this iteration:
+
+- turned the selected replay dossier into a portable local artifact layer inside Ripple
+- added local replay dossier markdown export plus replay packet json export without changing backend contracts
+- added a copyable replay excerpt so the currently selected replay set can leave the surface as authored text
+- cleaned up dossier narration so the visible summary no longer depends on hard-coded connector text leaking across locales
+- extended frontend coverage so the replay export tools and locale-safe excerpt are exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- keep extending the export path if the current SVG / PNG / TXT / HTML / JSON artifact set still feels too fragmented
+- deepen calibration beyond the current slice deck if decision-type or longer-horizon comparison becomes necessary
+- deepen the replay dossier further if persisted replay sets or more authored writing becomes necessary

@@ -1145,6 +1145,18 @@ li {
   box-shadow: var(--shadow);
 }
 
+.ripple-track-header--dossier {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ripple-dossier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
 .ripple-dossier-summary,
 .ripple-dossier-grid {
   display: grid;
@@ -1162,6 +1174,10 @@ li {
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ripple-dossier-card--wide {
+  grid-column: 1 / -1;
 }
 
 .ripple-dossier-meta {

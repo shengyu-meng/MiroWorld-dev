@@ -147,20 +147,37 @@
       </div>
     </div>
 
-    <div v-if="selectedReplaySet && replayDossier" class="ripple-replay-dossier-card" data-testid="ripple-replay-dossier">
-      <header class="ripple-track-header">
+    <div v-if="selectedReplaySet && replayDossier && replayPacket" class="ripple-replay-dossier-card" data-testid="ripple-replay-dossier">
+      <header class="ripple-track-header ripple-track-header--dossier">
         <div>
           <span class="annotation-label">{{ copy.replayDossier }}</span>
           <p class="surface-callout">{{ copy.replayDossierNote }}</p>
         </div>
+        <div class="ripple-dossier-actions">
+          <button type="button" class="ghost-action" data-testid="copy-replay-excerpt" @click="copyReplayExcerpt">
+            {{ copy.copyReplayExcerpt }}
+          </button>
+          <button type="button" class="ghost-action" data-testid="download-replay-dossier" @click="downloadReplayDossier">
+            {{ copy.downloadReplayDossier }}
+          </button>
+          <button type="button" class="ghost-action" data-testid="download-replay-packet" @click="downloadReplayPacket">
+            {{ copy.downloadReplayPacket }}
+          </button>
+        </div>
       </header>
+      <small v-if="dossierFeedback" class="copy-feedback">{{ dossierFeedback }}</small>
 
       <div class="ripple-dossier-summary">
         <strong>{{ selectedReplaySet.label }}</strong>
-        <p>{{ replayDossier.summary }}</p>
+        <p>{{ replayDossierSummary }}</p>
       </div>
 
       <div class="ripple-dossier-grid">
+        <article class="ripple-dossier-card ripple-dossier-card--wide" data-testid="ripple-replay-excerpt">
+          <span class="annotation-label">{{ copy.replayExcerpt }}</span>
+          <p>{{ replayPacket.authoredNote }}</p>
+        </article>
+
         <article class="ripple-dossier-card">
           <span class="annotation-label">{{ copy.entryAnchor }}</span>
           <strong>{{ replayDossier.entry.title }}</strong>
@@ -264,6 +281,7 @@ type HistoryMode = 'active' | 'primary' | 'alternate'
 type ReplaySetKey = 'current' | 'stabilizing' | 'pressure'
 
 const props = defineProps<{
+  projectId: string
   latestBend: string
   emptyCopy: string
   events: KeyEvent[]
@@ -318,6 +336,12 @@ const props = defineProps<{
     setAlternateCount: string
     replayDossier: string
     replayDossierNote: string
+    replayExcerpt: string
+    copyReplayExcerpt: string
+    downloadReplayDossier: string
+    downloadReplayPacket: string
+    replayDossierSummaryTemplate: string
+    replayPacketIntroTemplate: string
     entryAnchor: string
     hingePressure: string
     terminalExposure: string
@@ -410,6 +434,7 @@ const pathVariants = computed<Array<{
 })
 
 const selectedReplaySetKey = ref<ReplaySetKey>('current')
+const dossierFeedback = ref('')
 
 const replaySets = computed<Array<{
   key: ReplaySetKey
@@ -530,17 +555,106 @@ const historyEntries = computed(() => {
   })
 })
 
+const replayDossierSummary = computed(() => {
+  if (!selectedReplaySet.value || !replayDossier.value) return ''
+
+  return fillTemplate(props.copy.replayDossierSummaryTemplate, {
+    entry: replayDossier.value.entry.title,
+    hinge: replayDossier.value.hinge.title,
+    terminal: replayDossier.value.terminal.title,
+  })
+})
+
+const replayPacket = computed(() => {
+  if (!selectedReplaySet.value || !replayDossier.value) return null
+
+  return {
+    projectId: props.projectId,
+    replaySetKey: selectedReplaySet.value.key,
+    replaySetLabel: selectedReplaySet.value.label,
+    replaySetNote: selectedReplaySet.value.note,
+    authoredNote: [
+      fillTemplate(props.copy.replayPacketIntroTemplate, {
+        setLabel: selectedReplaySet.value.label,
+        eventCount: selectedReplaySet.value.eventCount,
+        confidence: formatConfidence(selectedReplaySet.value.averageConfidence),
+        pressure: selectedReplaySet.value.averagePressure,
+      }),
+      replayDossierSummary.value,
+    ].join(' '),
+    metrics: {
+      eventCount: selectedReplaySet.value.eventCount,
+      averageConfidence: selectedReplaySet.value.averageConfidence,
+      averagePressure: selectedReplaySet.value.averagePressure,
+      alternateCount: selectedReplaySet.value.alternateCount,
+    },
+    dossier: replayDossier.value,
+    timeline: historyEntries.value.map((entry) => ({
+      index: entry.index,
+      stage: entry.event.stage,
+      eventTitle: entry.event.title,
+      branchLabel: entry.branch.label,
+      confidence: entry.confidence,
+      counterSignalCount: entry.counterSignalCount,
+      description: entry.branch.description || entry.event.summary || entry.branch.cost_hint,
+      upstream: entry.upstream,
+      downstream: entry.downstream,
+    })),
+  }
+})
+
 watch(
   () => [props.selectedEventId, props.selectedBranchId],
   () => {
     selectedReplaySetKey.value = replaySets.value.some((set) => set.key === selectedReplaySetKey.value)
       ? selectedReplaySetKey.value
       : 'current'
+    dossierFeedback.value = ''
   },
 )
 
+watch(selectedReplaySetKey, () => {
+  dossierFeedback.value = ''
+})
+
 function formatConfidence(value: number) {
   return `${Math.round(value * 100)}%`
+}
+
+async function copyReplayExcerpt() {
+  dossierFeedback.value = ''
+  if (!navigator.clipboard || !replayPacket.value) return
+
+  try {
+    await navigator.clipboard.writeText(buildReplayExcerpt())
+    dossierFeedback.value = props.copy.copyReplayExcerpt
+  } catch {
+    dossierFeedback.value = ''
+  }
+}
+
+function downloadReplayDossier() {
+  if (!replayPacket.value) return
+
+  dossierFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-${selectedReplaySet.value?.key ?? 'current'}-replay-dossier.md`,
+    buildReplayDossierMarkdown(),
+    'text/markdown;charset=utf-8',
+  )
+  dossierFeedback.value = props.copy.downloadReplayDossier
+}
+
+function downloadReplayPacket() {
+  if (!replayPacket.value) return
+
+  dossierFeedback.value = ''
+  downloadFile(
+    `${safeFileStem(props.projectId)}-${selectedReplaySet.value?.key ?? 'current'}-replay-packet.json`,
+    JSON.stringify(replayPacket.value, null, 2),
+    'application/json;charset=utf-8',
+  )
+  dossierFeedback.value = props.copy.downloadReplayPacket
 }
 
 function pickPrimaryBranch(event: KeyEvent) {
@@ -596,5 +710,87 @@ function buildReplaySet(
     alternateCount,
     nodes,
   }
+}
+
+function buildReplayExcerpt() {
+  return replayPacket.value?.authoredNote ?? ''
+}
+
+function buildReplayDossierMarkdown() {
+  if (!replayPacket.value || !selectedReplaySet.value || !replayDossier.value) return ''
+
+  const timeline = replayPacket.value.timeline
+    .map((entry) => [
+      `### ${entry.index}`,
+      `${entry.eventTitle} / ${entry.branchLabel}`,
+      `${props.confidenceLabel}: ${formatConfidence(entry.confidence)}`,
+      `${props.copy.counterSignalDensity}: ${entry.counterSignalCount}`,
+      '',
+      `${entry.description ?? props.emptyCopy}`,
+      '',
+      `${props.copy.upstreamTension}: ${entry.upstream.title}`,
+      `${entry.upstream.summary}`,
+      '',
+      `${props.copy.downstreamDrift}: ${entry.downstream.title}`,
+      `${entry.downstream.summary}`,
+    ].join('\n'))
+    .join('\n\n')
+
+  return [
+    '# MIROWORLD REPLAY DOSSIER',
+    '',
+    `Project: ${props.projectId}`,
+    `Replay Set: ${selectedReplaySet.value.label} (${selectedReplaySet.value.key})`,
+    `Set Note: ${selectedReplaySet.value.note}`,
+    '',
+    `## ${props.copy.replayExcerpt}`,
+    replayPacket.value.authoredNote,
+    '',
+    `## ${props.copy.replayDossier}`,
+    replayDossierSummary.value,
+    '',
+    `## ${props.copy.entryAnchor}`,
+    replayDossier.value.entry.title,
+    replayDossier.value.entry.summary,
+    '',
+    `## ${props.copy.hingePressure}`,
+    replayDossier.value.hinge.title,
+    replayDossier.value.hinge.summary,
+    '',
+    `## ${props.copy.terminalExposure}`,
+    replayDossier.value.terminal.title,
+    replayDossier.value.terminal.summary,
+    '',
+    '## Metrics',
+    `- ${props.copy.eventCount}: ${selectedReplaySet.value.eventCount}`,
+    `- ${props.copy.setConfidence}: ${formatConfidence(selectedReplaySet.value.averageConfidence)}`,
+    `- ${props.copy.setPressure}: ${selectedReplaySet.value.averagePressure}`,
+    `- ${props.copy.setAlternateCount}: ${selectedReplaySet.value.alternateCount}`,
+    '',
+    `## ${props.copy.replayHistory}`,
+    timeline,
+  ].join('\n')
+}
+
+function fillTemplate(template: string, replacements: Record<string, string | number>) {
+  return Object.entries(replacements).reduce((result, [key, value]) => (
+    result.replaceAll(`{${key}}`, String(value))
+  ), template)
+}
+
+function safeFileStem(value: string) {
+  return value.replace(/[^a-z0-9-_]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'miroworld'
+}
+
+function downloadFile(filename: string, content: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
 }
 </script>
