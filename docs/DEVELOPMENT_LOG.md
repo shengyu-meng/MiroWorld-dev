@@ -197,3 +197,32 @@ Still open inside slice 4:
 - deepen the artifact path beyond local SVG / TXT export
 - extend calibration comparison if the current atlas proves too shallow in real use
 - broaden Ripple from a single continuity chain into a stronger multi-path replay archive
+
+## 2026-04-23 - Experience Rebuild Slice 4 (exhibit html export pass started)
+
+Planned in this iteration:
+
+- add a self-contained archive exhibit HTML export beyond SVG / TXT fragments
+- keep the export offline and frontend-only so no secret handling changes
+- package poster, wall text, decision trace, and calibration snapshot into one artifact
+
+## 2026-04-23 - Experience Rebuild Slice 4 (exhibit html export pass completed)
+
+Completed in this iteration:
+
+- added a self-contained exhibit HTML export so archive artifacts can travel as one offline file
+- packaged poster copy, wall text, decision trace, and calibration snapshot into the exported artifact
+- kept the export fully frontend-side so no backend contract or secret handling changed
+- extended frontend route coverage so the extra export action is exercised in tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- deepen the artifact path beyond the current HTML / SVG / TXT export set
+- extend calibration comparison if the current atlas proves too shallow in real use
+- broaden Ripple from a single continuity chain into a stronger multi-path replay archive

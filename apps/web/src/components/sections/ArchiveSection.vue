@@ -14,6 +14,9 @@
         <button type="button" class="ghost-action" data-testid="download-bundle" @click="downloadBundle">
           {{ copy.downloadBundle }}
         </button>
+        <button type="button" class="ghost-action" data-testid="download-exhibit" @click="downloadExhibitHtml">
+          {{ copy.downloadExhibitHtml }}
+        </button>
       </div>
     </div>
     <small v-if="archiveFeedback" class="archive-status">{{ archiveFeedback }}</small>
@@ -238,6 +241,7 @@ const props = defineProps<{
     calibrationPattern: string
     downloadPoster: string
     downloadBundle: string
+    downloadExhibitHtml: string
     calibrationAtlas: string
     dominantOutcome: string
     recentTendency: string
@@ -366,6 +370,12 @@ function downloadBundle() {
   archiveFeedback.value = props.copy.downloadBundle
 }
 
+function downloadExhibitHtml() {
+  archiveFeedback.value = ''
+  downloadFile(`${safeFileStem(props.projectId)}-exhibit.html`, buildExhibitHtml(), 'text/html;charset=utf-8')
+  archiveFeedback.value = props.copy.downloadExhibitHtml
+}
+
 function formatTimestamp(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
@@ -464,6 +474,217 @@ function buildShareBundle() {
     `${props.copy.calibrationHistory}:`,
     calibrations.trimEnd(),
   ].join('\n')
+}
+
+function buildExhibitHtml() {
+  const decisionMarkup = props.decisionLog.length
+    ? props.decisionLog.map((entry) => `
+        <article class="log-entry">
+          <span class="meta">${escapeXml(entry.input_type)} / ${escapeXml(formatTimestamp(entry.created_at))}</span>
+          <h3>${escapeXml(entry.event_title)}</h3>
+          <p>${escapeXml(entry.content)}</p>
+          <small>${escapeXml(entry.replay_summary)}</small>
+        </article>
+      `).join('')
+    : `<p class="empty">${escapeXml(props.copy.actualOutcomePlaceholder)}</p>`
+
+  const calibrationMarkup = sortedCalibrationRecords.value.length
+    ? sortedCalibrationRecords.value.slice(0, 6).map((record) => `
+        <article class="calibration-entry ${record.result}">
+          <span class="meta">${escapeXml(mapResultLabel(record.result))}</span>
+          <p>${escapeXml(record.actual_outcome)}</p>
+          <small>${escapeXml(formatTimestamp(record.created_at))}</small>
+        </article>
+      `).join('')
+    : `<p class="empty">${escapeXml(props.copy.actualOutcomePlaceholder)}</p>`
+
+  const atlasMarkup = calibrationAtlasCards.value.map((card) => `
+      <article class="atlas-card">
+        <span class="meta">${escapeXml(card.label)}</span>
+        <strong>${escapeXml(card.value)}</strong>
+        <p>${escapeXml(card.note)}</p>
+      </article>
+    `).join('')
+
+  const shareTextMarkup = escapeXml(props.shareSnapshot.share_text).replaceAll('\n', '<br />')
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeXml(props.shareSnapshot.title)} / MIROWORLD</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #071117;
+        --panel: rgba(12, 24, 31, 0.92);
+        --line: rgba(139, 226, 248, 0.16);
+        --text: #e8efe9;
+        --muted: #8fa7b0;
+        --warm: #ffb979;
+        --cool: #8be2f8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Aptos, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(38, 76, 83, 0.34), transparent 26%),
+          radial-gradient(circle at 78% 18%, rgba(122, 84, 45, 0.18), transparent 22%),
+          var(--bg);
+        color: var(--text);
+      }
+      main {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 2rem 0 3rem;
+        display: grid;
+        gap: 1.25rem;
+      }
+      .hero, .card, .log-entry, .calibration-entry, .atlas-card {
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+      }
+      .hero {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+        padding: 1.2rem;
+      }
+      .poster {
+        padding: 1.3rem;
+        border-radius: 22px;
+        background:
+          radial-gradient(circle at 15% 18%, rgba(255, 185, 121, 0.16), transparent 24%),
+          radial-gradient(circle at 88% 14%, rgba(139, 226, 248, 0.15), transparent 22%),
+          linear-gradient(180deg, rgba(16, 28, 36, 0.94), rgba(9, 13, 18, 0.88));
+      }
+      .brand, .meta {
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
+      h1, h2, h3 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Palatino Linotype", serif;
+        line-height: 0.96;
+      }
+      h1 { font-size: clamp(2.4rem, 5vw, 4rem); max-width: 10ch; }
+      h2 { font-size: 1.35rem; margin-bottom: 0.65rem; }
+      h3 { font-size: 1.05rem; margin-bottom: 0.45rem; }
+      .caption { color: var(--warm); font-size: 1.05rem; }
+      .side {
+        display: grid;
+        gap: 0.9rem;
+        align-content: start;
+        padding: 0.5rem 0.25rem;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .grid.two {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      }
+      .card {
+        padding: 1rem;
+        display: grid;
+        gap: 0.7rem;
+      }
+      .share {
+        white-space: pre-wrap;
+        line-height: 1.6;
+      }
+      .atlas-grid, .log-stack, .calibration-stack {
+        display: grid;
+        gap: 0.75rem;
+      }
+      .atlas-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .atlas-card, .log-entry, .calibration-entry {
+        padding: 0.85rem;
+      }
+      .hit { border-color: rgba(142, 240, 206, 0.28); }
+      .partial { border-color: rgba(255, 185, 121, 0.28); }
+      .miss { border-color: rgba(245, 135, 135, 0.28); }
+      .insufficient_data { border-color: rgba(139, 226, 248, 0.24); }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      .tag {
+        padding: 0.28rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        color: var(--muted);
+      }
+      .empty { color: var(--muted); }
+      @media (max-width: 920px) {
+        .hero, .grid, .grid.two, .atlas-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <article class="poster">
+          <p class="brand">MIROWORLD</p>
+          <h1>${escapeXml(props.shareSnapshot.title)}</h1>
+          <p>${escapeXml(props.shareSnapshot.summary)}</p>
+          <p class="caption">${escapeXml(props.shareSnapshot.poster_caption)}</p>
+          <div class="tag-row">${props.shareSnapshot.tags.map((tag) => `<span class="tag">${escapeXml(tag)}</span>`).join('')}</div>
+        </article>
+        <aside class="side">
+          <div>
+            <span class="meta">${escapeXml(props.copy.wallLabel)}</span>
+            <p>${escapeXml(props.shareSnapshot.wall_label)}</p>
+          </div>
+          <div>
+            <span class="meta">${escapeXml(props.copy.curatorNote)}</span>
+            <p>${escapeXml(props.shareSnapshot.curator_note || props.shareSnapshot.short_excerpt)}</p>
+          </div>
+          <div>
+            <span class="meta">${escapeXml(props.copy.archiveSummary)}</span>
+            <p>${escapeXml(props.shareSnapshot.archive_summary)}</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <span class="meta">${escapeXml(props.copy.posterCaption)}</span>
+          <p>${escapeXml(props.shareSnapshot.poster_caption)}</p>
+        </article>
+        <article class="card">
+          <span class="meta">${escapeXml(props.copy.shortExcerpt)}</span>
+          <p>${escapeXml(props.shareSnapshot.short_excerpt)}</p>
+        </article>
+        <article class="card">
+          <span class="meta">${escapeXml(props.copy.shareText)}</span>
+          <p class="share">${shareTextMarkup}</p>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="card">
+          <h2>${escapeXml(props.copy.decisionLog)}</h2>
+          <div class="log-stack">${decisionMarkup}</div>
+        </article>
+        <article class="card">
+          <h2>${escapeXml(props.copy.calibrationAtlas)}</h2>
+          <div class="atlas-grid">${atlasMarkup}</div>
+          <h2>${escapeXml(props.copy.calibrationHistory)}</h2>
+          <div class="calibration-stack">${calibrationMarkup}</div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>`
 }
 
 function downloadFile(filename: string, content: string, mimeType: string) {

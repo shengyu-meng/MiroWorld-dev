@@ -81,6 +81,7 @@ This slice does include:
 ### In progress now
 
 - [x] add local export actions for archive poster and share bundle
+- [x] add a self-contained exhibit HTML export for archive artifacts
 - [ ] turn the archive poster layer into a stronger export-ready artifact flow
 - [x] turn calibration pattern into a comparative archive atlas
 - [x] compare calibration records by pattern and tendency, not only chronology
