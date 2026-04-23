@@ -167,6 +167,13 @@ export const appCopy = {
       miss: '偏离',
       insufficient_data: '数据不足',
     },
+    ripple: {
+      continuityAtlas: 'Ripple 连续场',
+      continuityNote: '在 Ripple 里直接看事件如何一级级传到下一个节点，而不只是看最新的折弯。',
+      focusEvent: '焦点事件',
+      branchSpread: '分支展开',
+      evidenceDensity: '证据密度',
+    },
     labels: {
       primary: '主分支',
       alternate: '替代分支',
@@ -329,6 +336,13 @@ export const appCopy = {
       partial: 'Partial',
       miss: 'Miss',
       insufficient_data: 'Insufficient Data',
+    },
+    ripple: {
+      continuityAtlas: 'Ripple Continuity',
+      continuityNote: 'Use Ripple to read how one event carries pressure into the next instead of only reading the latest bend.',
+      focusEvent: 'Focus Event',
+      branchSpread: 'Branch Spread',
+      evidenceDensity: 'Evidence Density',
     },
     labels: {
       primary: 'Primary',

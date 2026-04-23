@@ -127,12 +127,29 @@
             <RippleSection
               v-else-if="activeSurface === 'ripple'"
               :latest-bend="latestBend"
+              :events="stage.observatory.key_events"
+              :worldline-track="stage.observatory.worldline_track"
+              :selected-event-id="selectedEventId"
+              :selected-branch-id="selectedBranchId"
               :ripple-cards="stage.ripple.ripple_cards"
               :empty-copy="copy.noData"
+              :labels="{
+                primary: copy.labels.primary,
+                alternate: copy.labels.alternate,
+                actionVector: copy.labels.actionVector,
+              }"
+              :confidence-label="copy.stage.confidenceLabel"
               :copy="{
                 rippleTrack: copy.archive.rippleTrack,
                 latestBendLabel: copy.archive.latestBendLabel,
+                continuityAtlas: copy.ripple.continuityAtlas,
+                continuityNote: copy.ripple.continuityNote,
+                focusEvent: copy.ripple.focusEvent,
+                branchSpread: copy.ripple.branchSpread,
+                evidenceDensity: copy.ripple.evidenceDensity,
               }"
+              @select-event="handleSelectEvent"
+              @select-branch="handleSelectBranch"
             />
 
             <ArchiveSection

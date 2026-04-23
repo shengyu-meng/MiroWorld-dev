@@ -45,6 +45,7 @@ const accent = computed(() => ({
 const scene = computed(() => props.scene ?? 'stage')
 
 const windowedEvents = computed(() => {
+  if (props.activeSurface === 'ripple') return props.events
   if (props.events.length <= 3) return props.events
   const index = props.events.findIndex((event) => event.event_id === props.selectedEventId)
   if (index < 0) return props.events.slice(0, 3)
@@ -163,6 +164,43 @@ function draw() {
     ctx.strokeStyle = line.color.replace(/0\.\d+\)$/, `${line.opacity})`)
     ctx.lineWidth = line.width
     ctx.stroke()
+  }
+
+  if (props.activeSurface === 'ripple' && windowedEvents.value.length > 1) {
+    const anchorStartX = width * 0.16
+    const anchorSpan = width * 0.62
+    const anchorBaseY = height * 0.74
+
+    ctx.beginPath()
+    for (let index = 0; index < windowedEvents.value.length; index += 1) {
+      const ratio = windowedEvents.value.length === 1 ? 0 : index / (windowedEvents.value.length - 1)
+      const x = anchorStartX + anchorSpan * ratio
+      const y = anchorBaseY - Math.sin(ratio * Math.PI) * height * 0.16
+      if (index === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.strokeStyle = 'rgba(188, 180, 255, 0.22)'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+
+    for (let index = 0; index < windowedEvents.value.length; index += 1) {
+      const event = windowedEvents.value[index]
+      const ratio = windowedEvents.value.length === 1 ? 0 : index / (windowedEvents.value.length - 1)
+      const x = anchorStartX + anchorSpan * ratio
+      const y = anchorBaseY - Math.sin(ratio * Math.PI) * height * 0.16
+      const isSelected = event.event_id === props.selectedEventId
+
+      ctx.beginPath()
+      ctx.arc(x, y, isSelected ? 7.5 : 4.5, 0, Math.PI * 2)
+      ctx.fillStyle = isSelected ? 'rgba(195, 180, 255, 0.95)' : 'rgba(142, 226, 248, 0.75)'
+      ctx.fill()
+
+      ctx.beginPath()
+      ctx.arc(x, y, isSelected ? 15 : 10, 0, Math.PI * 2)
+      ctx.strokeStyle = isSelected ? 'rgba(195, 180, 255, 0.28)' : 'rgba(142, 226, 248, 0.16)'
+      ctx.lineWidth = 1
+      ctx.stroke()
+    }
   }
 
   const ringBase = node.radius

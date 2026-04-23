@@ -70,6 +70,53 @@ const sampleStage: StageData = {
           },
         ],
       },
+      {
+        event_id: 'evt_2',
+        title: 'Event Two',
+        summary: 'Summary two',
+        stage: 'Aftermath',
+        impact_level: 'medium',
+        affected_entities: ['Students', 'Media'],
+        evidence_notes: ['Evidence two'],
+        branches: [
+          {
+            branch_id: 'br_3',
+            event_id: 'evt_2',
+            label: 'Continuation',
+            description: 'Continuation branch',
+            confidence: 0.58,
+            premises: ['Premise C'],
+            signals_for: ['Signal E'],
+            signals_against: ['Signal F'],
+            visibility: 'primary',
+            state: 'selected',
+            cost_hint: 'Cost C',
+            player_memory_count: 0,
+            player_memory_note: '',
+            memory_confidence_delta: 0,
+            effective_confidence: 0.58,
+            player_influence: 'tilting',
+          },
+          {
+            branch_id: 'br_4',
+            event_id: 'evt_2',
+            label: 'Backlash',
+            description: 'Backlash branch',
+            confidence: 0.31,
+            premises: ['Premise D'],
+            signals_for: ['Signal G'],
+            signals_against: ['Signal H'],
+            visibility: 'alternate',
+            state: 'candidate',
+            cost_hint: 'Cost D',
+            player_memory_count: 0,
+            player_memory_note: '',
+            memory_confidence_delta: 0,
+            effective_confidence: 0.31,
+            player_influence: 'volatile',
+          },
+        ],
+      },
     ],
     worldline_track: [
       {
@@ -79,6 +126,14 @@ const sampleStage: StageData = {
         primary_branch_id: 'br_1',
         primary_branch_label: 'Primary',
         confidence: 0.66,
+      },
+      {
+        event_id: 'evt_2',
+        title: 'Event Two',
+        stage: 'Aftermath',
+        primary_branch_id: 'br_3',
+        primary_branch_label: 'Continuation',
+        confidence: 0.58,
       },
     ],
   },
@@ -117,6 +172,11 @@ const sampleStage: StageData = {
         title: 'Ripple',
         summary: 'Ripple summary',
         branch_label: 'Primary',
+      },
+      {
+        title: 'Aftershock',
+        summary: 'Aftershock summary',
+        branch_label: 'Continuation',
       },
     ],
   },
@@ -278,6 +338,12 @@ describe('app routes', () => {
     await wrapper.findAll('.language-button')[1]?.trigger('click')
     await flushPromises()
     expect(fetchMock).toHaveBeenCalledTimes(2)
+
+    await wrapper.findAll('.surface-chip')[3]?.trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-testid="ripple-continuity-explorer"]').exists()).toBe(true)
+    await wrapper.find('[data-testid="ripple-event-node-evt_2"]').trigger('click')
+    expect(wrapper.find('[data-testid="ripple-focus-card"]').text()).toContain('Event Two')
 
     await wrapper.findAll('.surface-chip')[4]?.trigger('click')
     await flushPromises()

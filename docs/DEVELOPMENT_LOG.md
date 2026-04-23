@@ -168,3 +168,32 @@ Still open inside slice 4:
 - deepen the artifact path beyond local SVG / TXT export
 - extend calibration comparison if the current atlas proves too shallow in real use
 - extend ripple and linefield continuity beyond the current replay track
+
+## 2026-04-23 - Experience Rebuild Slice 4 (ripple continuity explorer pass started)
+
+Planned in this iteration:
+
+- turn Ripple from a simple replay strip into a clearer event-to-event continuity explorer
+- let the ripple scene steer event focus more directly inside the shell
+- keep linefield performance intact while showing a broader continuity field on the ripple surface
+
+## 2026-04-23 - Experience Rebuild Slice 4 (ripple continuity explorer pass completed)
+
+Completed in this iteration:
+
+- rebuilt Ripple into an event-to-event continuity explorer instead of a simple replay strip
+- made Ripple capable of steering both event focus and branch focus inside the scene
+- expanded the worldline canvas on the Ripple surface so continuity spans more events than the earlier windowed view
+- extended frontend coverage so the ripple explorer path is exercised in route tests
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Still open inside slice 4:
+
+- deepen the artifact path beyond local SVG / TXT export
+- extend calibration comparison if the current atlas proves too shallow in real use
+- broaden Ripple from a single continuity chain into a stronger multi-path replay archive

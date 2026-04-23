@@ -2,11 +2,11 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 calibration atlas pass complete`
+Phase: `experience-first rebuild / scene-shell slice 4 ripple continuity explorer pass complete`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now supports both export artifacts and comparative calibration reading.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive supports export/calibration layers while Ripple now behaves more like an event-to-event explorer.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -14,7 +14,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - calibration no longer reads as a plain log; it now exposes dominant outcomes, recent tendency, and branch focus
-- but the linefield can still become a stronger event-to-event storytelling actor
+- Ripple now lets the viewer steer event focus and branch focus from inside the continuity surface itself
+- and the linefield opens wider on the Ripple surface so continuity reads across more events than before
 - and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
@@ -83,6 +84,12 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - calibration now surfaces dominant outcomes, recent tendency, and the most-tested branch as first-pass comparative cues
 - frontend route tests now cover the presence of the calibration atlas
 
+### Frontend experience rebuild slice 4 (ripple continuity explorer pass)
+
+- Ripple now contains an event-to-event continuity explorer instead of only a single replay strip
+- Ripple can change event focus and branch focus directly inside the scene without returning to Observatory
+- the worldline canvas opens to the full event span on the Ripple surface so continuity reads across more nodes
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -93,10 +100,10 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ### Product / experience gaps
 
-- the linefield now acts as a branch field for the current event, but it is not yet a full event-to-event explorer
+- the linefield and Ripple now act more like an event continuity surface, but they are not yet a full multi-path explorer
 - the archive now exports local poster and text artifacts, but it does not yet generate richer saved multi-format bundles or image pipelines beyond SVG
 - calibration history is now comparative at a first pass, but it is not yet deeper across branch families, broader time windows, or decision types
-- ripple history is now more track-like, but it still centers one replay chain more than a broader event-to-event archive
+- ripple continuity is now event-aware, but it still needs a stronger broader archive of multiple replay paths
 
 ### Content expression gaps
 
@@ -115,4 +122,4 @@ The next active slice is still `Experience Rebuild Slice 4`:
 
 - deepen the export path beyond local SVG / TXT into stronger artifact options
 - deepen calibration comparison beyond the current atlas into richer archive perspectives if needed
-- keep extending the linefield / ripple system toward a fuller event-to-event explorer without regressing shell speed
+- keep extending the linefield / ripple system toward a fuller multi-path explorer without regressing shell speed
