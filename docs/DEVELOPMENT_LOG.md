@@ -60,3 +60,24 @@ Still open inside slice 2:
 
 - decide whether branch comparison should become its own scene or a stronger overlay inside the existing linefield
 - continue polishing share/export presentation beyond text-first output
+
+## 2026-04-23 - Experience Rebuild Slice 2 (branch field overlay pass)
+
+Completed in this iteration:
+
+- updated the docs to make the overlay-vs-dedicated-scene decision explicit
+- added an in-shell branch-field overlay so the linefield becomes a selectable branch surface
+- strengthened Observatory with a comparison board for the selected event
+- cleaned up the stage-facing copy source while keeping contracts stable
+
+Verification:
+
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+
+Next likely slice after this pass:
+
+- evolve share/export toward richer visual artifacts
+- make calibration history easier to read at a glance
+- deepen ripple history beyond the latest bend

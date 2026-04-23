@@ -155,6 +155,14 @@ li {
   grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
 }
 
+.worldline-overlay,
+.comparison-board {
+  background: linear-gradient(180deg, rgba(11, 21, 28, 0.9), rgba(7, 12, 17, 0.72));
+  border: 1px solid var(--line);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
 .entry-hero-copy,
 .entry-hero-side,
 .stage-header-tools,
@@ -403,6 +411,79 @@ li {
   border-radius: 1.35rem;
 }
 
+.worldline-overlay {
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 1.55rem;
+}
+
+.worldline-overlay-header,
+.comparison-board-header {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.worldline-overlay-field {
+  position: relative;
+  min-height: 230px;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 22% 48%, rgba(139, 226, 248, 0.14), transparent 18%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent 28%);
+}
+
+.worldline-knot {
+  position: absolute;
+  left: 14%;
+  top: 52%;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: var(--warm);
+  box-shadow: 0 0 0 0.35rem rgba(255, 185, 121, 0.12);
+  transform: translate(-50%, -50%);
+}
+
+.worldline-connector {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 185, 121, 0.36), rgba(139, 226, 248, 0.28));
+  transform-origin: left center;
+}
+
+.overlay-branch-card,
+.comparison-branch-card {
+  border: 1px solid var(--line);
+  background: rgba(9, 16, 21, 0.88);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.overlay-branch-card {
+  position: absolute;
+  width: min(240px, 28vw);
+  padding: 0.9rem;
+  border-radius: 1rem;
+  transform: translate(-50%, -50%);
+}
+
+.overlay-branch-card:hover {
+  border-color: var(--line-strong);
+  transform: translate(-50%, calc(-50% - 2px));
+}
+
+.overlay-branch-card.active,
+.comparison-branch-card.active {
+  border-color: rgba(255, 185, 121, 0.82);
+  background: linear-gradient(180deg, rgba(54, 31, 23, 0.96), rgba(18, 15, 14, 0.82));
+}
+
 .stage-overview {
   align-items: stretch;
 }
@@ -523,6 +604,31 @@ li {
 
 .event-note-list li + li {
   margin-top: 0.35rem;
+}
+
+.comparison-board {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1.35rem;
+}
+
+.comparison-board-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.comparison-branch-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem;
+  border-radius: 1rem;
+}
+
+.comparison-branch-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
 }
 
 .event-meta-pill {
@@ -669,6 +775,10 @@ li {
     grid-template-columns: 1fr;
   }
 
+  .overlay-branch-card {
+    width: min(260px, 36vw);
+  }
+
   .entry-hero-side,
   .annotation-rail {
     order: -1;
@@ -686,6 +796,29 @@ li {
   .stage-overview,
   .share-detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .worldline-overlay-field {
+    display: grid;
+    gap: 0.75rem;
+    min-height: auto;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .worldline-knot,
+  .worldline-connector {
+    display: none;
+  }
+
+  .overlay-branch-card {
+    position: static;
+    width: auto;
+    transform: none;
+  }
+
+  .overlay-branch-card:hover {
+    transform: translateY(-2px);
   }
 
   .entry-shell,

@@ -2,7 +2,7 @@
 
 Updated: 2026-04-23
 Status: Active
-Current slice: `Experience Rebuild Slice 2`
+Current slice: `Experience Rebuild Slice 3`
 
 ## Goal
 
@@ -23,9 +23,9 @@ This slice intentionally stays inside the existing MVP boundary:
 
 This slice does include:
 
-- deeper archive and share chamber
-- stronger branch comparison in Observatory
-- selective linefield overlay upgrades where they materially improve reading
+- richer share/export presentation
+- stronger calibration visualization
+- deeper ripple-history expression
 - further documentation sync after each iteration
 
 ## Slice 1 Completed
@@ -38,13 +38,19 @@ This slice does include:
 - [x] existing replay/share/calibration flow still works
 - [x] build, tests, and smoke pass after the redesign
 
-## Slice 2 Acceptance Criteria
+## Slice 2 Completed
 
-- Observatory makes branch differences easier to read without opening every branch manually
-- Archive feels closer to a `Debrief / Share / Export` destination than a utility drawer
-- share output presentation becomes richer without introducing frontend-side secret risk
-- linefield upgrades do not regress startup, replay flow, or local FPS expectations
-- docs are updated again when the slice lands
+- [x] Observatory makes branch differences easier to read without opening every branch manually
+- [x] Archive feels closer to a `Debrief / Share / Export` destination than a utility drawer
+- [x] linefield upgrades remain lightweight while becoming a selectable branch field for the active event
+- [x] build, tests, smoke, and docs stayed aligned after the iteration
+
+## Slice 3 Acceptance Criteria
+
+- share/export presentation becomes richer without introducing frontend-side secret risk
+- calibration history becomes easier to read than a plain chronological list
+- ripple history exposes more than only the latest bend
+- the current shell remains fast and the public contracts stay unchanged
 
 ## Checklist
 
@@ -59,17 +65,17 @@ This slice does include:
 
 ### In progress now
 
-- [x] redesign Archive into a fuller `Debrief / Share / Export` chamber
-- [x] improve Observatory branch comparison density
-- [ ] decide whether to add a dedicated branch-explorer scene or richer scene overlays
+- [ ] improve share artifact presentation beyond text-first copy
+- [ ] explore poster/export image generation
+- [ ] revisit calibration visualization now that archive structure is stronger
+- [ ] deepen ripple history beyond the latest bend
 - [ ] keep docs, tests, and smoke aligned with each iteration
 
 ### Deferred after this slice
 
-- [ ] improve share artifact presentation beyond text-first copy
-- [ ] explore poster/export image generation
+- [ ] decide whether the branch-field overlay should remain in-shell or become a dedicated future scene
 - [ ] continue polishing Observatory density and wording
-- [ ] revisit calibration visualization once archive structure is stronger
+- [ ] revisit calibration visualization if the visual artifact pass changes archive layout again
 
 ## Verification Plan
 

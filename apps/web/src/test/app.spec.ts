@@ -222,6 +222,7 @@ describe('app routes', () => {
     await flushPromises()
 
     expect(wrapper.find('[data-testid="observatory-section"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="worldline-overlay"]').exists()).toBe(true)
     await wrapper.findAll('.branch-chip')[1]?.trigger('click')
     expect(wrapper.text()).toContain('Alternate branch')
 

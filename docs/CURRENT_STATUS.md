@@ -2,7 +2,7 @@
 
 Updated: 2026-04-23
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 2 in progress`
+Phase: `experience-first rebuild / scene-shell slice 2 complete`
 
 ## One-line Summary
 
@@ -54,6 +54,13 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - archive, replay, and branch annotations reorganized into a stronger right-rail and scene layout
 - frontend tests and smoke flow updated to the new shell
 
+### Frontend experience rebuild slice 2
+
+- Archive expanded from a utility drawer into a richer `Share / Debrief` chamber
+- branch-field overlay added so the linefield becomes a selectable branch surface for the current event
+- Observatory gained an at-a-glance comparison board for the selected event's branches
+- stage copy cleaned up and centralized so the visible shell no longer relies on scattered inline wording
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -64,10 +71,10 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ### Product / experience gaps
 
-- the linefield is stronger now, but it still behaves more like a live atmosphere than a true branch-explorer surface
-- Observatory can still become denser and more legible for branch comparison at a glance
-- Archive is still a compact utility space; it is not yet a full `Debrief / Share / Export` chamber
-- share output is text-first today and does not yet produce richer visual export artifacts
+- the linefield now acts as a branch field for the current event, but it is not yet a full event-to-event explorer
+- share output is still text-first today and does not yet produce richer visual export artifacts
+- calibration history is visible, but its visualization is still list-based rather than patterned or comparative
+- ripple history still foregrounds the latest bend more than a multi-step replay trail
 
 ### Content expression gaps
 
@@ -82,9 +89,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The current active slice is `Experience Rebuild Slice 2`:
+The next active slice is `Experience Rebuild Slice 3`:
 
-- Archive has now moved toward a fuller `Share / Debrief` chamber with richer share text, wall label, archive summary, and calibration history
-- Observatory now exposes evidence notes earlier in the reading flow
-- the next highest-value remaining step is still deciding how far to push branch comparison and linefield overlays
-- performance and contract stability remain intact after the second frontend pass
+- evolve share/export from text-first output toward a more visual artifact layer
+- decide whether calibration should become a stronger visual record instead of a list
+- deepen ripple history beyond the latest bend without regressing the current shell

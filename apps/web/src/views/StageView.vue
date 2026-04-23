@@ -54,6 +54,20 @@
           </article>
         </section>
 
+        <WorldlineOverlay
+          :event="selectedEvent"
+          :selected-branch-id="selectedBranchId"
+          :confidence-label="copy.stage.confidenceLabel"
+          :branch-field-label="copy.stage.branchFieldLabel"
+          :branch-field-note="copy.stage.branchFieldNote"
+          :labels="{
+            primary: copy.labels.primary,
+            alternate: copy.labels.alternate,
+            actionVector: copy.labels.actionVector,
+          }"
+          @select-branch="handleSelectBranch(selectedEvent.event_id, $event)"
+        />
+
         <SurfaceRail :surfaces="surfaces" :active-surface="activeSurface" @select="activeSurface = $event" />
 
         <div class="stage-grid">
@@ -71,7 +85,15 @@
               :events="stage.observatory.key_events"
               :selected-event-id="selectedEventId"
               :selected-branch-id="selectedBranchId"
-              :labels="copy.labels"
+              :labels="{
+                primary: copy.labels.primary,
+                alternate: copy.labels.alternate,
+                affected: copy.labels.affected,
+                comparisonBoard: copy.stage.comparisonBoard,
+                confidenceLabel: copy.stage.confidenceLabel,
+                costHint: copy.labels.costHint,
+                actionVector: copy.labels.actionVector,
+              }"
               @select-event="handleSelectEvent"
               @select-branch="handleSelectBranch"
             />
@@ -132,13 +154,13 @@
               <span class="annotation-label">{{ copy.stage.selectedBranch }}</span>
               <strong>{{ selectedBranch.label }}</strong>
               <p>{{ selectedBranch.description }}</p>
-              <small>{{ copy.stage.confidenceLabel }} · {{ formatConfidence(selectedBranch.effective_confidence ?? selectedBranch.confidence) }}</small>
+              <small>{{ copy.stage.confidenceLabel }} / {{ formatConfidence(selectedBranch.effective_confidence ?? selectedBranch.confidence) }}</small>
             </div>
 
             <div class="annotation-block">
               <span class="annotation-label">{{ copy.stage.selectedEvent }}</span>
               <strong>{{ selectedEvent.title }}</strong>
-              <p>{{ selectedEvent.stage }} · {{ selectedEvent.impact_level }}</p>
+              <p>{{ selectedEvent.stage }} / {{ selectedEvent.impact_level }}</p>
               <ul>
                 <li v-for="entity in selectedEvent.affected_entities" :key="entity">{{ entity }}</li>
               </ul>
@@ -201,6 +223,7 @@ import { useRoute, useRouter } from 'vue-router'
 import LanguageToggle from '@/components/LanguageToggle.vue'
 import SurfaceRail from '@/components/SurfaceRail.vue'
 import WorldlineCanvas from '@/components/WorldlineCanvas.vue'
+import WorldlineOverlay from '@/components/WorldlineOverlay.vue'
 import ArchiveSection from '@/components/sections/ArchiveSection.vue'
 import CostLensSection from '@/components/sections/CostLensSection.vue'
 import InterventionSection from '@/components/sections/InterventionSection.vue'

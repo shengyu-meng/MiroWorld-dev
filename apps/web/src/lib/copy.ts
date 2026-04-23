@@ -56,6 +56,9 @@ export const appCopy = {
       actionLine: '用户不是观众，而是会改变世界线权重的变量。',
       submitAction: '运行重演',
       replaying: '正在折弯世界线...',
+      branchFieldLabel: 'Branch Field',
+      branchFieldNote: '在切换其他 surface 之前，先看清主分支和替代分支如何从同一事件分叉。',
+      comparisonBoard: 'Comparison Board',
     },
     surfaces: {
       observatory: {
@@ -149,6 +152,7 @@ export const appCopy = {
       ethicalNotes: 'Ethical Notes',
       passiveFloor: 'Passive Floor',
       actionVector: 'Action Vector',
+      costHint: 'Cost Hint',
     },
   },
   en: {
@@ -189,6 +193,9 @@ export const appCopy = {
       actionLine: 'The user is not just watching. The user changes the weight of the line.',
       submitAction: 'Run Replay',
       replaying: 'Bending worldline...',
+      branchFieldLabel: 'Branch Field',
+      branchFieldNote: 'Read the main and alternate branches before switching surfaces or acting on them.',
+      comparisonBoard: 'Comparison Board',
     },
     surfaces: {
       observatory: {
@@ -282,6 +289,7 @@ export const appCopy = {
       ethicalNotes: 'Ethical Notes',
       passiveFloor: 'Passive Floor',
       actionVector: 'Action Vector',
+      costHint: 'Cost Hint',
     },
   },
 } as const
