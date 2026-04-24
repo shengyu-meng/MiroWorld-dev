@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from .models import Branch, DisplayLanguage, KeyEvent, ShareArtifact, WorldState
+from .process_trace_builder import ProcessTraceBuilder
 
 
 class StageBuilder:
+  def __init__(self) -> None:
+    self.process_trace_builder = ProcessTraceBuilder()
+
   def build(self, world_state: WorldState, language: DisplayLanguage) -> dict:
     selected_event = world_state.key_events[0]
     selected_branch = selected_event.branches[0]
     calibration_summary = self._build_calibration_summary(world_state, language)
+    process_trace = self.process_trace_builder.build(world_state, language)
     return {
       "project_context": {
         "project_id": world_state.project_id,
@@ -81,6 +86,7 @@ class StageBuilder:
         "calibration_records": [record.model_dump(mode="json") for record in world_state.calibration_records[:12]],
         "calibration_summary": calibration_summary,
       },
+      "process_trace": process_trace,
       "version": world_state.version,
     }
 

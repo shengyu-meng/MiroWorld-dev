@@ -30,6 +30,17 @@ def assert_schema(name: str, payload):
   load_schema(name).validate(payload)
 
 
+def assert_process_trace(stage):
+  trace = stage["process_trace"]
+  assert trace["storage_mode"] == "local_gitignored_runtime"
+  assert len(trace["steps"]) == len(stage["observatory"]["key_events"])
+  first_step = trace["steps"][0]
+  assert {layer["layer"] for layer in first_step["layer_results"]} == {"FACT", "INFERENCE", "VALUE", "ACTION"}
+  assert first_step["artifact_path"].startswith("data/runtime/process/")
+  artifact_file = ROOT / first_step["artifact_path"]
+  assert artifact_file.exists()
+
+
 def create_fixture_project():
   response = client.post("/api/projects", json={"fixture_id": "literary-branching-world", "language": "zh"})
   assert response.status_code == 200
@@ -40,10 +51,13 @@ def test_fixture_project_creation_and_stage_contracts():
   data = create_fixture_project()
   project_id = data["project_id"]
   assert_schema("stage-response.schema.json", data["stage"])
+  assert_process_trace(data["stage"])
 
   stage_response = client.get(f"/api/projects/{project_id}/stage", params={"language": "zh"})
   assert stage_response.status_code == 200
-  assert_schema("stage-response.schema.json", stage_response.json()["data"])
+  fetched_stage = stage_response.json()["data"]
+  assert_schema("stage-response.schema.json", fetched_stage)
+  assert_process_trace(fetched_stage)
 
   project_file = ROOT / "data" / "runtime" / "projects" / f"{project_id}.json"
   snapshot = json.loads(project_file.read_text(encoding="utf-8"))
@@ -56,6 +70,7 @@ def test_prompt_project_creation():
   payload = response.json()["data"]
   assert payload["project_id"].startswith("proj_")
   assert_schema("stage-response.schema.json", payload["stage"])
+  assert_process_trace(payload["stage"])
 
 
 def test_input_replay_share_and_calibration_flow():

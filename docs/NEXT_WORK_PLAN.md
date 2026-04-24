@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 5 / Worldline Theatre completed`
+Current slice: `Experience Rebuild Slice 6 / Process Trace and Intervention Windows completed`
 
 ## Goal
 
@@ -28,9 +28,20 @@ This slice does include:
 - more comparative calibration reading
 - deeper event-to-event ripple and branch exploration
 - a non-report-like theatre shell with progressive reveal
+- visible process-trace files while the worldline unfolds
+- timed intervention windows so the viewer can disturb the line at meaningful nodes
 - cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
 - performance-focused canvas simplification with a smaller black-hole anchor
 - further documentation sync after each iteration
+
+## Slice 6 Acceptance Criteria
+
+- [x] stage payload exposes a deterministic `process_trace` derived from the current world state
+- [x] process trace writes gitignored runtime JSON artifacts under `data/runtime/process/...`
+- [x] `/world/:projectId` shows the current event's process file, layer outputs, and backend calculation cues while the viewer advances
+- [x] pressing Next still works without user input, but appropriate events show an intervention window with a direct path into the Intervention drawer
+- [x] tests cover process trace contract validation, progressive display, and intervention-window entry
+- [x] build, tests, smoke, diff check, secret scan, and reference-folder checks pass before push
 
 ## Slice 5 Acceptance Criteria
 
@@ -51,9 +62,19 @@ This slice does include:
 - [x] renamed the campus fixture to `campus-field-threshold` and moved policy wording toward civic rules and field conditions
 - [x] lightened `WorldlineCanvas` with lower density, smaller singularity, adaptive drawing, pointer throttling, and reduced-motion support
 
+## Slice 6 Completed
+
+- [x] added a small backend process-trace builder that derives FACT / INFERENCE / VALUE / ACTION layer outputs per event
+- [x] wrote process artifacts into ignored runtime data storage and exposed safe relative artifact paths in the stage response
+- [x] added a theatre-side process panel that reveals each event's process layers alongside the worldline
+- [x] added intervention-window affordances that select the recommended input type and open the Intervention drawer without forcing the viewer to intervene
+- [x] updated API contract, frontend types, unit tests, smoke test, and docs
+
 ## Next Candidate Slice
 
 - [ ] run a visual review of the theatre shell against `.ui-ref` and tune spatial rhythm, black-hole scale, and drawer density
+- [ ] make process artifacts more theatrical and less debug-card-like while keeping the data-file truth visible
+- [ ] decide whether process-trace reveal progress should persist in backend project snapshots
 - [ ] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [ ] decide whether reveal progress should persist in backend project snapshots
 - [ ] add a repeatable browser performance benchmark for canvas FPS and interaction latency

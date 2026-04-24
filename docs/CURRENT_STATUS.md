@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 5 worldline theatre completed`
+Phase: `experience-first rebuild / slice 6 process trace completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. The canvas has been lightened with a smaller black-hole anchor, `.ui-ref/` is protected from upload, and core UI / prompt / fixture wording has moved away from old public-opinion simulation language toward broader world simulation with actants, rules, environments, materials, natural objects, institutions, and constraints.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. The unfolding no longer reads as passive waiting: each stage now exposes backend process traces, generated runtime data-file previews, and timely intervention windows while keeping normal navigation fast and LLM-free.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -14,6 +14,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - a viewer can press Next without writing an intervention and still reach a complete Archive afterimage
 - core display text now rewrites old public-opinion terms such as initiator, public climate, platform, and public view into trigger source, field conditions, rule layer, and observable layer
 - the canvas now uses lower line density, pointer throttling, reduced-motion fallback, and a smaller singularity so the worldline remains primary
+- backend process-trace files now appear while the line advances, with FACT / INFERENCE / VALUE / ACTION outputs for the current node
+- high-pressure nodes now expose intervention windows that jump into the Intervention drawer with a recommended input type
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - and the archive can now leave the UI as a self-contained exhibit HTML artifact instead of only fragmented exports
@@ -201,6 +203,14 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - `.ui-ref/` and `ui-ref/` are ignored so the local reference package cannot be staged accidentally
 - the canvas now reduces line density, throttles pointer sampling, supports reduced motion, and keeps the black hole as a smaller anchor rather than the visual center of gravity
 
+### Experience rebuild slice 6 (process trace and intervention windows)
+
+- backend stage payloads now include deterministic `process_trace` data derived from the current world state
+- each process step writes a safe local runtime JSON artifact under ignored `data/runtime/process/...`
+- the theatre center now shows the current event's process file path, layer results, and calculation summary during progressive reveal
+- high-pressure or contradiction-heavy steps expose an intervention window that opens the Intervention drawer with the recommended input type and target branch
+- route tests, API contract tests, and smoke coverage now include process trace visibility and intervention-window entry
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -233,9 +243,11 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice should continue after `Experience Rebuild Slice 5`:
+The next active slice should continue after `Experience Rebuild Slice 6`:
 
 - run a visual/browser review of the new theatre shell against `.ui-ref` and tune spacing, scale, and black-hole size
+- make process artifacts feel more cinematic in the theatre instead of reading as compact debug cards
+- decide whether process-trace progress should persist in project snapshots or remain stage-derived
 - re-integrate the deeper Ripple/Archive authored export tools into the theatre drawer language without returning to report density
 - decide whether reveal progress should persist in the project snapshot or remain a local exhibition reading
 - add a repeatable canvas performance benchmark before pushing the visual system further

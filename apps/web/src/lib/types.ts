@@ -158,6 +158,53 @@ export interface SavedReplaySet extends SavedReplaySetDraft {
   saved_at: string
 }
 
+export interface ProcessLayerResult {
+  layer: KnowledgeLayer
+  title: string
+  inputs: string[]
+  outputs: string[]
+  confidence_note: string
+}
+
+export interface ProcessInterventionWindow {
+  is_open: boolean
+  urgency: 'low' | 'medium' | 'high'
+  recommended_input_type: InputType
+  effect_scope: EffectScope
+  target_event_id: string
+  target_branch_id: string
+  prompt: string
+  reason: string
+}
+
+export interface ProcessTraceStep {
+  step_id: string
+  event_id: string
+  event_title: string
+  branch_id: string
+  branch_label: string
+  status: string
+  artifact_path: string
+  artifact_kind: string
+  summary: string
+  layer_results: ProcessLayerResult[]
+  intervention_window: ProcessInterventionWindow
+  artifact_preview: {
+    event_id: string
+    primary_confidence: number
+    counter_signal_count: number
+    cost_mass: number
+  }
+}
+
+export interface ProcessTrace {
+  run_id: string
+  generated_at: string
+  artifact_root: string
+  storage_mode: 'local_gitignored_runtime'
+  steps: ProcessTraceStep[]
+}
+
 export interface StageData {
   project_context: {
     project_id: string
@@ -230,5 +277,6 @@ export interface StageData {
       summary: string
     }
   }
+  process_trace: ProcessTrace
   version: number
 }

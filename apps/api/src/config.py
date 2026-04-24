@@ -40,4 +40,5 @@ def get_settings() -> Settings:
   settings.data_dir.mkdir(parents=True, exist_ok=True)
   (settings.data_dir / "projects").mkdir(parents=True, exist_ok=True)
   (settings.data_dir / "cache").mkdir(parents=True, exist_ok=True)
+  (settings.data_dir / "process").mkdir(parents=True, exist_ok=True)
   return settings

@@ -713,3 +713,35 @@ Still open after slice 5:
 - Archive and Ripple advanced export tools should be re-integrated into the theatre language without returning to report density
 - reveal progress is currently frontend-local and may later need backend project persistence
 - canvas performance has targeted optimizations but still needs a repeatable benchmark before exhibition deployment
+
+## 2026-04-24 - Experience Rebuild Slice 6 (process trace and intervention windows started)
+
+Planned in this iteration:
+
+- expose backend process-trace outputs while the worldline unfolds so the viewer is not simply waiting between nodes
+- generate safe runtime process data files under ignored `data/runtime/process/...`
+- show FACT / INFERENCE / VALUE / ACTION layer outputs for the currently revealed event inside the theatre shell
+- add intervention-window affordances that open the Intervention drawer with a recommended input type at meaningful nodes
+- keep ordinary Next navigation local and fast, without requiring live LLM calls for display updates
+
+## 2026-04-24 - Experience Rebuild Slice 6 (process trace and intervention windows completed)
+
+Completed in this iteration:
+
+- added a backend `ProcessTraceBuilder` that derives per-event FACT / INFERENCE / VALUE / ACTION layer results from the current world state
+- wrote process trace artifacts as safe local JSON files under ignored `data/runtime/process/...`
+- extended the stage response contract and frontend types with a deterministic `process_trace`
+- added a central theatre process panel that shows artifact path, layer outputs, and backend calculation cues while the worldline advances
+- added intervention-window affordances that open the Intervention drawer with the recommended input type and target branch
+- extended API, frontend, and smoke coverage for process trace visibility and intervention-window entry
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm run test:api` passed
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` initially hit an old reused local server, then passed after `stop-miroworld.ps1` cleared stale 8000 / 4173 processes
+- `git diff --check` passed
+- secret scan returned no matches for the provided MiniMax key fragment
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files

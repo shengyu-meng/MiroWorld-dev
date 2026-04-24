@@ -26,6 +26,66 @@ function branch(eventId: string, id: string, label: string, confidence: number, 
   }
 }
 
+function processStep(eventId: string, title: string, branchId: string, branchLabel: string) {
+  return {
+    step_id: `step_${eventId}`,
+    event_id: eventId,
+    event_title: title,
+    branch_id: branchId,
+    branch_label: branchLabel,
+    status: 'ready',
+    artifact_path: `data/runtime/process/proj_test/v1/${eventId}-process.json`,
+    artifact_kind: 'runtime_json',
+    summary: `${title} is split into process layers.`,
+    layer_results: [
+      {
+        layer: 'FACT' as const,
+        title: 'Fact scan',
+        inputs: ['visible trace'],
+        outputs: ['1 observable trace'],
+        confidence_note: 'Visible material only.',
+      },
+      {
+        layer: 'INFERENCE' as const,
+        title: 'Inference fold',
+        inputs: ['branch premise'],
+        outputs: ['Primary confidence 66%'],
+        confidence_note: 'Branch-bound confidence.',
+      },
+      {
+        layer: 'VALUE' as const,
+        title: 'Cost-mass estimate',
+        inputs: ['rule layer'],
+        outputs: ['Cost mass 4'],
+        confidence_note: 'Cost without moral closure.',
+      },
+      {
+        layer: 'ACTION' as const,
+        title: 'Action window',
+        inputs: ['suggested disturbance: intervention'],
+        outputs: ['Window open'],
+        confidence_note: 'Intervention changes later tracks.',
+      },
+    ],
+    intervention_window: {
+      is_open: true,
+      urgency: 'high' as const,
+      recommended_input_type: 'intervention' as const,
+      effect_scope: 'world_state' as const,
+      target_event_id: eventId,
+      target_branch_id: branchId,
+      prompt: `Add one intervention at "${title}".`,
+      reason: 'Impact is high; counter-signals 1; cost mass 4.',
+    },
+    artifact_preview: {
+      event_id: eventId,
+      primary_confidence: 0.66,
+      counter_signal_count: 1,
+      cost_mass: 4,
+    },
+  }
+}
+
 const sampleStage: StageData = {
   project_context: {
     project_id: 'proj_test',
@@ -160,6 +220,17 @@ const sampleStage: StageData = {
       summary: 'No calibration yet.',
     },
   },
+  process_trace: {
+    run_id: 'proc_proj_test_v1',
+    generated_at: '2026-04-24T00:00:00Z',
+    artifact_root: 'data/runtime/process/proj_test/v1',
+    storage_mode: 'local_gitignored_runtime',
+    steps: [
+      processStep('evt_1', 'Process entrance', 'br_1', 'primary branch'),
+      processStep('evt_2', 'Process turn', 'br_3', 'continuation'),
+      processStep('evt_3', 'Process archive', 'br_5', 'settling'),
+    ],
+  },
   version: 1,
 }
 
@@ -247,6 +318,21 @@ describe('worldline theatre stage', () => {
     expect(text).not.toContain('公众气候')
     expect(text).not.toContain('公共视野')
     expect(text).not.toContain('舆论')
+  })
+
+  it('shows process files and opens the recommended intervention window', async () => {
+    const { wrapper } = await mountStage()
+
+    expect(wrapper.get('[data-testid="process-trace-panel"]').text()).toContain('Process entrance')
+    expect(wrapper.get('[data-testid="process-file-path"]').text()).toContain('evt_1-process.json')
+    expect(wrapper.find('[data-testid="process-layer-FACT"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="process-layer-INFERENCE"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="process-layer-VALUE"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="process-layer-ACTION"]').exists()).toBe(true)
+
+    await wrapper.get('[data-testid="process-intervene"]').trigger('click')
+    expect(wrapper.find('[data-testid="intervention-section"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="intervention-section"] textarea').attributes('placeholder')).toContain('Add one intervention')
   })
 
   it('keeps branch selection and intervention flow available inside the theatre', async () => {

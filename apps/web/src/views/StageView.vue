@@ -82,6 +82,47 @@
               <strong>{{ t.singularityNote }}</strong>
             </div>
 
+            <article v-if="currentProcessStep" class="process-trace-card" data-testid="process-trace-panel">
+              <div class="process-trace-head">
+                <span class="annotation-label">{{ processText.processLabel }}</span>
+                <small>{{ currentProcessStep.status }} / {{ currentProcessStep.artifact_kind }}</small>
+              </div>
+              <strong>{{ cleanText(currentProcessStep.event_title) }}</strong>
+              <p>{{ cleanText(currentProcessStep.summary) }}</p>
+              <code data-testid="process-file-path">{{ currentProcessStep.artifact_path }}</code>
+              <div class="process-layer-grid">
+                <button
+                  v-for="layerResult in currentProcessStep.layer_results"
+                  :key="layerResult.layer"
+                  type="button"
+                  class="process-layer-card"
+                  :class="{ active: layerResult.layer === selectedLayer }"
+                  :data-testid="`process-layer-${layerResult.layer}`"
+                  @click="selectedLayer = layerResult.layer"
+                >
+                  <span>{{ layerResult.layer }}</span>
+                  <strong>{{ cleanText(layerResult.title) }}</strong>
+                  <small>{{ cleanText(layerResult.outputs[0] ?? layerResult.confidence_note) }}</small>
+                </button>
+              </div>
+              <div
+                v-if="currentProcessStep.intervention_window.is_open"
+                class="intervention-window"
+                data-testid="process-intervention-window"
+              >
+                <span class="annotation-label">{{ processText.interventionWindow }}</span>
+                <p>{{ cleanText(currentProcessStep.intervention_window.reason) }}</p>
+                <button
+                  type="button"
+                  class="theatre-secondary-action"
+                  data-testid="process-intervene"
+                  @click="openProcessIntervention(currentProcessStep)"
+                >
+                  {{ processText.openInterventionWindow }}
+                </button>
+              </div>
+            </article>
+
             <ol class="progressive-worldline" data-testid="progressive-worldline">
               <li
                 v-for="(event, index) in revealedEvents"
@@ -176,7 +217,7 @@
               <p>{{ t.inputs[currentInputType].note }}</p>
             </div>
             <form class="theatre-input-form" @submit.prevent="submitInput">
-              <textarea v-model="draft" :placeholder="t.inputPlaceholder"></textarea>
+              <textarea v-model="draft" :placeholder="interventionPlaceholder"></textarea>
               <button type="submit" class="theatre-primary-action" :disabled="submitting || !draft.trim()">
                 {{ submitting ? t.replaying : t.submitAction }}
               </button>
@@ -534,7 +575,25 @@ const theatreCopy = {
   calibrationResults: Record<CalibrationRecord['result'], string>
 }>
 
+const processCopy = {
+  zh: {
+    processLabel: '后台过程文件',
+    interventionWindow: '可介入窗口',
+    openInterventionWindow: '从这里介入',
+  },
+  en: {
+    processLabel: 'Process File',
+    interventionWindow: 'Intervention Window',
+    openInterventionWindow: 'Intervene Here',
+  },
+} satisfies Record<DisplayLanguage, {
+  processLabel: string
+  interventionWindow: string
+  openInterventionWindow: string
+}>
+
 const t = computed(() => theatreCopy[language.value])
+const processText = computed(() => processCopy[language.value])
 const events = computed(() => stage.value?.observatory.key_events ?? [])
 const revealedEvents = computed(() => events.value.slice(0, Math.min(revealedCount.value, events.value.length)))
 const revealedIds = computed(() => new Set(revealedEvents.value.map((event) => event.event_id)))
@@ -552,8 +611,11 @@ const latestBend = computed(() => cleanText(replaySummary.value || stage.value?.
 const currentCosts = computed(() => selectedLenses.value.flatMap((lens) => [...lens.first_order_costs, ...lens.second_order_costs]).map(cleanText).slice(0, 4))
 const visibleRippleCards = computed(() => stage.value?.ripple.ripple_cards.slice(0, revealedCount.value) ?? [])
 const revealedTrack = computed(() => stage.value?.observatory.worldline_track.filter((track) => revealedIds.value.has(track.event_id)) ?? [])
+const processSteps = computed(() => stage.value?.process_trace.steps ?? [])
+const currentProcessStep = computed(() => processSteps.value.find((step) => step.event_id === selectedEventId.value) ?? null)
 const activeSurfaceCopy = computed(() => t.value.surfaces[activeSurface.value])
 const nextActionLabel = computed(() => (progressComplete.value ? t.value.finish : t.value.next))
+const interventionPlaceholder = computed(() => cleanText(currentProcessStep.value?.intervention_window.prompt ?? t.value.inputPlaceholder))
 
 const availableLayers = computed<KnowledgeLayer[]>(() => {
   const layers = stage.value?.observatory.knowledge_layers ?? []
@@ -693,6 +755,14 @@ function handleSelectBranch(eventId: string, branchId: string) {
 function handleModeChange(mode: InputType) {
   currentInputType.value = mode
   selectedLayer.value = 'ACTION'
+}
+
+function openProcessIntervention(step: StageData['process_trace']['steps'][number]) {
+  handleSelectEvent(step.intervention_window.target_event_id)
+  handleSelectBranch(step.intervention_window.target_event_id, step.intervention_window.target_branch_id)
+  currentInputType.value = step.intervention_window.recommended_input_type
+  selectedLayer.value = 'ACTION'
+  activeSurface.value = 'intervention'
 }
 
 function handleCalibrationResult(value: string) {
