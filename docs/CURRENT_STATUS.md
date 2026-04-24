@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 15 backstage reasoning artifact trail completed`
+Phase: `experience-first rebuild / slice 16 archive calibration constellation completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose an ordered trail of safe runtime computation artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule with copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose an ordered trail of safe runtime computation artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule, calibration constellation, and copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -48,6 +48,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and saved replay sets now persist with the project snapshot instead of living only inside browser-local state
 - and Ripple now has a theatre-native replay console with revealed-track metrics and a frontend-only trace packet export
 - and Archive now has a theatre-native afterimage capsule with reveal, decision, calibration, and export/copy affordances
+- and Archive calibration now reads as a constellation of actual outcomes, dominant result, latest return, calibrated branches, and confidence residue
 - and the performance benchmark now targets 45 FPS desktop frame cadence plus sub-150 ms Next-step reveal latency instead of the earlier loose MVP budget
 - and mobile / low-height viewport checks now guard theatre reachability, process panel visibility, Next control access, and horizontal overflow
 - and the calibration / replay archive can still become more comparative and more navigable
@@ -297,6 +298,13 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the theatre process panel shows the latest backstage trail while the viewer can keep pressing Next through the worldline
 - API and frontend tests now cover queued, completed, fallback, and rendered trail visibility without leaking provider keys or raw hidden reasoning
 
+### Experience rebuild slice 16 (archive calibration constellation)
+
+- Archive now derives a theatre-native calibration constellation from existing `calibration_records`
+- the constellation shows dominant result, latest outcome, calibrated branch count, confidence residue, and recent orbiting outcome marks
+- empty calibration archives now have a clear dormant constellation state instead of a blank utility area
+- the local afterimage capsule export now includes a derived calibration constellation payload
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -313,7 +321,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 - the new theatre shell restores progressive unfolding, and Archive/Ripple export surfaces now read as theatre instruments, but their generated artifact writing can become more authored and less template-like
 - the canvas is lighter and now has stricter exhibition budget checks, but real physical display testing is still needed before installation
-- calibration history is still available but can become more theatrical inside the Archive drawer instead of remaining mostly utility-like
+- calibration history now has a theatre-native constellation, but it can still become more interactive through branch filtering and event-to-event calibration drift
 - mobile and low-height exhibition layouts need another visual pass after the new orbital polish
 
 ### Content expression gaps
@@ -336,4 +344,4 @@ The next active slice continues after `Experience Rebuild Slice 15`:
 - deepen the authored writing quality of Archive/Ripple local artifacts now that their theatre-native shells are in place
 - consider a durable persisted reasoning queue or streaming progress protocol now that checkpoint files are visible but still in-process
 - keep mobile and low-height visual review active through future UI passes, especially on real exhibition hardware
-- make calibration more theatrical inside the Archive drawer instead of remaining mostly utility-like
+- deepen calibration interaction with branch filters, event-to-event drift, or authored calibration takeaways

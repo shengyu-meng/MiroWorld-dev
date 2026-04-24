@@ -423,6 +423,36 @@
                 <small class="instrument-feedback" aria-live="polite">{{ exportFeedback }}</small>
               </div>
             </article>
+            <article class="drawer-card calibration-constellation-card" data-testid="calibration-constellation">
+              <span class="annotation-label">{{ instrumentText.calibrationConstellation }}</span>
+              <div class="calibration-constellation-hero">
+                <strong>{{ calibrationConstellation.summary }}</strong>
+                <p>{{ calibrationConstellation.detail }}</p>
+              </div>
+              <div class="calibration-orbit-map" aria-hidden="true">
+                <i
+                  v-for="(mark, index) in calibrationConstellation.marks"
+                  :key="mark.calibration_id"
+                  :class="`calibration-mark--${mark.result}`"
+                  :style="calibrationMarkStyle(index, calibrationConstellation.marks.length)"
+                >
+                  <span>{{ mark.result_label }}</span>
+                </i>
+              </div>
+              <div class="calibration-constellation-metrics" data-testid="calibration-constellation-metrics">
+                <span v-for="metric in calibrationConstellation.metrics" :key="metric.label">
+                  <b>{{ metric.value }}</b>
+                  <small>{{ metric.label }}</small>
+                </span>
+              </div>
+              <ul v-if="calibrationConstellation.marks.length" class="calibration-afterimage-list">
+                <li v-for="mark in calibrationConstellation.marks.slice(0, 4)" :key="`${mark.calibration_id}-list`">
+                  <strong>{{ mark.event_title }} / {{ mark.branch_label }}</strong>
+                  <span>{{ mark.result_label }} · {{ mark.actual_outcome }}</span>
+                </li>
+              </ul>
+              <p v-else class="archive-empty">{{ instrumentText.noCalibrationAfterimage }}</p>
+            </article>
             <article class="drawer-card">
               <span class="annotation-label">{{ t.calibrationLabel }}</span>
               <button type="button" class="theatre-secondary-action" @click="calibrationOpen = !calibrationOpen">
@@ -824,12 +854,19 @@ const instrumentCopy = {
     rippleConsoleHint: '这一组读数来自当前已经显影的轨道，不需要等待新的模型调用。',
     rippleAfterimage: '回响残影',
     archiveCapsule: '残影胶囊',
+    calibrationConstellation: '校准星图',
+    calibrationConstellationHint: '真实结果正在把这条世界线留下的置信残影重新排布。',
+    noCalibrationAfterimage: '还没有真实结果写入档案。星图会在第一次校准后显影。',
     revealedNodes: '已显影节点',
     alternatePressure: '替代压力',
     savedSets: '已存重演',
     meanConfidence: '平均置信',
     decisions: '干涉记录',
     calibrations: '校准记录',
+    dominantCalibration: '主导结果',
+    latestCalibration: '最新回写',
+    calibratedBranches: '校准分支',
+    confidenceResidue: '置信残影',
     rippleCards: '回响片段',
     exportRipple: '导出回响轨迹包',
     copyCapsule: '复制胶囊文本',
@@ -843,12 +880,19 @@ const instrumentCopy = {
     rippleConsoleHint: 'These readings come from the revealed track; no fresh model call is needed.',
     rippleAfterimage: 'Ripple Afterimage',
     archiveCapsule: 'Afterimage Capsule',
+    calibrationConstellation: 'Calibration Constellation',
+    calibrationConstellationHint: 'Actual outcomes are rearranging the confidence residue of this worldline.',
+    noCalibrationAfterimage: 'No actual outcome has been written yet. The constellation appears after the first calibration.',
     revealedNodes: 'revealed nodes',
     alternatePressure: 'alternate pressure',
     savedSets: 'saved replays',
     meanConfidence: 'mean confidence',
     decisions: 'decision marks',
     calibrations: 'calibrations',
+    dominantCalibration: 'dominant result',
+    latestCalibration: 'latest outcome',
+    calibratedBranches: 'calibrated branches',
+    confidenceResidue: 'confidence residue',
     rippleCards: 'ripple cards',
     exportRipple: 'Export Ripple Trace',
     copyCapsule: 'Copy Capsule Text',
@@ -862,12 +906,19 @@ const instrumentCopy = {
   rippleConsoleHint: string
   rippleAfterimage: string
   archiveCapsule: string
+  calibrationConstellation: string
+  calibrationConstellationHint: string
+  noCalibrationAfterimage: string
   revealedNodes: string
   alternatePressure: string
   savedSets: string
   meanConfidence: string
   decisions: string
   calibrations: string
+  dominantCalibration: string
+  latestCalibration: string
+  calibratedBranches: string
+  confidenceResidue: string
   rippleCards: string
   exportRipple: string
   copyCapsule: string
@@ -918,6 +969,60 @@ const archiveMetrics = computed(() => [
   { value: String(stage.value?.archive.calibration_summary.count ?? stage.value?.archive.calibration_records.length ?? 0), label: instrumentText.value.calibrations },
   { value: String(visibleRippleCards.value.length), label: instrumentText.value.rippleCards },
 ])
+const calibrationConstellation = computed(() => {
+  const records = stage.value?.archive.calibration_records ?? []
+  const counts = calibrationResults.reduce((nextCounts, result) => {
+    nextCounts[result] = records.filter((record) => record.result === result).length
+    return nextCounts
+  }, {} as Record<CalibrationRecord['result'], number>)
+  const dominantResult = calibrationResults.reduce((best, result) => (
+    counts[result] > counts[best] ? result : best
+  ), 'partial' as CalibrationRecord['result'])
+  const latest = records[0] ?? null
+  const branchIds = new Set(records.map((record) => record.branch_id))
+  const branchConfidences = records
+    .map((record) => lookupBranch(record.branch_id)?.effective_confidence ?? lookupBranch(record.branch_id)?.confidence ?? null)
+    .filter((value): value is number => value !== null)
+  const averageConfidence = branchConfidences.length
+    ? branchConfidences.reduce((total, value) => total + value, 0) / branchConfidences.length
+    : averageRevealedConfidence.value
+  const marks = records.slice(0, 8).map((record) => {
+    const event = lookupEvent(record.event_id)
+    const branch = lookupBranch(record.branch_id)
+    return {
+      calibration_id: record.calibration_id,
+      result: record.result,
+      result_label: t.value.calibrationResults[record.result],
+      event_title: cleanText(event?.title ?? record.event_id),
+      branch_label: cleanText(branch?.label ?? record.branch_id),
+      actual_outcome: cleanText(record.actual_outcome),
+      created_at: record.created_at,
+    }
+  })
+
+  return {
+    total: records.length,
+    dominant_result: dominantResult,
+    dominant_label: records.length ? t.value.calibrationResults[dominantResult] : '-',
+    latest_label: latest ? t.value.calibrationResults[latest.result] : '-',
+    calibrated_branch_count: branchIds.size,
+    confidence_residue: records.length ? formatConfidence(averageConfidence) : '-',
+    summary: records.length
+      ? `${records.length} ${instrumentText.value.calibrations} / ${t.value.calibrationResults[dominantResult]}`
+      : instrumentText.value.calibrationConstellation,
+    detail: records.length
+      ? instrumentText.value.calibrationConstellationHint
+      : instrumentText.value.noCalibrationAfterimage,
+    metrics: [
+      { value: records.length ? t.value.calibrationResults[dominantResult] : '-', label: instrumentText.value.dominantCalibration },
+      { value: latest ? t.value.calibrationResults[latest.result] : '-', label: instrumentText.value.latestCalibration },
+      { value: String(branchIds.size), label: instrumentText.value.calibratedBranches },
+      { value: records.length ? formatConfidence(averageConfidence) : '-', label: instrumentText.value.confidenceResidue },
+    ],
+    marks,
+    counts,
+  }
+})
 const processSteps = computed(() => stage.value?.process_trace.steps ?? [])
 const currentProcessStep = computed(() => processSteps.value.find((step) => step.event_id === selectedEventId.value) ?? null)
 const processStepIndex = computed(() => Math.max(1, processSteps.value.findIndex((step) => step.event_id === currentProcessStep.value?.event_id) + 1))
@@ -1400,6 +1505,16 @@ function buildArchiveCapsulePacket() {
     })) ?? [],
     calibration_summary: stage.value?.archive.calibration_summary ?? null,
     calibration_records: stage.value?.archive.calibration_records ?? [],
+    calibration_constellation: {
+      total: calibrationConstellation.value.total,
+      dominant_result: calibrationConstellation.value.dominant_result,
+      dominant_label: calibrationConstellation.value.dominant_label,
+      latest_label: calibrationConstellation.value.latest_label,
+      calibrated_branch_count: calibrationConstellation.value.calibrated_branch_count,
+      confidence_residue: calibrationConstellation.value.confidence_residue,
+      counts: calibrationConstellation.value.counts,
+      marks: calibrationConstellation.value.marks,
+    },
   }
 }
 
@@ -1413,6 +1528,8 @@ function buildArchiveCapsuleText() {
     `${instrumentText.value.revealedNodes}: ${archiveMetrics.value[0]?.value ?? '0'}`,
     `${instrumentText.value.decisions}: ${archiveMetrics.value[1]?.value ?? '0'}`,
     `${instrumentText.value.calibrations}: ${archiveMetrics.value[2]?.value ?? '0'}`,
+    `${instrumentText.value.dominantCalibration}: ${calibrationConstellation.value.dominant_label}`,
+    `${instrumentText.value.confidenceResidue}: ${calibrationConstellation.value.confidence_residue}`,
     '',
     packet.revealed_track.map((track) => `${track.title} / ${track.branch_label} / ${formatConfidence(track.confidence)}`).join('\n'),
     '',
@@ -1444,6 +1561,18 @@ function formatConfidence(value: number) {
   return `${Math.round(value * 100)}%`
 }
 
+function lookupEvent(eventId: string) {
+  return events.value.find((event) => event.event_id === eventId) ?? null
+}
+
+function lookupBranch(branchId: string) {
+  for (const event of events.value) {
+    const branch = event.branches.find((candidate) => candidate.branch_id === branchId)
+    if (branch) return branch
+  }
+  return null
+}
+
 function orbitNodeStyle(index: number, total: number) {
   const denominator = Math.max(total - 1, 1)
   const angle = -126 + (252 * index) / denominator
@@ -1453,6 +1582,17 @@ function orbitNodeStyle(index: number, total: number) {
     '--orbit-counter-angle': `${-angle}deg`,
     '--orbit-distance': `${distance}%`,
     '--orbit-delay': `${index * 80}ms`,
+  } as Record<string, string>
+}
+
+function calibrationMarkStyle(index: number, total: number) {
+  const denominator = Math.max(total - 1, 1)
+  const angle = -118 + (236 * index) / denominator
+  const distance = 3.1 + (index % 3) * 1.25
+  return {
+    '--calibration-angle': `${angle}deg`,
+    '--calibration-counter-angle': `${-angle}deg`,
+    '--calibration-distance': `${distance}rem`,
   } as Record<string, string>
 }
 </script>

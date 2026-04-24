@@ -1061,9 +1061,47 @@ Verification:
 - `git diff --check` passed
 - secret pattern scan returned no matches
 - `git ls-files .ui-ref ui-ref` returned no tracked reference files
+- `git diff --check` passed
+- secret pattern scan returned no matches
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files
 
 Still open after slice 15:
 
 - the reasoning queue is still in-process and should become durable or streamable if installation deployment needs stronger recovery
 - the visible file trail is now real, but Archive/Ripple artifact writing can still become more authored and less template-like
 - calibration can still move further from utility archive toward dramaturgical exhibition instrument
+
+## 2026-04-24 - Experience Rebuild Slice 16 (archive calibration constellation started)
+
+Planned in this iteration:
+
+- turn Archive calibration from a mostly utility drawer into a theatre-native afterimage instrument
+- derive a calibration constellation from existing `calibration_records` without adding backend calls, schema churn, or live LLM dependency
+- show dominant outcome, latest outcome, calibrated branch count, confidence residue, and recent outcome marks inside Archive
+- include the derived constellation in the local afterimage capsule export
+- update frontend tests, docs, smoke, secret checks, and push only after verification
+
+## 2026-04-24 - Experience Rebuild Slice 16 (archive calibration constellation completed)
+
+Completed in this iteration:
+
+- added an Archive calibration constellation card derived from existing stage `calibration_records`
+- exposed dominant result, latest return, calibrated branch count, confidence residue, and recent orbiting outcome marks without backend calls or LLM dependency
+- added an empty-state constellation so archives without actual outcomes still read as a dormant instrument
+- included the derived calibration constellation in the local afterimage capsule export payload and copied text summary
+- added frontend tests for empty and non-empty constellation states
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `npm run test:perf` passed
+
+Still open after slice 16:
+
+- calibration can become more interactive with branch filters, event-to-event drift, and authored calibration takeaways
+- Archive/Ripple artifact writing can still gain stronger authorial language beyond structured export packets
+- the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery

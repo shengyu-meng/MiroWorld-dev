@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 15 / Backstage Reasoning Artifact Trail completed`
+Current slice: `Experience Rebuild Slice 16 / Archive Calibration Constellation completed`
 
 ## Goal
 
@@ -271,6 +271,23 @@ This slice does include:
 - [ ] continue visual review on mobile and low-height exhibition displays after the new performance hardening
 - [ ] make calibration more theatrical inside the Archive drawer instead of remaining utility-like
 
+## Slice 16 Acceptance Criteria
+
+- [x] Archive exposes a calibration constellation / afterimage instrument derived from existing `calibration_records`
+- [x] the constellation shows dominant outcome, latest outcome, calibrated branch count, and calibrated-branch confidence residue without adding backend calls or LLM dependency
+- [x] recent calibration records render as orbiting archive marks instead of only a form/log
+- [x] the afterimage capsule export includes the derived calibration constellation payload
+- [x] frontend tests cover the constellation rendering and empty/non-empty archive states
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 16 Completed
+
+- [x] marked Slice 16 as the active doc-tracked iteration before code changes
+- [x] derived calibration constellation metrics and recent marks from current stage state
+- [x] added a theatre-native constellation card to the Archive drawer
+- [x] included constellation data in the local Archive capsule export
+- [x] updated frontend tests and docs after verification
+
 ## Slice 1 Completed
 
 - [x] the repo has canonical `CURRENT_STATUS / NEXT_WORK_PLAN / DEVELOPMENT_LOG / BLOCKERS` docs
@@ -363,6 +380,7 @@ This slice does include:
 - [x] add a background/async model-enrichment lane that can enrich prompt starts after the deterministic worldline is already visible
 - [x] add a backstage reasoning artifact trail so async model work is visible as ordered local process files
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
+- [x] make Archive calibration read as a constellation / afterimage instrument instead of only an input drawer
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 

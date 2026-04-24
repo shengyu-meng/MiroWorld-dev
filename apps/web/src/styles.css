@@ -2612,6 +2612,139 @@ li {
   gap: 0.15rem;
 }
 
+.calibration-constellation-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(150, 247, 188, 0.2);
+  background:
+    radial-gradient(circle at 72% 0%, rgba(150, 247, 188, 0.14), transparent 36%),
+    linear-gradient(150deg, rgba(8, 35, 28, 0.5), rgba(4, 10, 17, 0.42));
+}
+
+.calibration-constellation-hero {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.calibration-constellation-hero strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2vw, 1.75rem);
+}
+
+.calibration-constellation-hero p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.calibration-orbit-map {
+  position: relative;
+  min-height: 168px;
+  border: 1px solid rgba(150, 247, 188, 0.16);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at center, rgba(150, 247, 188, 0.14), transparent 14%),
+    radial-gradient(ellipse at center, transparent 42%, rgba(150, 247, 188, 0.08) 43%, transparent 44%),
+    radial-gradient(ellipse at center, transparent 66%, rgba(139, 226, 248, 0.08) 67%, transparent 68%);
+}
+
+.calibration-orbit-map::before {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--archive);
+  box-shadow: 0 0 26px rgba(150, 247, 188, 0.62);
+  transform: translate(-50%, -50%);
+}
+
+.calibration-orbit-map i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  min-width: 3.7rem;
+  min-height: 2rem;
+  padding: 0.28rem 0.48rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(4, 11, 14, 0.78);
+  color: var(--text);
+  font-style: normal;
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--calibration-angle))
+    translateX(var(--calibration-distance))
+    rotate(var(--calibration-counter-angle));
+}
+
+.calibration-orbit-map span {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.calibration-mark--hit {
+  border-color: rgba(150, 247, 188, 0.55);
+  box-shadow: 0 0 18px rgba(150, 247, 188, 0.18);
+}
+
+.calibration-mark--partial {
+  border-color: rgba(139, 226, 248, 0.5);
+  box-shadow: 0 0 18px rgba(139, 226, 248, 0.16);
+}
+
+.calibration-mark--miss {
+  border-color: rgba(255, 180, 74, 0.54);
+  box-shadow: 0 0 18px rgba(255, 180, 74, 0.16);
+}
+
+.calibration-mark--insufficient_data {
+  border-color: rgba(161, 176, 185, 0.42);
+}
+
+.calibration-constellation-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.calibration-constellation-metrics span {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.9rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.calibration-constellation-metrics b {
+  color: var(--archive);
+}
+
+.calibration-constellation-metrics small,
+.calibration-afterimage-list span {
+  color: var(--muted);
+}
+
+.calibration-afterimage-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calibration-afterimage-list li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+
 .theatre-input-form,
 .calibration-drawer {
   display: grid;
@@ -2760,7 +2893,8 @@ li {
     flex: 1 1 auto;
   }
 
-  .instrument-metrics {
+  .instrument-metrics,
+  .calibration-constellation-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

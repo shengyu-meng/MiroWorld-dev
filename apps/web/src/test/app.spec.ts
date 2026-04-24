@@ -240,6 +240,46 @@ const sampleStage: StageData = {
   version: 1,
 }
 
+const calibratedStage: StageData = {
+  ...sampleStage,
+  archive: {
+    ...sampleStage.archive,
+    calibration_records: [
+      {
+        calibration_id: 'cal_1',
+        event_id: 'evt_1',
+        branch_id: 'br_1',
+        result: 'partial',
+        actual_outcome: 'tide drift confirmed',
+        note: 'field note',
+        created_at: '2026-04-24T01:00:00Z',
+      },
+      {
+        calibration_id: 'cal_2',
+        event_id: 'evt_2',
+        branch_id: 'br_4',
+        result: 'miss',
+        actual_outcome: 'rule gate moved away from the predicted branch',
+        note: 'field note',
+        created_at: '2026-04-24T02:00:00Z',
+      },
+      {
+        calibration_id: 'cal_3',
+        event_id: 'evt_3',
+        branch_id: 'br_5',
+        result: 'hit',
+        actual_outcome: 'afterimage stabilized as expected',
+        note: 'field note',
+        created_at: '2026-04-24T03:00:00Z',
+      },
+    ],
+    calibration_summary: {
+      count: 3,
+      summary: '3 calibration records have been written into the archive.',
+    },
+  },
+}
+
 function apiResponse<T>(data: T, status = 200) {
   return Promise.resolve(new Response(JSON.stringify({ success: status < 400, data }), { status }))
 }
@@ -405,10 +445,24 @@ describe('worldline theatre stage', () => {
     await wrapper.findAll('.surface-chip')[4].trigger('click')
     expect(wrapper.find('[data-testid="archive-capsule"]').exists()).toBe(true)
     expect(wrapper.get('[data-testid="archive-capsule-metrics"]').text()).toContain('1/3')
+    expect(wrapper.find('[data-testid="calibration-constellation"]').exists()).toBe(true)
+    expect(wrapper.find('.archive-empty').exists()).toBe(true)
 
     await wrapper.get('[data-testid="archive-capsule-export"]').trigger('click')
     expect(download.createObjectURL).toHaveBeenCalledTimes(2)
     expect(download.revokeObjectURL).toHaveBeenCalledTimes(2)
+  })
+
+  it('renders calibration records as an archive constellation instrument', async () => {
+    const { wrapper } = await mountStage(calibratedStage)
+
+    await wrapper.findAll('.surface-chip')[4].trigger('click')
+    const constellation = wrapper.get('[data-testid="calibration-constellation"]')
+
+    expect(constellation.findAll('.calibration-orbit-map i')).toHaveLength(3)
+    expect(wrapper.get('[data-testid="calibration-constellation-metrics"]').text()).toContain('3')
+    expect(constellation.text()).toContain('tide drift confirmed')
+    expect(constellation.text()).toContain('afterimage stabilized as expected')
   })
 
   it('removes legacy public-opinion wording from the rendered core UI', async () => {
