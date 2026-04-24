@@ -473,6 +473,15 @@ describe('worldline theatre stage', () => {
     expect(wrapper.get('[data-testid="calibration-constellation-metrics"]').text()).toContain('3')
     expect(constellation.text()).toContain('tide drift confirmed')
     expect(constellation.text()).toContain('afterimage stabilized as expected')
+    expect(wrapper.get('[data-testid="calibration-drift-reading"]').text()).toContain('全部校准残影 / 校准漂移')
+    expect(wrapper.get('[data-testid="calibration-drift-reading"]').text()).toContain('3 个真实结果')
+    expect(wrapper.get('[data-testid="calibration-branch-filters"]').text()).toContain('回折')
+
+    await wrapper.get('[data-testid="calibration-filter-br_4"]').trigger('click')
+    const filteredReading = wrapper.get('[data-testid="calibration-drift-reading"]').text()
+    expect(filteredReading).toContain('回折 / 校准漂移')
+    expect(filteredReading).toContain('偏离')
+    expect(filteredReading).toContain('rule gate moved away from the predicted branch')
   })
 
   it('removes legacy public-opinion wording from the rendered core UI', async () => {

@@ -488,6 +488,31 @@
                   <small>{{ metric.label }}</small>
                 </span>
               </div>
+              <div v-if="calibrationBranchOptions.length > 1" class="calibration-filter-row" data-testid="calibration-branch-filters">
+                <button
+                  v-for="option in calibrationBranchOptions"
+                  :key="option.branch_id"
+                  type="button"
+                  class="calibration-filter-chip"
+                  :class="{ active: option.branch_id === normalizedActiveCalibrationBranchId }"
+                  :data-testid="`calibration-filter-${option.branch_id}`"
+                  @click="handleCalibrationBranchFilter(option.branch_id)"
+                >
+                  <span>{{ option.label }}</span>
+                  <b>{{ option.count }}</b>
+                </button>
+              </div>
+              <div class="calibration-drift-reading" data-testid="calibration-drift-reading">
+                <span class="annotation-label">{{ instrumentText.calibrationDriftReading }}</span>
+                <strong>{{ calibrationDriftReading.title }}</strong>
+                <p>{{ calibrationDriftReading.thesis }}</p>
+                <blockquote>{{ calibrationDriftReading.drift_text }}</blockquote>
+                <ul>
+                  <li>{{ calibrationDriftReading.latest_line }}</li>
+                  <li>{{ calibrationDriftReading.event_line }}</li>
+                  <li>{{ calibrationDriftReading.confidence_line }}</li>
+                </ul>
+              </div>
               <ul v-if="calibrationConstellation.marks.length" class="calibration-afterimage-list">
                 <li v-for="mark in calibrationConstellation.marks.slice(0, 4)" :key="`${mark.calibration_id}-list`">
                   <strong>{{ mark.event_title }} / {{ mark.branch_label }}</strong>
@@ -601,6 +626,7 @@ const replaySummary = ref('')
 const calibrationOpen = ref(false)
 const calibrationDraft = ref('')
 const calibrationResult = ref<CalibrationRecord['result']>('partial')
+const activeCalibrationBranchId = ref('all')
 const submitting = ref(false)
 const shareSnapshot = ref<StageData['archive']['share_snapshot'] | null>(null)
 const reasoningStatus = ref<ReasoningStatus | null>(null)
@@ -905,6 +931,8 @@ const instrumentCopy = {
     exportWallReading: '导出墙文',
     calibrationConstellation: '校准星图',
     calibrationConstellationHint: '真实结果正在把这条世界线留下的置信残影重新排布。',
+    calibrationDriftReading: '校准漂移读法',
+    allCalibrationBranches: '全部校准残影',
     noCalibrationAfterimage: '还没有真实结果写入档案。星图会在第一次校准后显影。',
     revealedNodes: '已显影节点',
     alternatePressure: '替代压力',
@@ -937,6 +965,8 @@ const instrumentCopy = {
     exportWallReading: 'Export Wall Text',
     calibrationConstellation: 'Calibration Constellation',
     calibrationConstellationHint: 'Actual outcomes are rearranging the confidence residue of this worldline.',
+    calibrationDriftReading: 'Calibration Drift Reading',
+    allCalibrationBranches: 'All Calibration Residue',
     noCalibrationAfterimage: 'No actual outcome has been written yet. The constellation appears after the first calibration.',
     revealedNodes: 'revealed nodes',
     alternatePressure: 'alternate pressure',
@@ -969,6 +999,8 @@ const instrumentCopy = {
   exportWallReading: string
   calibrationConstellation: string
   calibrationConstellationHint: string
+  calibrationDriftReading: string
+  allCalibrationBranches: string
   noCalibrationAfterimage: string
   revealedNodes: string
   alternatePressure: string
@@ -1064,8 +1096,39 @@ const archiveMetrics = computed(() => [
   { value: String(stage.value?.archive.calibration_summary.count ?? stage.value?.archive.calibration_records.length ?? 0), label: instrumentText.value.calibrations },
   { value: String(visibleRippleCards.value.length), label: instrumentText.value.rippleCards },
 ])
+const calibrationRecords = computed(() => stage.value?.archive.calibration_records ?? [])
+const calibrationBranchOptions = computed(() => {
+  const branchCounts = new Map<string, { branch_id: string, label: string, count: number }>()
+
+  for (const record of calibrationRecords.value) {
+    const branch = lookupBranch(record.branch_id)
+    const label = cleanText(branch?.label ?? record.branch_id)
+    const current = branchCounts.get(record.branch_id)
+    if (current) {
+      current.count += 1
+    } else {
+      branchCounts.set(record.branch_id, { branch_id: record.branch_id, label, count: 1 })
+    }
+  }
+
+  const branchOptions = Array.from(branchCounts.values()).sort((left, right) => right.count - left.count || left.label.localeCompare(right.label))
+  return [
+    { branch_id: 'all', label: instrumentText.value.allCalibrationBranches, count: calibrationRecords.value.length },
+    ...branchOptions,
+  ]
+})
+const normalizedActiveCalibrationBranchId = computed(() => (
+  calibrationBranchOptions.value.some((option) => option.branch_id === activeCalibrationBranchId.value)
+    ? activeCalibrationBranchId.value
+    : 'all'
+))
+const selectedCalibrationRecords = computed(() => {
+  if (normalizedActiveCalibrationBranchId.value === 'all') return calibrationRecords.value
+  return calibrationRecords.value.filter((record) => record.branch_id === normalizedActiveCalibrationBranchId.value)
+})
+const sortedSelectedCalibrationRecords = computed(() => [...selectedCalibrationRecords.value].sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at)))
 const calibrationConstellation = computed(() => {
-  const records = stage.value?.archive.calibration_records ?? []
+  const records = calibrationRecords.value
   const counts = calibrationResults.reduce((nextCounts, result) => {
     nextCounts[result] = records.filter((record) => record.result === result).length
     return nextCounts
@@ -1116,6 +1179,60 @@ const calibrationConstellation = computed(() => {
     ],
     marks,
     counts,
+  }
+})
+const calibrationDriftReading = computed(() => {
+  const records = sortedSelectedCalibrationRecords.value
+  const counts = calibrationResults.reduce((nextCounts, result) => {
+    nextCounts[result] = records.filter((record) => record.result === result).length
+    return nextCounts
+  }, {} as Record<CalibrationRecord['result'], number>)
+  const dominantResult = calibrationResults.reduce((best, result) => (
+    counts[result] > counts[best] ? result : best
+  ), 'partial' as CalibrationRecord['result'])
+  const latest = records[0] ?? null
+  const selectedOption = calibrationBranchOptions.value.find((option) => option.branch_id === normalizedActiveCalibrationBranchId.value)
+  const branchLabel = selectedOption?.label ?? instrumentText.value.allCalibrationBranches
+  const eventTitles = records
+    .map((record) => cleanText(lookupEvent(record.event_id)?.title ?? record.event_id))
+    .filter((title, index, list) => title && list.indexOf(title) === index)
+    .slice(0, 3)
+  const branchConfidences = records
+    .map((record) => lookupBranch(record.branch_id)?.effective_confidence ?? lookupBranch(record.branch_id)?.confidence ?? null)
+    .filter((value): value is number => value !== null)
+  const confidence = branchConfidences.length
+    ? formatConfidence(branchConfidences.reduce((total, value) => total + value, 0) / branchConfidences.length)
+    : '-'
+  const latestEvent = latest ? cleanText(lookupEvent(latest.event_id)?.title ?? latest.event_id) : ''
+  const latestOutcome = cleanText(latest?.actual_outcome ?? '')
+  const dominantLabel = records.length ? t.value.calibrationResults[dominantResult] : '-'
+
+  if (language.value === 'zh') {
+    return {
+      title: `${branchLabel} / 校准漂移`,
+      thesis: records.length
+        ? `真实结果不是附注，它正在把这组分支的置信残影重新写回世界线。`
+        : instrumentText.value.noCalibrationAfterimage,
+      drift_text: records.length
+        ? `这组校准收束了 ${records.length} 个真实结果，当前主导回写是“${dominantLabel}”。`
+        : '还没有足够真实结果形成漂移读法。',
+      latest_line: latest ? `最新回写：${latestEvent} / ${t.value.calibrationResults[latest.result]} / ${latestOutcome}` : '最新回写：等待第一次校准。',
+      event_line: eventTitles.length ? `事件漂移：${eventTitles.join(' → ')}` : '事件漂移：尚未形成。',
+      confidence_line: `置信残影：${confidence}`,
+    }
+  }
+
+  return {
+    title: `${branchLabel} / calibration drift`,
+    thesis: records.length
+      ? 'Actual outcomes are not footnotes; they write confidence residue back into this branch slice.'
+      : instrumentText.value.noCalibrationAfterimage,
+    drift_text: records.length
+      ? `This slice gathers ${records.length} actual outcome(s), with "${dominantLabel}" as the dominant return.`
+      : 'There are not enough actual outcomes to form a drift reading yet.',
+    latest_line: latest ? `Latest return: ${latestEvent} / ${t.value.calibrationResults[latest.result]} / ${latestOutcome}` : 'Latest return: waiting for the first calibration.',
+    event_line: eventTitles.length ? `Event drift: ${eventTitles.join(' -> ')}` : 'Event drift: not formed yet.',
+    confidence_line: `Confidence residue: ${confidence}`,
   }
 })
 const archiveWallReading = computed(() => {
@@ -1381,6 +1498,10 @@ function handleCalibrationResult(value: string) {
   if (value === 'hit' || value === 'partial' || value === 'miss' || value === 'insufficient_data') {
     calibrationResult.value = value
   }
+}
+
+function handleCalibrationBranchFilter(branchId: string) {
+  activeCalibrationBranchId.value = branchId
 }
 
 function effectScopeForMode(mode: InputType) {
@@ -1706,6 +1827,7 @@ function buildArchiveCapsulePacket() {
       counts: calibrationConstellation.value.counts,
       marks: calibrationConstellation.value.marks,
     },
+    calibration_drift_reading: calibrationDriftReading.value,
   }
 }
 

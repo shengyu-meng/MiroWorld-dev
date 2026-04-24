@@ -1180,3 +1180,41 @@ Still open after slice 18:
 - the authored Ripple and Archive texts are deterministic and local; a later secret-safe async editorial lane can make them more alive without blocking the stage
 - the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery
 - calibration can still become more interactive with branch filters, event-to-event drift, and authored calibration takeaways
+
+## 2026-04-24 - Experience Rebuild Slice 19 (archive calibration drift reading started)
+
+Planned in this iteration:
+
+- deepen Archive calibration from a constellation summary into a branch-filtered calibration drift reading
+- derive branch filter options from existing calibration records without backend calls, schema changes, or live LLM dependency
+- expose an authored reading that names selected branch slice, dominant result, latest outcome, event drift, and confidence residue
+- include the selected calibration drift reading in the local Archive afterimage capsule export
+- update tests, docs, smoke, perf benchmark, secret checks, and push only after verification
+
+## 2026-04-24 - Experience Rebuild Slice 19 (archive calibration drift reading completed)
+
+Completed in this iteration:
+
+- added branch-filter chips for Archive calibration records so viewers can isolate a calibrated branch family
+- added an authored calibration drift reading for all records or the selected branch slice
+- derived dominant result, latest outcome, event drift, and confidence residue from existing local stage state
+- included the selected calibration drift reading in the local Archive afterimage capsule packet
+- added frontend coverage for branch filtering and rendered calibration drift text
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `npm run test:perf` passed
+- `git diff --check` passed
+- secret pattern scan returned no matches
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files
+
+Still open after slice 19:
+
+- calibration can still gain event-to-event drift maps and model-assisted takeaways
+- the authored Ripple and Archive texts are deterministic and local; a later secret-safe async editorial lane can make them more alive without blocking the stage
+- the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery
