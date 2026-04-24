@@ -35,7 +35,22 @@ class ProcessTraceBuilder:
       "generated_at": generated_at,
       "artifact_root": relative_root,
       "storage_mode": "local_gitignored_runtime",
+      "reasoning_run": self._reasoning_run_preview(world_state),
       "steps": steps,
+    }
+
+  def _reasoning_run_preview(self, world_state: WorldState) -> dict | None:
+    if not world_state.reasoning_runs:
+      return None
+    latest = world_state.reasoning_runs[0]
+    return {
+      "reasoning_run_id": latest.reasoning_run_id,
+      "provider": latest.provider,
+      "model_name": latest.model_name,
+      "status": latest.status,
+      "artifact_path": latest.artifact_path,
+      "summary": latest.summary,
+      "step_count": latest.step_count,
     }
 
   def _build_step(

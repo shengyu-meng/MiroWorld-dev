@@ -953,3 +953,38 @@ Still open after slice 12:
 - design a proper async MiniMax enrichment lane so model computation can appear as visible backstage progress without blocking project creation
 - continue improving the authored quality of generated worldline language
 - keep tightening real-device visual and performance review
+
+## 2026-04-24 - Experience Rebuild Slice 13 (MiniMax reasoning packet fix completed)
+
+Root cause:
+
+- the live MiniMax endpoint was reachable, but `MiniMax-M2.7-highspeed` can prepend a `<think>...</think>` block before the final JSON object
+- the OpenAI-compatible adapter previously attempted `json.loads(content)` on the full response, swallowed the parse failure, and returned `None`
+- the seed compiler then silently fell back to deterministic prompt compilation, so the UI looked like it had run but no model reasoning packet entered the world state
+- the local 60-second timeout was also too short for the current seed-compiler packet; a real prompt run completed only after a longer timeout
+
+Completed in this iteration:
+
+- updated the MiniMax adapter to strip reasoning prefaces and recover the final JSON object with `JSONDecoder.raw_decode`
+- changed the recommended and local ignored timeout to `LLM_REQUEST_TIMEOUT=180`
+- re-enabled local MiniMax seed compilation when credentials are configured while keeping no-key fallback deterministic and safe
+- added `ReasoningRunRecord` to world state and exposed the latest reasoning/fallback run through `stage.process_trace.reasoning_run`
+- wrote successful MiniMax packets to ignored `data/runtime/process/.../00-minimax-seed-reasoning.json`
+- wrote failed MiniMax attempts to ignored `00-minimax-seed-fallback.json` artifacts so future failures are visible instead of silent
+- added a frontend process strip for model reasoning / fallback artifacts
+- added API tests for `<think>` parsing, structured MiniMax packets, and fallback artifact redaction
+
+Verification:
+
+- real local MiniMax prompt creation returned `source_label=seed_prompt+MiniMax`
+- real local MiniMax prompt creation produced `minimax_reasoning` knowledge and a completed `00-minimax-seed-reasoning.json` process artifact
+- `python -m pytest apps/api/tests/test_api.py -q` passed
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run smoke` passed
+
+Still open after slice 13:
+
+- MiniMax prompt creation is now real, but still synchronous and can take around two minutes on a fresh run
+- the next architecture step should move model reasoning into an async visible backstage lane with progress polling or streaming artifacts
+- generated worldline language still needs more authorial editing and less generic model phrasing

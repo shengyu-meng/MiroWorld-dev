@@ -2117,6 +2117,25 @@ li {
   font-size: 0.8rem;
 }
 
+.process-file-strip--model {
+  padding: 0.7rem;
+  border: 1px solid rgba(245, 177, 92, 0.24);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(245, 177, 92, 0.13), transparent 40%),
+    rgba(44, 25, 14, 0.3);
+}
+
+.process-file-strip--model code {
+  border-color: rgba(245, 177, 92, 0.28);
+  color: var(--ember);
+}
+
+.process-file-strip--model small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
 .process-metric-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

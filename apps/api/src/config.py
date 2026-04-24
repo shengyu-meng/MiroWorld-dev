@@ -31,8 +31,8 @@ class Settings(BaseSettings):
   llm_api_key: str | None = None
   llm_base_url: HttpUrl = "https://api.minimaxi.com/v1"
   llm_model_name: str = "MiniMax-M2.7-highspeed"
-  llm_request_timeout: int = 30
-  llm_seed_compiler_enabled: bool = False
+  llm_request_timeout: int = 180
+  llm_seed_compiler_enabled: bool = True
 
 
 @lru_cache(maxsize=1)

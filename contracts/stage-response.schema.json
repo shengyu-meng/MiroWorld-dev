@@ -47,13 +47,32 @@
     "archive": { "type": "object" },
     "process_trace": {
       "type": "object",
-      "required": ["run_id", "generated_at", "artifact_root", "storage_mode", "steps"],
+      "required": ["run_id", "generated_at", "artifact_root", "storage_mode", "reasoning_run", "steps"],
       "additionalProperties": false,
       "properties": {
         "run_id": { "type": "string" },
         "generated_at": { "type": "string" },
         "artifact_root": { "type": "string" },
         "storage_mode": { "type": "string", "const": "local_gitignored_runtime" },
+        "reasoning_run": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["reasoning_run_id", "provider", "model_name", "status", "artifact_path", "summary", "step_count"],
+              "additionalProperties": false,
+              "properties": {
+                "reasoning_run_id": { "type": "string" },
+                "provider": { "type": "string" },
+                "model_name": { "type": "string" },
+                "status": { "type": "string" },
+                "artifact_path": { "type": "string" },
+                "summary": { "type": "string" },
+                "step_count": { "type": "integer", "minimum": 0 }
+              }
+            }
+          ]
+        },
         "steps": {
           "type": "array",
           "items": {

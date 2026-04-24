@@ -97,6 +97,41 @@
       "type": "array",
       "items": { "$ref": "./confidence-update.schema.json" }
     },
+    "reasoning_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reasoning_run_id",
+          "operation",
+          "provider",
+          "model_name",
+          "status",
+          "artifact_path",
+          "summary",
+          "step_count",
+          "created_at"
+        ],
+        "properties": {
+          "reasoning_run_id": { "type": "string" },
+          "operation": {
+            "type": "string",
+            "enum": ["seed_compiler", "replay_engine", "cost_confidence_engine", "share_engine"]
+          },
+          "provider": { "type": "string" },
+          "model_name": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "fallback", "failed"]
+          },
+          "artifact_path": { "type": "string" },
+          "summary": { "type": "string" },
+          "step_count": { "type": "integer", "minimum": 0 },
+          "created_at": { "type": "string" }
+        }
+      }
+    },
     "player_inputs": {
       "type": "array",
       "items": { "$ref": "./user-input-record.schema.json" }

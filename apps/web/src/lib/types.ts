@@ -210,6 +210,15 @@ export interface ProcessTrace {
   generated_at: string
   artifact_root: string
   storage_mode: 'local_gitignored_runtime'
+  reasoning_run: {
+    reasoning_run_id: string
+    provider: string
+    model_name: string
+    status: string
+    artifact_path: string
+    summary: string
+    step_count: number
+  } | null
   steps: ProcessTraceStep[]
 }
 

@@ -8,6 +8,8 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 from main import app
+from features.projects.llm_adapter import OpenAICompatibleLLMAdapter
+from features.projects.router import service as project_service
 from features.projects.seed_compiler import SeedCompiler
 
 
@@ -65,7 +67,8 @@ def test_fixture_project_creation_and_stage_contracts():
   assert_schema("world-state.schema.json", snapshot["world_state"])
 
 
-def test_prompt_project_creation():
+def test_prompt_project_creation(monkeypatch):
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_seed_compiler_enabled", False)
   prompt = "A bridge load rule changes overnight; tide, steel, and commuter paths begin pulling on each other."
   response = client.post("/api/projects", json={"seed_prompt": prompt, "language": "en"})
   assert response.status_code == 200
@@ -85,7 +88,13 @@ def test_prompt_project_creation():
   assert all(len(event["branches"]) >= 3 for event in stage["observatory"]["key_events"])
 
 
-def test_prompt_compiler_does_not_call_live_llm_by_default(monkeypatch):
+def test_llm_adapter_extracts_json_after_think_block():
+  adapter = OpenAICompatibleLLMAdapter()
+  parsed = adapter._parse_json_object('<think>private reasoning {"noise": true}</think> {"ok": true, "value": 3}')
+  assert parsed == {"ok": True, "value": 3}
+
+
+def test_prompt_compiler_can_run_without_live_llm_when_disabled(monkeypatch):
   compiler = SeedCompiler()
   monkeypatch.setattr(compiler.llm_adapter.settings, "llm_seed_compiler_enabled", False)
 
@@ -100,6 +109,90 @@ def test_prompt_compiler_does_not_call_live_llm_by_default(monkeypatch):
   assert snapshot.project.source_mode == "seed_prompt"
   assert len(snapshot.world_state.key_events) == 3
   assert "glacier" in snapshot.world_state.key_events[0].title.lower()
+
+
+def test_prompt_compiler_uses_structured_llm_reasoning_packet(monkeypatch):
+  compiler = SeedCompiler()
+  monkeypatch.setattr(compiler.llm_adapter.settings, "llm_seed_compiler_enabled", True)
+  monkeypatch.setattr(compiler.llm_adapter.settings, "llm_model_name", "MiniMax-M2.7-highspeed")
+  monkeypatch.setattr(
+    compiler.llm_adapter,
+    "generate_json",
+    lambda **_kwargs: {
+      "title": "Bridge Tide Shear",
+      "summary": "A bridge, tide, steel fatigue, and commuter pressure form a coupled worldline.",
+      "seed_words": ["bridge load", "tide", "steel fatigue", "commuter path"],
+      "actants": ["bridge deck", "tide table", "steel cable", "commuter route"],
+      "reasoning_steps": [
+        {
+          "layer": "FACT",
+          "title": "Visible coupling",
+          "inputs": ["bridge load", "tide"],
+          "outputs": ["tide changes load timing"],
+          "confidence_note": "seed-level inference",
+          "confidence": 0.81,
+        }
+      ],
+      "events": [
+        {
+          "stage": "Entry",
+          "title": "Tide enters the bridge load field",
+          "summary": "The tide table changes how the bridge deck receives pressure.",
+          "impact_level": "high",
+          "affected_entities": ["bridge deck", "tide table"],
+          "evidence_notes": ["load timing and water level become coupled"],
+          "causal_note": "The rule change makes the coupling visible.",
+          "branches": [
+            {
+              "label": "Expose the load rhythm",
+              "description": "Make the tide-load relation observable.",
+              "confidence": 0.69,
+              "premises": ["water level modulates stress"],
+              "signals_for": ["commuter peaks align with tide"],
+              "signals_against": ["steel fatigue remains uncertain"],
+              "cost_hint": "inspection slows traffic",
+            }
+          ],
+        }
+      ],
+    },
+  )
+  snapshot = compiler.compile_prompt(
+    "A bridge load rule changes overnight; tide, steel, and commuter paths begin pulling on each other.",
+    "en",
+  )
+  assert snapshot.world_state.source_label == "seed_prompt+MiniMax"
+  assert snapshot.world_state.reasoning_runs[0].model_name == "MiniMax-M2.7-highspeed"
+  assert snapshot.world_state.reasoning_runs[0].artifact_path.startswith("data/runtime/process/")
+  assert "Tide enters" in snapshot.world_state.key_events[0].title
+  assert snapshot.world_state.knowledge_items[0].source_type == "minimax_reasoning"
+
+
+def test_prompt_compiler_records_failed_llm_attempt(monkeypatch):
+  compiler = SeedCompiler()
+  monkeypatch.setattr(compiler.llm_adapter.settings, "llm_seed_compiler_enabled", True)
+  monkeypatch.setattr(compiler.llm_adapter.settings, "llm_api_key", "test-local-key")
+  monkeypatch.setattr(compiler.llm_adapter.settings, "llm_model_name", "MiniMax-M2.7-highspeed")
+
+  def fail_generation(**_kwargs):
+    compiler.llm_adapter.last_error = "TimeoutException: request timed out"
+    return None
+
+  monkeypatch.setattr(compiler.llm_adapter, "generate_json", fail_generation)
+  snapshot = compiler.compile_prompt(
+    "A slow storm surge pushes hospital power, a harbor gate, and evacuation timing into one track.",
+    "en",
+  )
+  run = snapshot.world_state.reasoning_runs[0]
+  artifact_file = ROOT / run.artifact_path
+  artifact = json.loads(artifact_file.read_text(encoding="utf-8"))
+
+  assert snapshot.world_state.source_label == "seed_prompt"
+  assert run.status == "fallback"
+  assert run.step_count == 0
+  assert run.artifact_path.endswith("00-minimax-seed-fallback.json")
+  assert artifact["status"] == "fallback"
+  assert "test-local-key" not in json.dumps(artifact)
 
 
 def test_theatre_progress_persistence_restores_stage_defaults():

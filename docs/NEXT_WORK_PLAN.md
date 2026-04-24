@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 12 / Prompt Worldline Driver Fix completed`
+Current slice: `Experience Rebuild Slice 13 / MiniMax Reasoning Packet Fix completed`
 
 ## Goal
 
@@ -33,7 +33,7 @@ This slice does include:
 - a more cinematic computation display that still keeps data-file truth visible
 - a repeatable browser performance benchmark for canvas FPS and Next-step latency
 - persistent theatre reading state so refreshes can resume the same worldline layer
-- prompt-generated starts that compile into a real worldline immediately instead of blocking on live LLM work or falling back to a generic template
+- prompt-generated starts that compile into a real worldline and, when local MiniMax is configured, can consume a structured model reasoning packet instead of silently falling back to a generic template
 - an `.impeccable.md` design context so future UI work keeps the artwork's visual language consistent
 - a stronger orbital theatre polish pass that makes the current stage feel less like stacked cards
 - cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
@@ -192,7 +192,7 @@ This slice does include:
 
 ## Slice 12 Acceptance Criteria
 
-- [x] pressing the prompt-generation entry action returns a driveable project without waiting on a live MiniMax call by default
+- [x] pressing the prompt-generation entry action returns a driveable project in deterministic mode without waiting on a live MiniMax call
 - [x] generated prompt projects contain prompt-specific actants, key events, branches, cost lenses, knowledge layers, and process traces
 - [x] fixture creation and prompt creation both keep public contracts unchanged
 - [x] Playwright smoke covers prompt entry, theatre load, process trace visibility, and Next-step advancement
@@ -202,16 +202,35 @@ This slice does include:
 ## Slice 12 Completed
 
 - [x] replaced prompt creation's default live-LLM dependency with a deterministic prompt compiler
-- [x] made MiniMax seed enrichment opt-in through `LLM_SEED_COMPILER_ENABLED=false` by default
+- [x] separated deterministic prompt compilation from MiniMax availability; Slice 13 then re-enabled local MiniMax reasoning with a longer timeout and visible fallback artifacts
 - [x] added prompt-specific worldline derivation so the submitted seed drives the first three events and their process artifacts
 - [x] added API tests proving prompt projects are seed-specific and do not call the live LLM by default
 - [x] added a prompt-generation smoke path that advances the generated theatre
 - [x] changed Playwright local server reuse to `!process.env.CI` so local development is less brittle without weakening CI
 
+## Slice 13 Acceptance Criteria
+
+- [x] MiniMax seed compiler responses that prepend `<think>...</think>` are parsed into the final JSON object instead of being discarded
+- [x] local MiniMax prompt generation uses a timeout that matches the observed model latency and can produce a real `seed_prompt+MiniMax` worldline
+- [x] successful MiniMax runs write a safe runtime reasoning artifact and surface it through `stage.process_trace.reasoning_run`
+- [x] failed MiniMax runs write a safe fallback artifact and expose fallback status instead of silently pretending the model path succeeded
+- [x] the frontend process panel shows the latest model reasoning / fallback artifact without exposing API keys or raw hidden reasoning
+- [x] API tests cover `<think>` parsing, structured MiniMax packets, and fallback artifact redaction
+- [x] real local MiniMax verification, build, tests, smoke, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 13 Completed
+
+- [x] updated the OpenAI-compatible adapter to recover JSON after MiniMax reasoning prefaces
+- [x] raised `LLM_REQUEST_TIMEOUT` guidance to `180` seconds and updated the local ignored `.env`
+- [x] proved a real prompt creation path returns `source_label=seed_prompt+MiniMax`, `minimax_reasoning` knowledge, and a completed MiniMax process artifact
+- [x] added `ReasoningRunRecord` to world state and exposed the latest run in stage process trace
+- [x] added a stage UI strip for model reasoning / fallback artifacts
+- [x] added fallback artifact persistence so local failures become diagnosable without leaking secrets
+
 ## Next Candidate Slice
 
+- [ ] design async MiniMax reasoning as visible backstage computation rather than a blocking project-create call
 - [ ] deepen Archive/Ripple artifact writing quality now that their theatre-native instrument shells are in place
-- [ ] design async MiniMax enrichment as visible backstage computation rather than a blocking project-create call
 - [ ] continue visual review on mobile and low-height exhibition displays after the new performance hardening
 - [ ] make calibration more theatrical inside the Archive drawer instead of remaining utility-like
 
@@ -302,7 +321,8 @@ This slice does include:
 - [x] add the `.impeccable.md` design context and first orbital UI polish pass
 - [x] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [x] tighten the existing browser performance benchmark into stricter exhibition thresholds
-- [x] fix prompt-generated project creation so it immediately produces a driveable, seed-specific worldline without waiting on live LLM work
+- [x] fix prompt-generated project creation so deterministic mode immediately produces a driveable, seed-specific worldline without waiting on live LLM work
+- [x] reconnect local MiniMax prompt generation so Pro-style starts can produce a real structured reasoning packet when credentials are configured
 - [ ] add a background/async model-enrichment lane that can enrich prompt starts after the deterministic worldline is already visible
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene

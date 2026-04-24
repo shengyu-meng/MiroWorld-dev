@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import Any
 
+from config import get_settings
 from shared.utils import make_id, utc_now
 from .llm_adapter import OpenAICompatibleLLMAdapter
 from .models import (
@@ -15,6 +17,7 @@ from .models import (
   KnowledgeItem,
   ProjectRecord,
   ProjectSnapshot,
+  ReasoningRunRecord,
   ReplayTraceItem,
   ShareArtifact,
   SourceEntity,
@@ -35,6 +38,14 @@ class PromptContext:
   seed_words: list[str]
   actants: list[str]
   seed_excerpt: str
+  llm_payload: dict[str, Any] | None = None
+  llm_events: list[dict[str, Any]] = field(default_factory=list)
+  reasoning_steps: list[dict[str, Any]] = field(default_factory=list)
+  llm_error: str | None = None
+
+  @property
+  def has_llm_reasoning(self) -> bool:
+    return self.llm_payload is not None
 
 
 class SeedCompiler:
@@ -90,12 +101,13 @@ class SeedCompiler:
       updated_at=now,
       language=language,
     )
+    source_label = "seed_prompt+MiniMax" if context.has_llm_reasoning else "seed_prompt"
     world_state = self._build_prompt_world_state(
       world_state_id=world_state_id,
       project=project,
       session_id=session_id,
       context=context,
-      source_label="seed_prompt",
+      source_label=source_label,
       language=language,
     )
     return ProjectSnapshot(project=project, world_state=world_state)
@@ -112,16 +124,15 @@ class SeedCompiler:
     title = self._prompt_title(normalized, seed_words, language)
     summary = self._translate(
       language,
-      f"{normalized} 这条 seed 会被立即编译成可观测、可推进、可干涉的世界线，而不是等待实时模型返回。",
-      f"{normalized} This seed is compiled immediately into an observable, advanceable, and interruptible worldline instead of waiting on a live model call.",
+      f"{normalized} 这条 seed 会先形成可推进世界线；如果本地 MiniMax 可用，后台会写入结构化推理包。",
+      f"{normalized} This seed first forms an advanceable worldline; when local MiniMax is available, a structured reasoning packet is written into the runtime.",
     )
-    actants = self._derive_actants(seed_words, language)
     return PromptContext(
       title=title,
       summary=summary,
       seed_words=seed_words,
-      actants=actants,
-      seed_excerpt=self._excerpt(normalized, 96),
+      actants=self._derive_actants(seed_words, language),
+      seed_excerpt=self._excerpt(normalized, 120),
     )
 
   def _maybe_enrich_prompt_context(self, context: PromptContext, seed_prompt: str, language: DisplayLanguage) -> PromptContext:
@@ -132,18 +143,59 @@ class SeedCompiler:
       operation="seed_compiler",
       language=language,
       payload={
-        "task": "Return a compact worldline seed. Include human and non-human actants. Avoid media-dashboard framing.",
-        "schema": {
+        "task": (
+          "Build a structured worldline reasoning packet for an art-first simulation theatre. "
+          "The world can include humans, institutions, rules, environments, natural objects, materials, energy, and time constraints. "
+          "Avoid media-dashboard framing. Do not expose hidden chain-of-thought; return concise public reasoning steps only."
+        ),
+        "language": language,
+        "seed_prompt": seed_prompt,
+        "required_json_schema": {
           "title": "short exhibit title",
           "summary": "one paragraph world-simulation premise",
           "seed_words": ["3 to 6 concrete forces, materials, rules, or actants"],
           "actants": ["4 to 6 affected actants, including non-human or rule objects"],
+          "reasoning_steps": [
+            {
+              "layer": "FACT|INFERENCE|VALUE|ACTION",
+              "title": "short public-facing step label",
+              "inputs": ["visible inputs used by this step"],
+              "outputs": ["public-facing result of this step"],
+              "confidence_note": "why this layer is provisional",
+              "confidence": 0.0,
+            }
+          ],
+          "events": [
+            {
+              "stage": "Entry/Bend/Ripple or localized equivalent",
+              "title": "worldline node title",
+              "summary": "what changes at this node",
+              "impact_level": "high|medium|low",
+              "affected_entities": ["actants affected"],
+              "evidence_notes": ["visible evidence or trace"],
+              "causal_note": "how this node follows from the previous one",
+              "branches": [
+                {
+                  "label": "branch label",
+                  "description": "branch meaning",
+                  "confidence": 0.0,
+                  "premises": ["conditions that make it hold"],
+                  "signals_for": ["signals supporting it"],
+                  "signals_against": ["signals resisting it"],
+                  "cost_hint": "cost of this branch",
+                }
+              ],
+            }
+          ],
         },
-        "seed_prompt": seed_prompt,
-        "language": language,
       },
     )
     if not llm_payload:
+      if self.llm_adapter.settings.llm_api_key:
+        return replace(
+          context,
+          llm_error=self._safe_text(self.llm_adapter.last_error) or "MiniMax did not return structured JSON.",
+        )
       return context
 
     title = self._safe_text(llm_payload.get("title")) or context.title
@@ -156,6 +208,9 @@ class SeedCompiler:
       seed_words=self._pad_terms(seed_words, self._fallback_seed_words(language)),
       actants=self._pad_terms(actants, self._fallback_actants(language)),
       seed_excerpt=context.seed_excerpt,
+      llm_payload=self._sanitize_llm_payload(llm_payload),
+      llm_events=self._safe_event_specs(llm_payload.get("events")),
+      reasoning_steps=self._safe_reasoning_steps(llm_payload.get("reasoning_steps")),
     )
 
   def _build_prompt_world_state(
@@ -173,6 +228,7 @@ class SeedCompiler:
     key_events = self._build_prompt_events(world_state_id, language, context)
     primary_branch = key_events[0].branches[0]
     share_artifact = self._build_share_artifact(context.title, context.summary, language)
+    reasoning_runs = self._build_reasoning_runs(project.project_id, context, language)
 
     return WorldState(
       world_state_id=world_state_id,
@@ -185,7 +241,11 @@ class SeedCompiler:
       source_mode="project_graph",
       source_label=source_label,
       disclaimer=share_artifact.disclaimer,
-      share_context=self._translate(language, "Prompt 世界线即时编译", "Prompt worldline instant compilation"),
+      share_context=self._translate(
+        language,
+        "MiniMax 世界线推理" if context.has_llm_reasoning else "Prompt 世界线即时编译",
+        "MiniMax worldline reasoning" if context.has_llm_reasoning else "Prompt worldline instant compilation",
+      ),
       share_artifact=share_artifact,
       entities=entities,
       key_events=key_events,
@@ -200,13 +260,14 @@ class SeedCompiler:
           after=primary_branch.confidence,
           reason=self._translate(
             language,
-            "Prompt 中的作用体、规则和环境信号已经足够形成第一条可推进主轨。",
-            "The prompt contains enough actant, rule, and environment signals to form a first advanceable main track.",
+            "MiniMax 结构化推理包形成了第一条可推进主轨。" if context.has_llm_reasoning else "Prompt 中的作用体、规则和环境信号已经足够形成第一条可推进主轨。",
+            "The MiniMax structured reasoning packet formed the first advanceable main track." if context.has_llm_reasoning else "The prompt contains enough actant, rule, and environment signals to form a first advanceable main track.",
           ),
-          method="deterministic_seed_compile",
+          method="minimax_seed_reasoning" if context.has_llm_reasoning else "deterministic_seed_compile",
           created_at=utc_now(),
         )
       ],
+      reasoning_runs=reasoning_runs,
       replay_trace=[
         ReplayTraceItem(
           trace_id=make_id("rt"),
@@ -216,14 +277,90 @@ class SeedCompiler:
           branch_label=primary_branch.label,
           summary=self._translate(
             language,
-            "Prompt 已被写入第一层显影轨道，用户可以直接继续推进或在窗口介入。",
-            "The prompt has been written into the first exposure track; the viewer can advance or intervene immediately.",
+            "MiniMax 推理已写入第一层显影轨道，用户可以继续推进或在窗口介入。" if context.has_llm_reasoning else "Prompt 已被写入第一层显影轨道，用户可以直接继续推进或在窗口介入。",
+            "MiniMax reasoning has been written into the first exposure track; the viewer can advance or intervene immediately." if context.has_llm_reasoning else "The prompt has been written into the first exposure track; the viewer can advance or intervene immediately.",
           ),
         )
       ],
       created_at=utc_now(),
       updated_at=utc_now(),
     )
+
+  def _build_reasoning_runs(self, project_id: str, context: PromptContext, language: DisplayLanguage) -> list[ReasoningRunRecord]:
+    if not context.has_llm_reasoning and not context.llm_error:
+      return []
+    created_at = utc_now()
+    if context.llm_error:
+      relative_path = f"data/runtime/process/{project_id}/v1/00-minimax-seed-fallback.json"
+      absolute_path = get_settings().data_dir / "process" / project_id / "v1" / "00-minimax-seed-fallback.json"
+      absolute_path.parent.mkdir(parents=True, exist_ok=True)
+      artifact = {
+        "generated_at": created_at,
+        "artifact_type": "miroworld_minimax_seed_fallback",
+        "provider": "MiniMax",
+        "model_name": self.llm_adapter.settings.llm_model_name,
+        "language": language,
+        "seed_excerpt": context.seed_excerpt,
+        "status": "fallback",
+        "error": context.llm_error,
+        "fallback": "deterministic_seed_compile",
+        "note": "No secret or raw provider hidden reasoning is stored in this artifact.",
+      }
+      absolute_path.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
+      return [
+        ReasoningRunRecord(
+          reasoning_run_id=make_id("rr"),
+          operation="seed_compiler",
+          provider="MiniMax",
+          model_name=self.llm_adapter.settings.llm_model_name,
+          status="fallback",
+          artifact_path=relative_path,
+          summary=self._translate(
+            language,
+            "MiniMax reasoning did not complete; fallback reason was recorded and local seed compilation was used.",
+            "MiniMax reasoning did not complete; the fallback reason was recorded and local seed compilation was used.",
+          ),
+          step_count=0,
+          created_at=created_at,
+        )
+      ]
+
+    relative_path = f"data/runtime/process/{project_id}/v1/00-minimax-seed-reasoning.json"
+    absolute_path = get_settings().data_dir / "process" / project_id / "v1" / "00-minimax-seed-reasoning.json"
+    absolute_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact = {
+      "generated_at": created_at,
+      "artifact_type": "miroworld_minimax_seed_reasoning",
+      "provider": "MiniMax",
+      "model_name": self.llm_adapter.settings.llm_model_name,
+      "language": language,
+      "seed_excerpt": context.seed_excerpt,
+      "title": context.title,
+      "summary": context.summary,
+      "actants": context.actants,
+      "seed_words": context.seed_words,
+      "reasoning_steps": context.reasoning_steps,
+      "events": context.llm_events,
+      "note": "Raw provider hidden reasoning is not stored; this artifact contains the structured public reasoning packet only.",
+    }
+    absolute_path.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
+    return [
+      ReasoningRunRecord(
+        reasoning_run_id=make_id("rr"),
+        operation="seed_compiler",
+        provider="MiniMax",
+        model_name=self.llm_adapter.settings.llm_model_name,
+        status="completed",
+        artifact_path=relative_path,
+        summary=self._translate(
+          language,
+          f"MiniMax 生成了 {len(context.llm_events)} 个推演节点和 {len(context.reasoning_steps)} 个公开推理层。",
+          f"MiniMax generated {len(context.llm_events)} worldline nodes and {len(context.reasoning_steps)} public reasoning layers.",
+        ),
+        step_count=len(context.reasoning_steps) or len(context.llm_events),
+        created_at=created_at,
+      )
+    ]
 
   def _build_prompt_entities(self, context: PromptContext, language: DisplayLanguage) -> list[SourceEntity]:
     kinds = ["agent", "system", "environment", "constraint", "agent", "environment"]
@@ -246,39 +383,31 @@ class SeedCompiler:
     ]
 
   def _build_prompt_knowledge(self, context: PromptContext, language: DisplayLanguage) -> list[KnowledgeItem]:
-    lead = context.actants[0]
-    rule = context.actants[1]
-    field = context.actants[2]
-    constraint = context.actants[3]
+    if context.reasoning_steps:
+      items: list[KnowledgeItem] = []
+      for step in context.reasoning_steps[:8]:
+        layer = self._coerce_layer(step.get("layer"))
+        content = self._safe_text(step.get("outputs", [""])[0] if isinstance(step.get("outputs"), list) and step.get("outputs") else step.get("title")) or self._safe_text(step.get("confidence_note"))
+        if not content:
+          continue
+        items.append(
+          KnowledgeItem(
+            id=make_id("ki"),
+            layer=layer,
+            content=content,
+            source_type="minimax_reasoning",
+            confidence=self._clamp_float(step.get("confidence"), 0.74),
+          )
+        )
+      if items:
+        return items
+
+    lead, rule, field, constraint = context.actants[:4]
     return [
-      KnowledgeItem(
-        id=make_id("ki"),
-        layer="FACT",
-        content=self._translate(language, f"Seed 中明确出现了 {context.seed_excerpt}", f"The seed explicitly contains: {context.seed_excerpt}"),
-        source_type="seed_prompt",
-        confidence=0.86,
-      ),
-      KnowledgeItem(
-        id=make_id("ki"),
-        layer="INFERENCE",
-        content=self._translate(language, f"{lead} 与 {rule} 正在形成第一组因果牵引。", f"{lead} and {rule} are forming the first causal pull."),
-        source_type="deterministic_compile",
-        confidence=0.72,
-      ),
-      KnowledgeItem(
-        id=make_id("ki"),
-        layer="VALUE",
-        content=self._translate(language, f"代价不会平均分布，{field} 与 {constraint} 会先承受压力。", f"Cost will not distribute evenly; {field} and {constraint} will carry early pressure."),
-        source_type="deterministic_compile",
-        confidence=0.7,
-      ),
-      KnowledgeItem(
-        id=make_id("ki"),
-        layer="ACTION",
-        content=self._translate(language, "每个节点都会开放一个合适的干涉窗口：观测、修正、介入或偏好约束。", "Each node opens a suitable intervention window: observation, correction, intervention, or preference constraint."),
-        source_type="system",
-        confidence=0.78,
-      ),
+      KnowledgeItem(id=make_id("ki"), layer="FACT", content=self._translate(language, f"Seed 中明确出现了 {context.seed_excerpt}", f"The seed explicitly contains: {context.seed_excerpt}"), source_type="seed_prompt", confidence=0.86),
+      KnowledgeItem(id=make_id("ki"), layer="INFERENCE", content=self._translate(language, f"{lead} 与 {rule} 正在形成第一组因果牵引。", f"{lead} and {rule} are forming the first causal pull."), source_type="deterministic_compile", confidence=0.72),
+      KnowledgeItem(id=make_id("ki"), layer="VALUE", content=self._translate(language, f"代价不会平均分布，{field} 与 {constraint} 会先承受压力。", f"Cost will not distribute evenly; {field} and {constraint} will carry early pressure."), source_type="deterministic_compile", confidence=0.7),
+      KnowledgeItem(id=make_id("ki"), layer="ACTION", content=self._translate(language, "每个节点都会开放一个合适的干涉窗口：观测、修正、介入或偏好约束。", "Each node opens a suitable intervention window: observation, correction, intervention, or preference constraint."), source_type="system", confidence=0.78),
     ]
 
   def _build_world_state(
@@ -293,20 +422,14 @@ class SeedCompiler:
     source_label: str,
     language: DisplayLanguage,
   ) -> WorldState:
-    entities = [
-      SourceEntity(entity_id=make_id("ent"), entity_kind="agent", name=self._translate(language, "触发源", "Trigger source"), description=self._translate(language, "引发这条世界线的人、组织、材料或自然条件。", "The people, groups, materials, or natural conditions that trigger the worldline.")),
-      SourceEntity(entity_id=make_id("ent"), entity_kind="system", name=self._translate(language, "规则与制度", "Rules and institutions"), description=self._translate(language, "决定可见度、节奏、阈值与可行动作边界的系统外壳。", "The systems that shape visibility, tempo, thresholds, and possible action.")),
-      SourceEntity(entity_id=make_id("ent"), entity_kind="constraint", name=self._translate(language, "资源约束", "Resource pressure"), description=self._translate(language, "成本、时间、材料与注意力限制。", "Limits around cost, time, materials, and attention.")),
-      SourceEntity(entity_id=make_id("ent"), entity_kind="environment", name=self._translate(language, "场域条件", "Field conditions"), description=self._translate(language, "环境、时间、自然物与背景压力构成的作用场。", "The field made of environment, timing, natural objects, and background pressure.")),
-    ]
-
-    knowledge_items = [
-      KnowledgeItem(id=make_id("ki"), layer="FACT", content=self._translate(language, "触发材料已经进入可观测层。", "The triggering material has entered the observable layer."), source_type="fixture", confidence=0.82),
-      KnowledgeItem(id=make_id("ki"), layer="INFERENCE", content=self._translate(language, "最初的解释框架会决定后续世界线的分叉角度。", "The first interpretation frame will determine how the worldline forks."), source_type="system", confidence=0.68),
-      KnowledgeItem(id=make_id("ki"), layer="VALUE", content=self._translate(language, "系统会暴露谁承担代价，以及什么被视为可接受的损耗。", "The system exposes who absorbs the cost and what counts as acceptable loss."), source_type="system", confidence=0.73),
-      KnowledgeItem(id=make_id("ki"), layer="ACTION", content=self._translate(language, "一次清晰但有代价的 intervention 会显著改变后续轨迹。", "A clear but costly intervention can noticeably bend the next trajectory."), source_type="system", confidence=0.76),
-    ]
-
+    context = PromptContext(
+      title=title,
+      summary=summary,
+      seed_words=self._pad_terms(seed_words, self._fallback_seed_words(language)),
+      actants=self._fallback_actants(language),
+      seed_excerpt=self._translate(language, "预设世界线", "fixture worldline"),
+    )
+    entities = self._build_prompt_entities(context, language)
     key_events = self._build_events(world_state_id, language, seed_words)
     primary_branch = key_events[0].branches[0]
     share_artifact = self._build_share_artifact(title, summary, language)
@@ -327,28 +450,17 @@ class SeedCompiler:
       entities=entities,
       key_events=key_events,
       cost_lenses=self._build_cost_lenses(key_events, language),
-      knowledge_items=knowledge_items,
+      knowledge_items=[
+        KnowledgeItem(id=make_id("ki"), layer="FACT", content=self._translate(language, "触发材料已经进入可观测层。", "The triggering material has entered the observable layer."), source_type="fixture", confidence=0.82),
+        KnowledgeItem(id=make_id("ki"), layer="INFERENCE", content=self._translate(language, "最初的解释框架会决定后续世界线的分叉角度。", "The first interpretation frame will determine how the worldline forks."), source_type="system", confidence=0.68),
+        KnowledgeItem(id=make_id("ki"), layer="VALUE", content=self._translate(language, "系统会暴露谁承担代价，以及什么被视为可接受的损耗。", "The system exposes who absorbs the cost and what counts as acceptable loss."), source_type="system", confidence=0.73),
+        KnowledgeItem(id=make_id("ki"), layer="ACTION", content=self._translate(language, "一次清晰但有代价的 intervention 会显著改变后续轨迹。", "A clear but costly intervention can noticeably bend the next trajectory."), source_type="system", confidence=0.76),
+      ],
       confidence_updates=[
-        ConfidenceUpdate(
-          update_id=make_id("cu"),
-          target_type="branch",
-          target_id=primary_branch.branch_id,
-          before=0.55,
-          after=primary_branch.confidence,
-          reason=self._translate(language, "多条早期信号在主分支上汇聚。", "Multiple early signals converge on the main branch."),
-          method="rule",
-          created_at=utc_now(),
-        )
+        ConfidenceUpdate(update_id=make_id("cu"), target_type="branch", target_id=primary_branch.branch_id, before=0.55, after=primary_branch.confidence, reason=self._translate(language, "多条早期信号在主分支上汇聚。", "Multiple early signals converge on the main branch."), method="rule", created_at=utc_now())
       ],
       replay_trace=[
-        ReplayTraceItem(
-          trace_id=make_id("rt"),
-          event_id=key_events[0].event_id,
-          event_title=key_events[0].title,
-          branch_id=primary_branch.branch_id,
-          branch_label=primary_branch.label,
-          summary=self._translate(language, "主分支获得第一轮可见度优势。", "The primary branch gains the first visibility advantage."),
-        )
+        ReplayTraceItem(trace_id=make_id("rt"), event_id=key_events[0].event_id, event_title=key_events[0].title, branch_id=primary_branch.branch_id, branch_label=primary_branch.label, summary=self._translate(language, "主分支获得第一轮可见度优势。", "The primary branch gains the first visibility advantage."))
       ],
       created_at=utc_now(),
       updated_at=utc_now(),
@@ -370,119 +482,64 @@ class SeedCompiler:
     )
 
   def _build_prompt_events(self, world_state_id: str, language: DisplayLanguage, context: PromptContext) -> list[KeyEvent]:
-    lead, rule, field, constraint = context.actants[:4]
-    tertiary = context.actants[4] if len(context.actants) > 4 else field
-    templates = [
-      {
-        "stage": self._translate(language, "入口", "Entry"),
-        "impact": "high",
-        "title": self._translate(language, f"{lead}进入可观测层", f"{lead} enters the observable layer"),
-        "summary": self._translate(language, f"{context.seed_excerpt} 开始显影：{lead}、{rule} 与 {field} 被放进同一个作用场，世界线获得第一层方向。", f"{context.seed_excerpt} begins to appear: {lead}, {rule}, and {field} enter the same field, giving the worldline its first direction."),
-        "affected": [lead, rule, field],
-        "evidence": self._translate(language, f"Seed 线索把 {lead} 与 {rule} 同时推入场域。", f"The seed pushes {lead} and {rule} into the field together."),
-        "causal": self._translate(language, "入口事件决定观众最先看见哪一层因果。", "The entry event decides which causal layer appears first."),
-        "branches": [
-          ("主轨显影", "Primary exposure", f"{lead}沿着{rule}快速获得方向，世界线可以立即推进。", f"{lead} gains direction through {rule}, allowing the worldline to advance immediately."),
-          ("慢速校准", "Slow calibration", f"{field}先吸收不确定性，节点展开较慢但误伤更低。", f"{field} absorbs uncertainty first; the node unfolds slowly but with less collateral damage."),
-          ("失控折叠", "Runaway fold", f"{constraint}被过早压缩，后续节点可能出现突然折叠。", f"{constraint} is compressed too early, creating a risk of sudden downstream folding."),
-        ],
-      },
-      {
-        "stage": self._translate(language, "折转", "Bend"),
-        "impact": "medium",
-        "title": self._translate(language, f"{constraint}重新分配轨道", f"{constraint} redistributes the track"),
-        "summary": self._translate(language, f"{rule}、{constraint} 与 {tertiary} 开始争夺节奏：哪个对象先被保护，哪个对象先承压，会改变第二层分叉。", f"{rule}, {constraint}, and {tertiary} begin negotiating tempo: what gets protected first and what bears pressure first changes the second fork."),
-        "affected": [rule, constraint, tertiary],
-        "evidence": self._translate(language, f"{constraint}的压力正在转移到 {tertiary}。", f"Pressure from {constraint} is moving toward {tertiary}."),
-        "causal": self._translate(language, "第一层显影形成的惯性开始改变资源与行动的顺序。", "The inertia from the first exposure changes the ordering of resources and actions."),
-        "branches": [
-          ("约束重排", "Constraint reallocation", f"系统承认{constraint}的存在，并把代价显式分摊到多个作用体。", f"The system acknowledges {constraint} and distributes cost across several actants."),
-          ("局部绕行", "Local bypass", f"{tertiary}绕开主轨，保留一条较窄但更稳的路径。", f"{tertiary} bypasses the main track, preserving a narrower but steadier path."),
-          ("材料断裂", "Material rupture", f"如果{rule}过度收紧，{field}会把压力变成可见断裂。", f"If {rule} tightens too hard, {field} turns pressure into visible rupture."),
-        ],
-      },
-      {
-        "stage": self._translate(language, "回响", "Ripple"),
-        "impact": "medium",
-        "title": self._translate(language, f"{field}沉积为新的世界残影", f"{field} settles into a new world afterimage"),
-        "summary": self._translate(language, f"最后一层不会给出唯一答案，而是留下{lead}、{rule}、{constraint}之间的代价记录，作为下一轮观测和干涉的起点。", f"The last layer does not produce a single answer; it leaves a cost record among {lead}, {rule}, and {constraint} as the next starting point for observation and intervention."),
-        "affected": [field, lead, constraint],
-        "evidence": self._translate(language, f"{field}保留了前两层的弯折痕迹。", f"{field} retains the bends from the first two layers."),
-        "causal": self._translate(language, "前两层选择沉积成新的边界条件。", "The first two layers settle into new boundary conditions."),
-        "branches": [
-          ("残影固化", "Afterimage settles", f"代价被记录下来，{lead}后续只能在新的边界内行动。", f"The cost is recorded; {lead} can only act within the new boundary."),
-          ("重新开口", "Re-opened track", f"一次校准把{constraint}重新打开，让下一轮推演保留弹性。", f"A calibration reopens {constraint}, keeping the next simulation elastic."),
-          ("长期回声", "Long echo", f"{field}把短期选择转化为更长的制度或环境回声。", f"{field} turns a short-term choice into a longer institutional or environmental echo."),
-        ],
-      },
-    ]
+    specs = context.llm_events if context.llm_events else self._fallback_event_specs(language, context)
+    if len(specs) < 3:
+      specs = specs + self._fallback_event_specs(language, context)[len(specs):]
     events: list[KeyEvent] = []
     previous_event_id = ""
-    for index, template in enumerate(templates):
-      event = self._event_from_template(world_state_id, language, index, previous_event_id, template)
+    for index, spec in enumerate(specs[:5]):
+      event = self._event_from_spec(world_state_id, language, index, previous_event_id, spec)
       events.append(event)
       previous_event_id = event.event_id
     return events
 
-  def _event_from_template(self, world_state_id: str, language: DisplayLanguage, index: int, previous_event_id: str, template: dict[str, Any]) -> KeyEvent:
+  def _event_from_spec(self, world_state_id: str, language: DisplayLanguage, index: int, previous_event_id: str, spec: dict[str, Any]) -> KeyEvent:
     event_id = make_id("evt")
-    confidences = [(0.64, 0.25, 0.11), (0.56, 0.29, 0.15), (0.51, 0.33, 0.16)][index]
-    branches = [
-      self._branch(event_id, language, template["branches"][0], confidences[0], "primary", "selected" if index == 0 else "candidate", "清晰度上升，但会把代价更快推给承压对象。", "Clarity rises, but cost moves faster onto pressured actants."),
-      self._branch(event_id, language, template["branches"][1], confidences[1], "alternate", "candidate", "降低误伤，但会拉长不确定窗口。", "Reduces collateral damage but lengthens uncertainty."),
-      self._branch(event_id, language, template["branches"][2], confidences[2], "alternate", "candidate", "可见度极高，但可能制造难以回收的后续损耗。", "Highly visible, but may create downstream damage that is hard to unwind."),
-    ]
+    branches = self._branches_from_spec(event_id, language, index, spec)
+    stage_fallback = ["入口", "折转", "回响", "归档", "再显影"] if language == "zh" else ["Entry", "Bend", "Ripple", "Archive", "Re-entry"]
     return KeyEvent(
       event_id=event_id,
       world_state_id=world_state_id,
-      title=template["title"],
-      summary=template["summary"],
+      title=self._safe_text(spec.get("title")) or self._translate(language, f"推演节点 {index + 1}", f"Worldline node {index + 1}"),
+      summary=self._safe_text(spec.get("summary")) or self._translate(language, "该节点由模型推理包和本地兜底结构共同生成。", "This node is formed from the model packet and local fallback structure."),
       depends_on_event_id=previous_event_id,
-      causal_note=template["causal"],
+      causal_note=self._safe_text(spec.get("causal_note")) or self._translate(language, "上一层形成的约束继续向后传导。", "The previous layer's constraint continues downstream."),
       causal_strength="high" if index == 0 else "medium",
       collapse_hint=self._translate(language, "如果不推进，系统会停留在当前显影层。", "If not advanced, the system remains in the current exposure layer."),
-      stage=template["stage"],
-      impact_level=template["impact"],
+      stage=self._safe_text(spec.get("stage")) or stage_fallback[min(index, len(stage_fallback) - 1)],
+      impact_level=self._coerce_impact(spec.get("impact_level"), "high" if index == 0 else "medium"),
       fold_state="expanded" if index == 0 else "collapsed",
       branches=branches,
       evidence_ids=[make_id("ev"), make_id("ev")],
-      evidence_notes=[template["evidence"]],
-      affected_entities=template["affected"],
+      evidence_notes=self._safe_list(spec.get("evidence_notes"))[:4] or [self._translate(language, "模型推理包给出了该节点的可观测痕迹。", "The model reasoning packet supplied an observable trace for this node.")],
+      affected_entities=self._pad_terms(self._safe_list(spec.get("affected_entities")), self._fallback_actants(language), 3)[:5],
     )
 
-  def _branch(
-    self,
-    event_id: str,
-    language: DisplayLanguage,
-    labels: tuple[str, str, str, str],
-    confidence: float,
-    visibility: str,
-    state: str,
-    cost_zh: str,
-    cost_en: str,
-  ) -> Branch:
-    zh_label, en_label, zh_description, en_description = labels
-    return Branch(
-      branch_id=make_id("br"),
-      event_id=event_id,
-      label=self._translate(language, zh_label, en_label),
-      description=self._translate(language, zh_description, en_description),
-      confidence=confidence,
-      premises=[
-        self._translate(language, "可观测材料已经足以支撑这一轨道继续显影。", "Observable material is sufficient for this track to keep appearing."),
-        self._translate(language, "规则、环境和作用体之间存在稳定牵引。", "Rules, environments, and actants hold a stable pull."),
-      ],
-      signals_for=[
-        self._translate(language, "因果链条开始对齐。", "The causal chain begins to align."),
-        self._translate(language, "代价载体已经可见。", "The cost carrier is visible."),
-      ],
-      signals_against=[
-        self._translate(language, "新的观测或修正仍可能改变证据层。", "A new observation or correction may still change the evidence layer."),
-      ],
-      visibility=visibility,  # type: ignore[arg-type]
-      state=state,  # type: ignore[arg-type]
-      cost_hint=self._translate(language, cost_zh, cost_en),
-    )
+  def _branches_from_spec(self, event_id: str, language: DisplayLanguage, index: int, spec: dict[str, Any]) -> list[Branch]:
+    branch_specs = spec.get("branches")
+    if not isinstance(branch_specs, list) or not branch_specs:
+      branch_specs = self._fallback_branch_specs(language)
+    branches: list[Branch] = []
+    confidences = [(0.64, 0.25, 0.11), (0.56, 0.29, 0.15), (0.51, 0.33, 0.16)][min(index, 2)]
+    for branch_index, branch_spec in enumerate(branch_specs[:3]):
+      if not isinstance(branch_spec, dict):
+        continue
+      branches.append(
+        Branch(
+          branch_id=make_id("br"),
+          event_id=event_id,
+          label=self._safe_text(branch_spec.get("label")) or self._fallback_branch_specs(language)[branch_index]["label"],
+          description=self._safe_text(branch_spec.get("description")) or self._fallback_branch_specs(language)[branch_index]["description"],
+          confidence=self._clamp_float(branch_spec.get("confidence"), confidences[min(branch_index, len(confidences) - 1)]),
+          premises=self._safe_list(branch_spec.get("premises"))[:4] or [self._translate(language, "可观测材料足以支撑这一轨道继续显影。", "Observable material is sufficient for this track to keep appearing.")],
+          signals_for=self._safe_list(branch_spec.get("signals_for"))[:4] or [self._translate(language, "因果链条开始对齐。", "The causal chain begins to align.")],
+          signals_against=self._safe_list(branch_spec.get("signals_against"))[:3] or [self._translate(language, "新的观测仍可能改变证据层。", "A new observation may still change the evidence layer.")],
+          visibility="primary" if branch_index == 0 else "alternate",
+          state="selected" if index == 0 and branch_index == 0 else "candidate",
+          cost_hint=self._safe_text(branch_spec.get("cost_hint")) or self._translate(language, "清晰度上升，但代价会更快显形。", "Clarity rises, but cost becomes visible faster."),
+        )
+      )
+    return branches or self._branches_from_spec(event_id, language, index, {"branches": self._fallback_branch_specs(language)})
 
   def _build_events(self, world_state_id: str, language: DisplayLanguage, seed_words: list[str]) -> list[KeyEvent]:
     context = PromptContext(
@@ -520,6 +577,93 @@ class SeedCompiler:
         )
     return lenses
 
+  def _fallback_event_specs(self, language: DisplayLanguage, context: PromptContext) -> list[dict[str, Any]]:
+    lead, rule, field, constraint = context.actants[:4]
+    tertiary = context.actants[4] if len(context.actants) > 4 else field
+    return [
+      {
+        "stage": self._translate(language, "入口", "Entry"),
+        "impact_level": "high",
+        "title": self._translate(language, f"{lead}进入可观测层", f"{lead} enters the observable layer"),
+        "summary": self._translate(language, f"{context.seed_excerpt} 开始显影：{lead}、{rule} 与 {field} 被放进同一个作用场。", f"{context.seed_excerpt} begins to appear: {lead}, {rule}, and {field} enter the same field."),
+        "affected_entities": [lead, rule, field],
+        "evidence_notes": [self._translate(language, f"Seed 线索把 {lead} 与 {rule} 同时推入场域。", f"The seed pushes {lead} and {rule} into the field together.")],
+        "causal_note": self._translate(language, "入口事件决定观众最先看见哪一层因果。", "The entry event decides which causal layer appears first."),
+        "branches": self._fallback_branch_specs(language),
+      },
+      {
+        "stage": self._translate(language, "折转", "Bend"),
+        "impact_level": "medium",
+        "title": self._translate(language, f"{constraint}重新分配轨道", f"{constraint} redistributes the track"),
+        "summary": self._translate(language, f"{rule}、{constraint} 与 {tertiary} 开始争夺节奏。", f"{rule}, {constraint}, and {tertiary} begin negotiating tempo."),
+        "affected_entities": [rule, constraint, tertiary],
+        "evidence_notes": [self._translate(language, f"{constraint}的压力正在转移到 {tertiary}。", f"Pressure from {constraint} is moving toward {tertiary}.")],
+        "causal_note": self._translate(language, "第一层显影形成的惯性开始改变资源与行动的顺序。", "The inertia from the first exposure changes the ordering of resources and actions."),
+        "branches": self._fallback_branch_specs(language),
+      },
+      {
+        "stage": self._translate(language, "回响", "Ripple"),
+        "impact_level": "medium",
+        "title": self._translate(language, f"{field}沉积为新的世界残影", f"{field} settles into a new world afterimage"),
+        "summary": self._translate(language, f"最后一层留下 {lead}、{rule}、{constraint} 之间的代价记录。", f"The last layer leaves a cost record among {lead}, {rule}, and {constraint}."),
+        "affected_entities": [field, lead, constraint],
+        "evidence_notes": [self._translate(language, f"{field}保留了前两层的弯折痕迹。", f"{field} retains the bends from the first two layers.")],
+        "causal_note": self._translate(language, "前两层选择沉积成新的边界条件。", "The first two layers settle into new boundary conditions."),
+        "branches": self._fallback_branch_specs(language),
+      },
+    ]
+
+  def _fallback_branch_specs(self, language: DisplayLanguage) -> list[dict[str, Any]]:
+    return [
+      {
+        "label": self._translate(language, "主轨显影", "Primary exposure"),
+        "description": self._translate(language, "世界线沿着最强因果牵引继续推进。", "The worldline advances along the strongest causal pull."),
+        "confidence": 0.62,
+        "premises": [self._translate(language, "可观测材料已经足以支撑这一轨道。", "Observable material is sufficient to support this track.")],
+        "signals_for": [self._translate(language, "代价载体已经可见。", "The cost carrier is visible.")],
+        "signals_against": [self._translate(language, "新的观测或修正仍可能改变证据层。", "A new observation or correction may still change the evidence layer.")],
+        "cost_hint": self._translate(language, "清晰度上升，但会把代价更快推给承压对象。", "Clarity rises, but cost moves faster onto pressured actants."),
+      },
+      {
+        "label": self._translate(language, "慢速校准", "Slow calibration"),
+        "description": self._translate(language, "系统先吸收不确定性，再决定是否折转。", "The system absorbs uncertainty before deciding whether to bend."),
+        "confidence": 0.27,
+        "premises": [self._translate(language, "观测场仍保留判断弹性。", "The observer field still retains judgment elasticity.")],
+        "signals_for": [self._translate(language, "新的细节削弱单一轨道。", "New details weaken the single track.")],
+        "signals_against": [self._translate(language, "节奏过慢会扩大不确定期。", "A slow tempo widens uncertainty.")],
+        "cost_hint": self._translate(language, "降低误伤，但会拉长不确定窗口。", "Reduces collateral damage but lengthens uncertainty."),
+      },
+      {
+        "label": self._translate(language, "高冲击低概率", "High-impact low-probability"),
+        "description": self._translate(language, "脆弱节点被过度放大，可能触发突然折叠。", "A fragile node is over-amplified and may trigger a sudden fold."),
+        "confidence": 0.11,
+        "premises": [self._translate(language, "脆弱节点被过度放大。", "A fragile node is over-amplified.")],
+        "signals_for": [self._translate(language, "风险叙事开始压过事实层。", "Risk framing begins to dominate the fact layer.")],
+        "signals_against": [self._translate(language, "稳定结构仍可吸收部分冲击。", "Stable structures can still absorb part of the shock.")],
+        "cost_hint": self._translate(language, "可见度极高，但可能制造难以回收的后续损耗。", "Highly visible, but may create downstream damage that is hard to unwind."),
+      },
+    ]
+
+  def _safe_event_specs(self, value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+      return []
+    return [item for item in value if isinstance(item, dict)]
+
+  def _safe_reasoning_steps(self, value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+      return []
+    return [item for item in value if isinstance(item, dict)]
+
+  def _sanitize_llm_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+    return {
+      "title": self._safe_text(payload.get("title")),
+      "summary": self._safe_text(payload.get("summary")),
+      "seed_words": self._safe_list(payload.get("seed_words")),
+      "actants": self._safe_list(payload.get("actants")),
+      "reasoning_steps": self._safe_reasoning_steps(payload.get("reasoning_steps")),
+      "events": self._safe_event_specs(payload.get("events")),
+    }
+
   def _extract_seed_words(self, text: str, language: DisplayLanguage) -> list[str]:
     if language == "zh":
       parts = re.split(r"[，。；、！？,.!?;:\s]+", text)
@@ -549,7 +693,7 @@ class SeedCompiler:
   def _pad_terms(self, values: list[str], fallback: list[str], target: int = 6) -> list[str]:
     cleaned: list[str] = []
     for value in values + fallback:
-      item = self._excerpt(str(value).strip(), 36)
+      item = self._excerpt(str(value).strip(), 48)
       if item and item not in cleaned:
         cleaned.append(item)
       if len(cleaned) >= target:
@@ -575,6 +719,19 @@ class SeedCompiler:
     if len(text) <= limit:
       return text
     return f"{text[:limit].rstrip()}..."
+
+  def _clamp_float(self, value: Any, fallback: float) -> float:
+    try:
+      parsed = float(value)
+    except (TypeError, ValueError):
+      parsed = fallback
+    return min(1.0, max(0.0, parsed))
+
+  def _coerce_impact(self, value: Any, fallback: str) -> str:
+    return value if value in {"low", "medium", "high"} else fallback
+
+  def _coerce_layer(self, value: Any) -> str:
+    return value if value in {"FACT", "INFERENCE", "VALUE", "ACTION"} else "INFERENCE"
 
   def _translate(self, language: DisplayLanguage, zh: str, en: str) -> str:
     return zh if language == "zh" else en

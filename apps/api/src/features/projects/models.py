@@ -157,6 +157,18 @@ class ReplayTraceItem(BaseModel):
   summary: str
 
 
+class ReasoningRunRecord(BaseModel):
+  reasoning_run_id: str
+  operation: Literal["seed_compiler", "replay_engine", "cost_confidence_engine", "share_engine"]
+  provider: str
+  model_name: str
+  status: Literal["completed", "fallback", "failed"]
+  artifact_path: str
+  summary: str
+  step_count: int = 0
+  created_at: str
+
+
 class SavedReplayFocus(BaseModel):
   event_id: str
   event_title: str
@@ -260,6 +272,7 @@ class WorldState(BaseModel):
   cost_lenses: list[CostLens]
   knowledge_items: list[KnowledgeItem] = Field(default_factory=list)
   confidence_updates: list[ConfidenceUpdate] = Field(default_factory=list)
+  reasoning_runs: list[ReasoningRunRecord] = Field(default_factory=list)
   player_inputs: list[UserInputRecord] = Field(default_factory=list)
   player_decision_log: list[DecisionLogEntry] = Field(default_factory=list)
   replay_trace: list[ReplayTraceItem] = Field(default_factory=list)

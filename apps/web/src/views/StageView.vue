@@ -134,6 +134,20 @@
                 <code data-testid="process-file-path">{{ currentProcessStep.artifact_path }}</code>
               </div>
 
+              <div
+                v-if="stage.process_trace.reasoning_run"
+                class="process-file-strip process-file-strip--model"
+                data-testid="model-reasoning-strip"
+              >
+                <span>{{ processText.modelLabel }}</span>
+                <code data-testid="model-reasoning-file">{{ stage.process_trace.reasoning_run.artifact_path }}</code>
+                <small>
+                  {{ stage.process_trace.reasoning_run.provider }} /
+                  {{ stage.process_trace.reasoning_run.model_name }} /
+                  {{ stage.process_trace.reasoning_run.status }}
+                </small>
+              </div>
+
               <div class="process-metric-row">
                 <span data-testid="process-metric-confidence">
                   {{ processText.confidenceLabel }} {{ formatConfidence(currentProcessStep.artifact_preview.primary_confidence) }}
@@ -707,6 +721,7 @@ const processCopy = {
     processLabel: '后台过程文件',
     stepLabel: '显影层',
     fileLabel: 'runtime artifact',
+    modelLabel: 'model reasoning',
     confidenceLabel: '置信',
     costMassLabel: '代价质量',
     counterSignalLabel: '反向信号',
@@ -719,6 +734,7 @@ const processCopy = {
     processLabel: 'Process File',
     stepLabel: 'Exposure',
     fileLabel: 'runtime artifact',
+    modelLabel: 'model reasoning',
     confidenceLabel: 'confidence',
     costMassLabel: 'cost mass',
     counterSignalLabel: 'counter-signals',
@@ -731,6 +747,7 @@ const processCopy = {
   processLabel: string
   stepLabel: string
   fileLabel: string
+  modelLabel: string
   confidenceLabel: string
   costMassLabel: string
   counterSignalLabel: string
