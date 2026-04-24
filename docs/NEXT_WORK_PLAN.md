@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 11 / Exhibition Performance Budget completed`
+Current slice: `Experience Rebuild Slice 12 / Prompt Worldline Driver Fix completed`
 
 ## Goal
 
@@ -33,6 +33,7 @@ This slice does include:
 - a more cinematic computation display that still keeps data-file truth visible
 - a repeatable browser performance benchmark for canvas FPS and Next-step latency
 - persistent theatre reading state so refreshes can resume the same worldline layer
+- prompt-generated starts that compile into a real worldline immediately instead of blocking on live LLM work or falling back to a generic template
 - an `.impeccable.md` design context so future UI work keeps the artwork's visual language consistent
 - a stronger orbital theatre polish pass that makes the current stage feel less like stacked cards
 - cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
@@ -189,9 +190,28 @@ This slice does include:
 - [x] added mobile and low-height viewport checks for theatre visibility, process panel reachability, Next control reachability, and horizontal overflow
 - [x] hardened theatre CSS for mobile and low-height displays without changing public contracts or backend behavior
 
+## Slice 12 Acceptance Criteria
+
+- [x] pressing the prompt-generation entry action returns a driveable project without waiting on a live MiniMax call by default
+- [x] generated prompt projects contain prompt-specific actants, key events, branches, cost lenses, knowledge layers, and process traces
+- [x] fixture creation and prompt creation both keep public contracts unchanged
+- [x] Playwright smoke covers prompt entry, theatre load, process trace visibility, and Next-step advancement
+- [x] local smoke can run when a current dev server is already active, while CI still starts clean servers
+- [x] build, tests, smoke, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 12 Completed
+
+- [x] replaced prompt creation's default live-LLM dependency with a deterministic prompt compiler
+- [x] made MiniMax seed enrichment opt-in through `LLM_SEED_COMPILER_ENABLED=false` by default
+- [x] added prompt-specific worldline derivation so the submitted seed drives the first three events and their process artifacts
+- [x] added API tests proving prompt projects are seed-specific and do not call the live LLM by default
+- [x] added a prompt-generation smoke path that advances the generated theatre
+- [x] changed Playwright local server reuse to `!process.env.CI` so local development is less brittle without weakening CI
+
 ## Next Candidate Slice
 
 - [ ] deepen Archive/Ripple artifact writing quality now that their theatre-native instrument shells are in place
+- [ ] design async MiniMax enrichment as visible backstage computation rather than a blocking project-create call
 - [ ] continue visual review on mobile and low-height exhibition displays after the new performance hardening
 - [ ] make calibration more theatrical inside the Archive drawer instead of remaining utility-like
 
@@ -282,6 +302,8 @@ This slice does include:
 - [x] add the `.impeccable.md` design context and first orbital UI polish pass
 - [x] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [x] tighten the existing browser performance benchmark into stricter exhibition thresholds
+- [x] fix prompt-generated project creation so it immediately produces a driveable, seed-specific worldline without waiting on live LLM work
+- [ ] add a background/async model-enrichment lane that can enrich prompt starts after the deterministic worldline is already visible
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration

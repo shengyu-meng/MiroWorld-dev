@@ -78,10 +78,11 @@
             <button
               type="button"
               class="secondary-action"
+              data-testid="prompt-launch"
               :disabled="creating || !seedPrompt.trim()"
               @click="launchPrompt"
             >
-              {{ copy.entry.secondaryAction }}
+              {{ creating ? copy.entry.opening : copy.entry.secondaryAction }}
             </button>
           </div>
         </article>

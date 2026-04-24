@@ -923,3 +923,33 @@ Still open after slice 11:
 - deepen Archive/Ripple artifact prose now that their theatre-native shells are stable
 - keep real-device / real-display visual review on mobile and low-height exhibition hardware
 - make Archive calibration more theatrical and less utility-like
+
+## 2026-04-24 - Experience Rebuild Slice 12 (prompt worldline driver fix completed)
+
+Root cause:
+
+- prompt project creation was calling the live MiniMax adapter synchronously whenever local `LLM_API_KEY` was present
+- after that call, the generated title/summary could change, but the actual key events still came from a generic worldline template
+- the result could feel stuck or non-driveable: slow entry plus a generated project that did not really unfold from the submitted seed
+
+Completed in this iteration:
+
+- replaced the default prompt path with a deterministic prompt compiler that immediately derives actants, events, branches, costs, knowledge layers, and process traces from the submitted seed
+- made live seed enrichment explicitly opt-in through `LLM_SEED_COMPILER_ENABLED=false` by default, so local credentials no longer make ordinary prompt starts block on a network call
+- kept MiniMax server-side and secret-safe while preserving the public contracts
+- added API coverage proving prompt projects are seed-specific and do not call the live LLM by default
+- added a Playwright smoke path for prompt entry, theatre load, process trace visibility, and Next-step advancement
+- adjusted Playwright server reuse so local smoke can reuse a current dev server outside CI while CI still starts clean servers
+
+Verification:
+
+- `python -m pytest apps/api/tests/test_api.py -q` passed
+- `npm --workspace apps/web run test -- --run` passed
+- `npm --workspace apps/web run build` passed
+- `npm run smoke` passed with the new prompt-generation path
+
+Still open after slice 12:
+
+- design a proper async MiniMax enrichment lane so model computation can appear as visible backstage progress without blocking project creation
+- continue improving the authored quality of generated worldline language
+- keep tightening real-device visual and performance review

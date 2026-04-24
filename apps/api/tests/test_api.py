@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 from main import app
+from features.projects.seed_compiler import SeedCompiler
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -65,12 +66,40 @@ def test_fixture_project_creation_and_stage_contracts():
 
 
 def test_prompt_project_creation():
-  response = client.post("/api/projects", json={"seed_prompt": "A museum dispute fractures a city narrative.", "language": "en"})
+  prompt = "A bridge load rule changes overnight; tide, steel, and commuter paths begin pulling on each other."
+  response = client.post("/api/projects", json={"seed_prompt": prompt, "language": "en"})
   assert response.status_code == 200
   payload = response.json()["data"]
   assert payload["project_id"].startswith("proj_")
   assert_schema("stage-response.schema.json", payload["stage"])
   assert_process_trace(payload["stage"])
+  stage = payload["stage"]
+  event_blob = " ".join(
+    f"{event['title']} {event['summary']} {' '.join(event['affected_entities'])}"
+    for event in stage["observatory"]["key_events"]
+  ).lower()
+  assert "bridge" in event_blob
+  assert "tide" in stage["project_context"]["summary"].lower()
+  assert "museum dispute" not in event_blob
+  assert len(stage["observatory"]["key_events"]) == 3
+  assert all(len(event["branches"]) >= 3 for event in stage["observatory"]["key_events"])
+
+
+def test_prompt_compiler_does_not_call_live_llm_by_default(monkeypatch):
+  compiler = SeedCompiler()
+  monkeypatch.setattr(compiler.llm_adapter.settings, "llm_seed_compiler_enabled", False)
+
+  def fail_if_called(**_kwargs):
+    raise AssertionError("Prompt creation must not block on a live LLM call by default.")
+
+  monkeypatch.setattr(compiler.llm_adapter, "generate_json", fail_if_called)
+  snapshot = compiler.compile_prompt(
+    "A glacier, a ferry timetable, and a municipal rule begin pulling the same route.",
+    "en",
+  )
+  assert snapshot.project.source_mode == "seed_prompt"
+  assert len(snapshot.world_state.key_events) == 3
+  assert "glacier" in snapshot.world_state.key_events[0].title.lower()
 
 
 def test_theatre_progress_persistence_restores_stage_defaults():
