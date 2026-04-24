@@ -745,3 +745,35 @@ Verification:
 - `git diff --check` passed
 - secret scan returned no matches for the provided MiniMax key fragment
 - `git ls-files .ui-ref ui-ref` returned no tracked reference files
+
+## 2026-04-24 - Experience Rebuild Slice 7 (computation theatre and performance benchmark started)
+
+Planned in this iteration:
+
+- make the process trace panel feel like a computation theatre instrument instead of a debug card
+- keep runtime process file paths and preview metrics visible so the stage still shows real backend artifact results
+- add expanded selected-layer inputs / outputs / confidence notes to make FACT / INFERENCE / VALUE / ACTION more readable
+- add a repeatable browser benchmark for canvas frame cadence and Next-step latency
+- prevent Playwright smoke from silently reusing stale local servers from older runs
+
+## 2026-04-24 - Experience Rebuild Slice 7 (computation theatre and performance benchmark completed)
+
+Completed in this iteration:
+
+- reshaped the process trace panel into a computation-theatre instrument with orbit progress, scanline treatment, artifact strip, and preview metrics
+- added an expanded selected-layer inspector so FACT / INFERENCE / VALUE / ACTION expose inputs, outputs, and confidence notes
+- kept runtime process artifact paths visible so the theatrical layer still points back to real local data files
+- added `npm run test:perf` / `npm --workspace apps/web run test:perf` for a browser benchmark covering canvas frame cadence and Next-step latency
+- updated Playwright config so smoke and perf tests start fresh API / web servers instead of silently reusing stale local processes
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test:perf` passed
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed with smoke and performance E2E specs
+- `git diff --check` passed
+- secret scan returned no matches for the provided MiniMax key fragment
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files

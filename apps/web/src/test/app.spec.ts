@@ -325,10 +325,16 @@ describe('worldline theatre stage', () => {
 
     expect(wrapper.get('[data-testid="process-trace-panel"]').text()).toContain('Process entrance')
     expect(wrapper.get('[data-testid="process-file-path"]').text()).toContain('evt_1-process.json')
+    expect(wrapper.get('[data-testid="process-metric-confidence"]').text()).toContain('66%')
+    expect(wrapper.get('[data-testid="process-metric-cost-mass"]').text()).toContain('4')
     expect(wrapper.find('[data-testid="process-layer-FACT"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="process-layer-INFERENCE"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="process-layer-VALUE"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="process-layer-ACTION"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="process-layer-inspector"]').text()).toContain('visible trace')
+
+    await wrapper.get('[data-testid="process-layer-VALUE"]').trigger('click')
+    expect(wrapper.get('[data-testid="process-layer-inspector"]').text()).toContain('Cost mass 4')
 
     await wrapper.get('[data-testid="process-intervene"]').trigger('click')
     expect(wrapper.find('[data-testid="intervention-section"]').exists()).toBe(true)

@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 6 / Process Trace and Intervention Windows completed`
+Current slice: `Experience Rebuild Slice 7 / Computation Theatre and Performance Benchmark completed`
 
 ## Goal
 
@@ -30,6 +30,8 @@ This slice does include:
 - a non-report-like theatre shell with progressive reveal
 - visible process-trace files while the worldline unfolds
 - timed intervention windows so the viewer can disturb the line at meaningful nodes
+- a more cinematic computation display that still keeps data-file truth visible
+- a repeatable browser performance benchmark for canvas FPS and Next-step latency
 - cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
 - performance-focused canvas simplification with a smaller black-hole anchor
 - further documentation sync after each iteration
@@ -70,10 +72,26 @@ This slice does include:
 - [x] added intervention-window affordances that select the recommended input type and open the Intervention drawer without forcing the viewer to intervene
 - [x] updated API contract, frontend types, unit tests, smoke test, and docs
 
+## Slice 7 Acceptance Criteria
+
+- [x] process trace reads as a computation theatre panel rather than a plain debug card
+- [x] current process layer has an expanded inspector for inputs, outputs, and confidence note
+- [x] process file truth remains visible through the runtime artifact path and preview metrics
+- [x] `npm --workspace apps/web run test:perf` provides a repeatable browser-side canvas FPS and Next-step latency benchmark
+- [x] Playwright smoke no longer silently reuses stale local API / web servers
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 7 Completed
+
+- [x] added process orbit / scanline / metric treatment to the theatre center without adding expensive effects
+- [x] exposed selected process-layer details in the UI and tests
+- [x] added a focused Playwright performance spec for animation frame cadence and Next interaction latency
+- [x] updated Playwright server reuse behavior so smoke validates the current checkout
+- [x] updated docs after verification
+
 ## Next Candidate Slice
 
 - [ ] run a visual review of the theatre shell against `.ui-ref` and tune spatial rhythm, black-hole scale, and drawer density
-- [ ] make process artifacts more theatrical and less debug-card-like while keeping the data-file truth visible
 - [ ] decide whether process-trace reveal progress should persist in backend project snapshots
 - [ ] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [ ] decide whether reveal progress should persist in backend project snapshots

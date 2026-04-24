@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 6 process trace completed`
+Phase: `experience-first rebuild / slice 7 computation theatre completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. The unfolding no longer reads as passive waiting: each stage now exposes backend process traces, generated runtime data-file previews, and timely intervention windows while keeping normal navigation fast and LLM-free.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Process traces now read more like a computation-theatre instrument, while `test:perf` gives a repeatable browser benchmark for canvas frame cadence and Next-step latency.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -16,6 +16,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the canvas now uses lower line density, pointer throttling, reduced-motion fallback, and a smaller singularity so the worldline remains primary
 - backend process-trace files now appear while the line advances, with FACT / INFERENCE / VALUE / ACTION outputs for the current node
 - high-pressure nodes now expose intervention windows that jump into the Intervention drawer with a recommended input type
+- process artifacts now include orbit progress, runtime artifact strip, preview metrics, and an expanded selected-layer inspector
+- browser performance now has a repeatable Playwright benchmark instead of only manual impressions
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - and the archive can now leave the UI as a self-contained exhibit HTML artifact instead of only fragmented exports
@@ -211,6 +213,14 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - high-pressure or contradiction-heavy steps expose an intervention window that opens the Intervention drawer with the recommended input type and target branch
 - route tests, API contract tests, and smoke coverage now include process trace visibility and intervention-window entry
 
+### Experience rebuild slice 7 (computation theatre and performance benchmark)
+
+- process trace display now includes an orbit progress strip, runtime artifact strip, preview metrics, and selected-layer inspector
+- FACT / INFERENCE / VALUE / ACTION can now be opened into input / output / confidence-note detail while the data-file path remains visible
+- the process panel uses lightweight scanline and transform/opacity treatment with reduced-motion fallback
+- Playwright smoke now starts fresh local API / web servers instead of silently reusing stale processes
+- `npm run test:perf` now runs a browser benchmark for canvas frame cadence and Next-step latency
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -243,11 +253,10 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice should continue after `Experience Rebuild Slice 6`:
+The next active slice should continue after `Experience Rebuild Slice 7`:
 
 - run a visual/browser review of the new theatre shell against `.ui-ref` and tune spacing, scale, and black-hole size
-- make process artifacts feel more cinematic in the theatre instead of reading as compact debug cards
-- decide whether process-trace progress should persist in project snapshots or remain stage-derived
+- decide whether process-trace reveal progress should persist in project snapshots or remain stage-derived
 - re-integrate the deeper Ripple/Archive authored export tools into the theatre drawer language without returning to report density
 - decide whether reveal progress should persist in the project snapshot or remain a local exhibition reading
-- add a repeatable canvas performance benchmark before pushing the visual system further
+- continue tightening the performance benchmark toward stricter exhibition thresholds once the visual system stabilizes

@@ -16,7 +16,8 @@
     "test:api": "python -m pytest apps/api/tests",
     "test:web": "npm --workspace apps/web run test",
     "lint": "npm --workspace apps/web run lint",
-    "smoke": "npm --workspace apps/web run test:e2e"
+    "smoke": "npm --workspace apps/web run test:e2e",
+    "test:perf": "npm --workspace apps/web run test:perf"
   },
   "engines": {
     "node": ">=20.0.0"

@@ -84,12 +84,45 @@
 
             <article v-if="currentProcessStep" class="process-trace-card" data-testid="process-trace-panel">
               <div class="process-trace-head">
-                <span class="annotation-label">{{ processText.processLabel }}</span>
+                <div>
+                  <span class="annotation-label">{{ processText.processLabel }}</span>
+                  <strong>{{ processText.stepLabel }} {{ processStepIndex }} / {{ processSteps.length }}</strong>
+                </div>
                 <small>{{ currentProcessStep.status }} / {{ currentProcessStep.artifact_kind }}</small>
               </div>
+
+              <div class="process-orbit" aria-hidden="true">
+                <i
+                  v-for="(step, index) in processSteps"
+                  :key="step.step_id"
+                  :class="{
+                    active: step.event_id === currentProcessStep.event_id,
+                    revealed: revealedIds.has(step.event_id),
+                  }"
+                  :style="{ '--orbit-delay': `${index * 70}ms` }"
+                ></i>
+              </div>
+
               <strong>{{ cleanText(currentProcessStep.event_title) }}</strong>
               <p>{{ cleanText(currentProcessStep.summary) }}</p>
-              <code data-testid="process-file-path">{{ currentProcessStep.artifact_path }}</code>
+
+              <div class="process-file-strip">
+                <span>{{ processText.fileLabel }}</span>
+                <code data-testid="process-file-path">{{ currentProcessStep.artifact_path }}</code>
+              </div>
+
+              <div class="process-metric-row">
+                <span data-testid="process-metric-confidence">
+                  {{ processText.confidenceLabel }} {{ formatConfidence(currentProcessStep.artifact_preview.primary_confidence) }}
+                </span>
+                <span data-testid="process-metric-cost-mass">
+                  {{ processText.costMassLabel }} {{ currentProcessStep.artifact_preview.cost_mass }}
+                </span>
+                <span>
+                  {{ processText.counterSignalLabel }} {{ currentProcessStep.artifact_preview.counter_signal_count }}
+                </span>
+              </div>
+
               <div class="process-layer-grid">
                 <button
                   v-for="layerResult in currentProcessStep.layer_results"
@@ -105,6 +138,29 @@
                   <small>{{ cleanText(layerResult.outputs[0] ?? layerResult.confidence_note) }}</small>
                 </button>
               </div>
+
+              <section v-if="selectedProcessLayer" class="process-layer-inspector" data-testid="process-layer-inspector">
+                <header>
+                  <span>{{ selectedProcessLayer.layer }}</span>
+                  <strong>{{ cleanText(selectedProcessLayer.title) }}</strong>
+                </header>
+                <div class="process-io-grid">
+                  <div>
+                    <span>{{ processText.inputsLabel }}</span>
+                    <ul>
+                      <li v-for="item in selectedProcessLayer.inputs" :key="item">{{ cleanText(item) }}</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <span>{{ processText.outputsLabel }}</span>
+                    <ul>
+                      <li v-for="item in selectedProcessLayer.outputs" :key="item">{{ cleanText(item) }}</li>
+                    </ul>
+                  </div>
+                </div>
+                <p>{{ cleanText(selectedProcessLayer.confidence_note) }}</p>
+              </section>
+
               <div
                 v-if="currentProcessStep.intervention_window.is_open"
                 class="intervention-window"
@@ -578,16 +634,37 @@ const theatreCopy = {
 const processCopy = {
   zh: {
     processLabel: '后台过程文件',
+    stepLabel: '显影层',
+    fileLabel: 'runtime artifact',
+    confidenceLabel: '置信',
+    costMassLabel: '代价质量',
+    counterSignalLabel: '反向信号',
+    inputsLabel: '输入材料',
+    outputsLabel: '输出结果',
     interventionWindow: '可介入窗口',
     openInterventionWindow: '从这里介入',
   },
   en: {
     processLabel: 'Process File',
+    stepLabel: 'Exposure',
+    fileLabel: 'runtime artifact',
+    confidenceLabel: 'confidence',
+    costMassLabel: 'cost mass',
+    counterSignalLabel: 'counter-signals',
+    inputsLabel: 'inputs',
+    outputsLabel: 'outputs',
     interventionWindow: 'Intervention Window',
     openInterventionWindow: 'Intervene Here',
   },
 } satisfies Record<DisplayLanguage, {
   processLabel: string
+  stepLabel: string
+  fileLabel: string
+  confidenceLabel: string
+  costMassLabel: string
+  counterSignalLabel: string
+  inputsLabel: string
+  outputsLabel: string
   interventionWindow: string
   openInterventionWindow: string
 }>
@@ -613,6 +690,12 @@ const visibleRippleCards = computed(() => stage.value?.ripple.ripple_cards.slice
 const revealedTrack = computed(() => stage.value?.observatory.worldline_track.filter((track) => revealedIds.value.has(track.event_id)) ?? [])
 const processSteps = computed(() => stage.value?.process_trace.steps ?? [])
 const currentProcessStep = computed(() => processSteps.value.find((step) => step.event_id === selectedEventId.value) ?? null)
+const processStepIndex = computed(() => Math.max(1, processSteps.value.findIndex((step) => step.event_id === currentProcessStep.value?.event_id) + 1))
+const selectedProcessLayer = computed(() => (
+  currentProcessStep.value?.layer_results.find((layer) => layer.layer === selectedLayer.value)
+  ?? currentProcessStep.value?.layer_results[0]
+  ?? null
+))
 const activeSurfaceCopy = computed(() => t.value.surfaces[activeSurface.value])
 const nextActionLabel = computed(() => (progressComplete.value ? t.value.finish : t.value.next))
 const interventionPlaceholder = computed(() => cleanText(currentProcessStep.value?.intervention_window.prompt ?? t.value.inputPlaceholder))

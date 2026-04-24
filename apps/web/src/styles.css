@@ -1814,7 +1814,26 @@ li {
     linear-gradient(180deg, rgba(4, 12, 16, 0.84), rgba(3, 8, 11, 0.64));
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(14px);
+  overflow: hidden;
   z-index: 2;
+}
+
+.process-trace-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(139, 226, 248, 0.08), transparent),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 7px);
+  opacity: 0.72;
+  transform: translateX(-34%);
+  animation: process-scan 3600ms cubic-bezier(0.19, 1, 0.22, 1) infinite;
+  pointer-events: none;
+}
+
+.process-trace-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .process-trace-head {
@@ -1824,12 +1843,70 @@ li {
   align-items: center;
 }
 
+.process-trace-head > div {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.process-trace-head strong {
+  color: var(--cool);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .process-trace-card p,
 .process-trace-card strong {
   margin: 0;
 }
 
-.process-trace-card code {
+.process-orbit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22px, 1fr));
+  gap: 0.35rem;
+}
+
+.process-orbit i {
+  height: 0.22rem;
+  border-radius: 999px;
+  background: rgba(139, 226, 248, 0.1);
+  opacity: 0.45;
+  transform: scaleX(0.72);
+  transform-origin: left center;
+  transition:
+    transform 220ms ease,
+    background 220ms ease,
+    opacity 220ms ease;
+  transition-delay: var(--orbit-delay, 0ms);
+}
+
+.process-orbit i.revealed {
+  background: rgba(139, 226, 248, 0.34);
+  opacity: 0.75;
+  transform: scaleX(0.9);
+}
+
+.process-orbit i.active {
+  background: linear-gradient(90deg, var(--warm), var(--cool));
+  box-shadow: 0 0 18px rgba(255, 185, 121, 0.22);
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.process-file-strip {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.process-file-strip span,
+.process-io-grid span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.process-file-strip code {
   display: block;
   max-width: 100%;
   overflow: hidden;
@@ -1841,6 +1918,21 @@ li {
   background: rgba(0, 0, 0, 0.24);
   color: var(--cool);
   font-size: 0.8rem;
+}
+
+.process-metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.process-metric-row span {
+  padding: 0.48rem 0.55rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.035);
+  color: color-mix(in srgb, var(--text) 76%, var(--muted));
+  font-size: 0.78rem;
 }
 
 .process-layer-grid {
@@ -1889,6 +1981,49 @@ li {
   color: var(--muted);
 }
 
+.process-layer-inspector {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.78rem;
+  border: 1px solid rgba(139, 226, 248, 0.16);
+  border-radius: 0.95rem;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(139, 226, 248, 0.09), transparent 38%),
+    rgba(3, 10, 13, 0.46);
+}
+
+.process-layer-inspector header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: baseline;
+}
+
+.process-layer-inspector header span {
+  color: var(--warm);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+}
+
+.process-io-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.process-io-grid div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.process-io-grid ul {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0;
+  padding-left: 1rem;
+  color: color-mix(in srgb, var(--text) 68%, var(--muted));
+}
+
 .intervention-window {
   display: grid;
   gap: 0.55rem;
@@ -1898,6 +2033,22 @@ li {
   background:
     radial-gradient(circle at 12% 20%, rgba(255, 185, 121, 0.14), transparent 38%),
     rgba(33, 20, 12, 0.36);
+}
+
+@keyframes process-scan {
+  0% {
+    transform: translateX(-42%);
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 0.72;
+  }
+
+  100% {
+    transform: translateX(42%);
+    opacity: 0;
+  }
 }
 
 .progressive-worldline {
@@ -2136,6 +2287,11 @@ li {
   .process-layer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .process-metric-row,
+  .process-io-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -2183,5 +2339,11 @@ li {
   .input-mode-chip,
   .process-layer-card {
     transition: none;
+  }
+
+  .process-trace-card::before {
+    animation: none;
+    opacity: 0.24;
+    transform: none;
   }
 }
