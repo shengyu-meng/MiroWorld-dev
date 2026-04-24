@@ -222,6 +222,20 @@ export interface ProcessTrace {
   steps: ProcessTraceStep[]
 }
 
+export interface ReasoningStatus {
+  job_id: string
+  project_id: string
+  operation: 'seed_compiler'
+  provider: string
+  model_name: string
+  status: 'idle' | 'queued' | 'running' | 'completed' | 'fallback' | 'failed' | 'disabled'
+  progress_step: string
+  summary: string
+  artifact_path: string | null
+  updated_at: string
+  stage: StageData | null
+}
+
 export interface StageData {
   project_context: {
     project_id: string

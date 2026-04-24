@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reasoning-status.schema.json",
+  "title": "ReasoningStatus",
+  "type": "object",
+  "required": [
+    "job_id",
+    "project_id",
+    "operation",
+    "provider",
+    "model_name",
+    "status",
+    "progress_step",
+    "summary",
+    "artifact_path",
+    "updated_at",
+    "stage"
+  ],
+  "properties": {
+    "job_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "operation": { "const": "seed_compiler" },
+    "provider": { "type": "string" },
+    "model_name": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["idle", "queued", "running", "completed", "fallback", "failed", "disabled"]
+    },
+    "progress_step": { "type": "string" },
+    "summary": { "type": "string" },
+    "artifact_path": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "updated_at": { "type": "string" },
+    "stage": {
+      "anyOf": [
+        { "$ref": "https://miroworld.local/contracts/stage-response.schema.json" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

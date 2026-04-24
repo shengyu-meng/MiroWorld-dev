@@ -4,6 +4,7 @@ import type {
   EffectScope,
   FixtureManifest,
   InputType,
+  ReasoningStatus,
   ReplayResult,
   SavedReplaySet,
   SavedReplaySetDraft,
@@ -47,7 +48,7 @@ export function createProject(payload: {
   seed_prompt?: string
   language: DisplayLanguage
 }) {
-  return request<{ project_id: string; stage: StageData }>('/api/projects', {
+  return request<{ project_id: string; stage: StageData; reasoning: ReasoningStatus | null }>('/api/projects', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -55,6 +56,10 @@ export function createProject(payload: {
 
 export function getStage(projectId: string, language: DisplayLanguage) {
   return request<StageData>(`/api/projects/${projectId}/stage?language=${language}`)
+}
+
+export function getReasoningStatus(projectId: string, language: DisplayLanguage) {
+  return request<ReasoningStatus>(`/api/projects/${projectId}/reasoning?language=${language}`)
 }
 
 export function applyInput(

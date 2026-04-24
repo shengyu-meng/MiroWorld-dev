@@ -13,6 +13,7 @@ SurfaceKey = Literal["observatory", "intervention", "cost", "ripple", "archive"]
 BranchVisibility = Literal["primary", "alternate"]
 BranchState = Literal["candidate", "selected", "replayed", "invalidated"]
 CalibrationResultType = Literal["hit", "partial", "miss", "insufficient_data"]
+ReasoningJobStatus = Literal["idle", "queued", "running", "completed", "fallback", "failed", "disabled"]
 
 
 class SourceEntity(BaseModel):
@@ -297,6 +298,21 @@ class ProjectCreateRequest(BaseModel):
 class ProjectCreateResponse(BaseModel):
   project_id: str
   stage: dict
+  reasoning: "ReasoningStatusResponse | None" = None
+
+
+class ReasoningStatusResponse(BaseModel):
+  job_id: str
+  project_id: str
+  operation: Literal["seed_compiler"]
+  provider: str
+  model_name: str
+  status: ReasoningJobStatus
+  progress_step: str
+  summary: str
+  artifact_path: str | None = None
+  updated_at: str
+  stage: dict | None = None
 
 
 class InputRequest(BaseModel):

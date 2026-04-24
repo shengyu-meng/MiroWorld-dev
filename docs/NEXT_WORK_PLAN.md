@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 13 / MiniMax Reasoning Packet Fix completed`
+Current slice: `Experience Rebuild Slice 14 / Async MiniMax Backstage Reasoning completed`
 
 ## Goal
 
@@ -227,10 +227,30 @@ This slice does include:
 - [x] added a stage UI strip for model reasoning / fallback artifacts
 - [x] added fallback artifact persistence so local failures become diagnosable without leaking secrets
 
+## Slice 14 Acceptance Criteria
+
+- [x] prompt project creation returns a driveable deterministic worldline immediately, even when local MiniMax credentials are configured
+- [x] prompt projects created with MiniMax available enqueue a background `seed_compiler` reasoning task instead of blocking the entry route
+- [x] `GET /api/projects/{projectId}/reasoning` exposes safe task status, runtime artifact path, progress step, and summary without returning secrets or raw hidden reasoning
+- [x] completed background reasoning can merge a structured MiniMax packet into the existing project snapshot and refresh stage process trace
+- [x] failed background reasoning records a visible fallback artifact instead of silently disappearing
+- [x] the stage UI shows backstage model progress and lets viewers continue pressing Next while the model job runs
+- [x] tests cover immediate prompt creation, queued/running/completed/failed reasoning status, merge behavior, and no-key deterministic fallback
+- [x] build, tests, smoke, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 14 Completed
+
+- [x] added a small in-process reasoning job registry and daemon background worker around the existing seed compiler path
+- [x] split prompt compilation into deterministic first render plus optional MiniMax enrichment merge
+- [x] added safe backend status endpoint and stage payload refresh behavior
+- [x] added typed frontend polling and a theatre-native backstage computation strip
+- [x] updated API, frontend, and E2E coverage for async reasoning behavior
+- [x] updated docs after verification
+
 ## Next Candidate Slice
 
-- [ ] design async MiniMax reasoning as visible backstage computation rather than a blocking project-create call
 - [ ] deepen Archive/Ripple artifact writing quality now that their theatre-native instrument shells are in place
+- [ ] consider a durable persisted reasoning queue or streaming progress protocol if in-process jobs become too fragile for exhibition deployment
 - [ ] continue visual review on mobile and low-height exhibition displays after the new performance hardening
 - [ ] make calibration more theatrical inside the Archive drawer instead of remaining utility-like
 

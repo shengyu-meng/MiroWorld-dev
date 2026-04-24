@@ -2136,6 +2136,27 @@ li {
   font-size: 0.72rem;
 }
 
+.process-file-strip--backstage {
+  padding: 0.7rem;
+  border: 1px solid rgba(132, 210, 255, 0.22);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(132, 210, 255, 0.14), transparent 42%),
+    rgba(8, 28, 42, 0.34);
+}
+
+.process-file-strip--backstage strong {
+  color: var(--ion);
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.process-file-strip--backstage small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
 .process-metric-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -135,6 +135,16 @@
               </div>
 
               <div
+                v-if="visibleReasoningStatus"
+                class="process-file-strip process-file-strip--backstage"
+                data-testid="backstage-reasoning-status"
+              >
+                <span>{{ processText.backstageLabel }}</span>
+                <strong>{{ reasoningStatusLabel }}</strong>
+                <small>{{ visibleReasoningStatus.summary }}</small>
+              </div>
+
+              <div
                 v-if="stage.process_trace.reasoning_run"
                 class="process-file-strip process-file-strip--model"
                 data-testid="model-reasoning-strip"
@@ -464,7 +474,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import LanguageToggle from '@/components/LanguageToggle.vue'
@@ -472,6 +482,7 @@ import WorldlineCanvas from '@/components/WorldlineCanvas.vue'
 import {
   applyInput,
   buildShare,
+  getReasoningStatus,
   getStage,
   recordCalibration,
   saveTheatreProgress,
@@ -483,6 +494,7 @@ import type {
   DisplayLanguage,
   InputType,
   KnowledgeLayer,
+  ReasoningStatus,
   StageData,
   SurfaceKey,
   TheatreProgress,
@@ -507,12 +519,14 @@ const calibrationDraft = ref('')
 const calibrationResult = ref<CalibrationRecord['result']>('partial')
 const submitting = ref(false)
 const shareSnapshot = ref<StageData['archive']['share_snapshot'] | null>(null)
+const reasoningStatus = ref<ReasoningStatus | null>(null)
 const revealedCount = ref(1)
 const pulseKey = ref(0)
 const branchMemory = ref<Record<string, string>>({})
 const progressSaveState = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
 const exportFeedback = ref('')
 let progressSaveRevision = 0
+let reasoningPollTimer: ReturnType<typeof setInterval> | null = null
 
 const surfaceKeys: SurfaceKey[] = ['observatory', 'intervention', 'cost', 'ripple', 'archive']
 const calibrationResults: CalibrationRecord['result'][] = ['hit', 'partial', 'miss', 'insufficient_data']
@@ -722,6 +736,12 @@ const processCopy = {
     stepLabel: '显影层',
     fileLabel: 'runtime artifact',
     modelLabel: 'model reasoning',
+    backstageLabel: 'backstage reasoning',
+    queuedLabel: 'queued',
+    runningLabel: 'running',
+    completedLabel: 'completed',
+    fallbackLabel: 'fallback',
+    failedLabel: 'failed',
     confidenceLabel: '置信',
     costMassLabel: '代价质量',
     counterSignalLabel: '反向信号',
@@ -735,6 +755,12 @@ const processCopy = {
     stepLabel: 'Exposure',
     fileLabel: 'runtime artifact',
     modelLabel: 'model reasoning',
+    backstageLabel: 'backstage reasoning',
+    queuedLabel: 'queued',
+    runningLabel: 'running',
+    completedLabel: 'completed',
+    fallbackLabel: 'fallback',
+    failedLabel: 'failed',
     confidenceLabel: 'confidence',
     costMassLabel: 'cost mass',
     counterSignalLabel: 'counter-signals',
@@ -748,6 +774,12 @@ const processCopy = {
   stepLabel: string
   fileLabel: string
   modelLabel: string
+  backstageLabel: string
+  queuedLabel: string
+  runningLabel: string
+  completedLabel: string
+  fallbackLabel: string
+  failedLabel: string
   confidenceLabel: string
   costMassLabel: string
   counterSignalLabel: string
@@ -875,6 +907,21 @@ const archiveMetrics = computed(() => [
 const processSteps = computed(() => stage.value?.process_trace.steps ?? [])
 const currentProcessStep = computed(() => processSteps.value.find((step) => step.event_id === selectedEventId.value) ?? null)
 const processStepIndex = computed(() => Math.max(1, processSteps.value.findIndex((step) => step.event_id === currentProcessStep.value?.event_id) + 1))
+const visibleReasoningStatus = computed(() => {
+  const status = reasoningStatus.value
+  if (!status || status.status === 'idle' || status.status === 'disabled') return null
+  if (stage.value?.process_trace.reasoning_run && !['queued', 'running'].includes(status.status)) return null
+  return status
+})
+const reasoningStatusLabel = computed(() => {
+  const status = visibleReasoningStatus.value?.status
+  if (status === 'queued') return processText.value.queuedLabel
+  if (status === 'running') return processText.value.runningLabel
+  if (status === 'completed') return processText.value.completedLabel
+  if (status === 'fallback') return processText.value.fallbackLabel
+  if (status === 'failed') return processText.value.failedLabel
+  return ''
+})
 const selectedProcessLayer = computed(() => (
   currentProcessStep.value?.layer_results.find((layer) => layer.layer === selectedLayer.value)
   ?? currentProcessStep.value?.layer_results[0]
@@ -939,6 +986,10 @@ watch(
   { immediate: true },
 )
 
+onUnmounted(() => {
+  stopReasoningPoll()
+})
+
 async function loadStage() {
   loading.value = true
   errorMessage.value = ''
@@ -946,11 +997,43 @@ async function loadStage() {
     const projectId = route.params.projectId as string
     const nextStage = await getStage(projectId, language.value)
     syncSelection(nextStage, activeSurface.value, true)
+    void refreshReasoningStatus()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
   } finally {
     loading.value = false
   }
+}
+
+async function refreshReasoningStatus() {
+  try {
+    const projectId = route.params.projectId as string
+    const nextStatus = await getReasoningStatus(projectId, language.value)
+    reasoningStatus.value = nextStatus
+    if (nextStatus.stage) {
+      syncSelection(nextStatus.stage, activeSurface.value, false)
+    }
+    if (nextStatus.status === 'queued' || nextStatus.status === 'running') {
+      startReasoningPoll()
+    } else {
+      stopReasoningPoll()
+    }
+  } catch {
+    stopReasoningPoll()
+  }
+}
+
+function startReasoningPoll() {
+  if (reasoningPollTimer) return
+  reasoningPollTimer = setInterval(() => {
+    void refreshReasoningStatus()
+  }, 2500)
+}
+
+function stopReasoningPoll() {
+  if (!reasoningPollTimer) return
+  clearInterval(reasoningPollTimer)
+  reasoningPollTimer = null
 }
 
 function syncSelection(nextStage: StageData, nextSurface = activeSurface.value, restoreProgress = false) {

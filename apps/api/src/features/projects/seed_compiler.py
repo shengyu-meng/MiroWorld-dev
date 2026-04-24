@@ -84,13 +84,24 @@ class SeedCompiler:
     )
     return ProjectSnapshot(project=project, world_state=world_state)
 
-  def compile_prompt(self, seed_prompt: str, language: DisplayLanguage) -> ProjectSnapshot:
-    project_id = make_id("proj")
-    world_state_id = make_id("ws")
-    session_id = make_id("sess")
+  def compile_prompt(
+    self,
+    seed_prompt: str,
+    language: DisplayLanguage,
+    *,
+    use_llm: bool | None = None,
+    project_id: str | None = None,
+    world_state_id: str | None = None,
+    session_id: str | None = None,
+  ) -> ProjectSnapshot:
+    project_id = project_id or make_id("proj")
+    world_state_id = world_state_id or make_id("ws")
+    session_id = session_id or make_id("sess")
     now = utc_now()
     context = self._build_prompt_context(seed_prompt, language)
-    context = self._maybe_enrich_prompt_context(context, seed_prompt, language)
+    should_use_llm = self.llm_adapter.settings.llm_seed_compiler_enabled if use_llm is None else use_llm
+    if should_use_llm:
+      context = self._maybe_enrich_prompt_context(context, seed_prompt, language)
     project = ProjectRecord(
       project_id=project_id,
       title=context.title,

@@ -230,6 +230,7 @@ const sampleStage: StageData = {
     generated_at: '2026-04-24T00:00:00Z',
     artifact_root: 'data/runtime/process/proj_test/v1',
     storage_mode: 'local_gitignored_runtime',
+    reasoning_run: null,
     steps: [
       processStep('evt_1', 'Process entrance', 'br_1', 'primary branch'),
       processStep('evt_2', 'Process turn', 'br_3', 'continuation'),
@@ -243,10 +244,27 @@ function apiResponse<T>(data: T, status = 200) {
   return Promise.resolve(new Response(JSON.stringify({ success: status < 400, data }), { status }))
 }
 
-async function mountStage(stage: StageData = sampleStage) {
+function disabledReasoningStatus() {
+  return {
+    job_id: '',
+    project_id: 'proj_test',
+    operation: 'seed_compiler',
+    provider: 'MiniMax',
+    model_name: 'MiniMax-M2.7-highspeed',
+    status: 'disabled',
+    progress_step: 'not_started',
+    summary: 'MiniMax backstage reasoning is not active for this project.',
+    artifact_path: null,
+    updated_at: '2026-04-24T00:00:00Z',
+    stage: null,
+  }
+}
+
+async function mountStage(stage: StageData = sampleStage, reasoningStatus = disabledReasoningStatus()) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     if (url.includes('/stage')) return apiResponse(stage)
+    if (url.includes('/reasoning')) return apiResponse(reasoningStatus)
     if (url.includes('/share')) return apiResponse(stage.archive.share_snapshot)
     if (url.includes('/calibration')) return apiResponse(stage)
     if (url.includes('/progress')) {
@@ -424,6 +442,19 @@ describe('worldline theatre stage', () => {
     await wrapper.get('[data-testid="process-intervene"]').trigger('click')
     expect(wrapper.find('[data-testid="intervention-section"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="intervention-section"] textarea').attributes('placeholder')).toContain('Add one intervention')
+  })
+
+  it('shows backstage MiniMax reasoning while a prompt job is queued', async () => {
+    const { wrapper } = await mountStage(sampleStage, {
+      ...disabledReasoningStatus(),
+      job_id: 'rjob_test',
+      status: 'queued',
+      progress_step: 'queued',
+      summary: 'MiniMax seed reasoning is queued as backstage computation.',
+    })
+
+    expect(wrapper.get('[data-testid="backstage-reasoning-status"]').text()).toContain('queued')
+    expect(wrapper.get('[data-testid="backstage-reasoning-status"]').text()).toContain('backstage')
   })
 
   it('keeps branch selection and intervention flow available inside the theatre', async () => {

@@ -988,3 +988,42 @@ Still open after slice 13:
 - MiniMax prompt creation is now real, but still synchronous and can take around two minutes on a fresh run
 - the next architecture step should move model reasoning into an async visible backstage lane with progress polling or streaming artifacts
 - generated worldline language still needs more authorial editing and less generic model phrasing
+
+## 2026-04-24 - Experience Rebuild Slice 14 (async MiniMax backstage reasoning started)
+
+Planned in this iteration:
+
+- make prompt project creation immediately return a deterministic, driveable worldline even when MiniMax credentials are configured
+- enqueue local MiniMax seed reasoning as a background backstage task instead of blocking the entry action
+- expose a safe reasoning-status endpoint with status, progress step, summary, and runtime artifact path
+- merge completed MiniMax reasoning packets back into the project snapshot so the stage can refresh from deterministic seed to model-enriched worldline
+- surface backstage progress in the theatre UI while preserving Next-driven worldline unfolding
+- keep all provider keys and raw hidden reasoning out of tracked files, logs, screenshots, and frontend code
+- update tests, docs, smoke, secret checks, and push only after the full verification loop passes
+
+## 2026-04-24 - Experience Rebuild Slice 14 (async MiniMax backstage reasoning completed)
+
+Completed in this iteration:
+
+- changed prompt project creation so it always returns the deterministic, driveable worldline first
+- added an in-process MiniMax backstage job manager with queued, running, completed, fallback, failed, disabled, and idle statuses
+- added `GET /api/projects/{projectId}/reasoning` so the frontend can poll safe backstage computation status
+- merged completed MiniMax reasoning packets back into the project snapshot when the viewer has not authored inputs yet
+- preserved viewer-authored state by archiving completed reasoning runs instead of overwriting a worldline that already has interventions, decisions, calibration, or saved replay sets
+- added a stage-side backstage reasoning strip so viewers can continue unfolding the line while the model works
+- added a `reasoning-status` contract plus API and frontend tests for queueing, completion merge, fallback artifact redaction, and UI status display
+
+Verification:
+
+- real local prompt creation with MiniMax credentials returned in about `0.02s` with `stage_source=seed_prompt` and `reasoning_status=running`
+- `python -m pytest apps/api/tests/test_api.py -q` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `git diff --check` passed
+
+Still open after slice 14:
+
+- the current worker is intentionally lightweight and in-process; exhibition deployment may need a durable persisted queue or streaming protocol
+- background progress is visible at a coarse step level, but not yet a fine-grained file-by-file computation theatre
+- Archive/Ripple artifact writing and calibration dramaturgy remain good next product slices

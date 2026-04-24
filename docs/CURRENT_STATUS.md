@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 13 MiniMax reasoning packet fix completed`
+Phase: `experience-first rebuild / slice 14 async MiniMax backstage reasoning completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches; when local MiniMax credentials are configured, the seed compiler can also consume a real structured MiniMax reasoning packet and expose the resulting safe runtime artifact in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule with copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose safe runtime artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule with copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -17,6 +17,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - backend process-trace files now appear while the line advances, with FACT / INFERENCE / VALUE / ACTION outputs for the current node
 - prompt starts now drive a real three-node worldline from the submitted seed instead of reusing the generic fixture-like event template
 - live MiniMax seed enrichment now works when local credentials are present: MiniMax `<think>` prefaces are stripped before JSON parsing, the timeout is long enough for the current model, and failures are recorded as visible fallback process artifacts instead of silent template downgrades
+- MiniMax enrichment now runs as backstage computation after prompt creation, so the entry action returns a driveable deterministic worldline immediately instead of waiting for the full model response
 - high-pressure nodes now expose intervention windows that jump into the Intervention drawer with a recommended input type
 - process artifacts now include orbit progress, runtime artifact strip, preview metrics, and an expanded selected-layer inspector
 - browser performance now has a repeatable Playwright benchmark instead of only manual impressions
@@ -279,6 +280,15 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - failed local MiniMax attempts now write a safe `00-minimax-seed-fallback.json` artifact and expose fallback status in `stage.process_trace.reasoning_run`
 - the stage UI now shows the latest model reasoning / fallback artifact strip without exposing API keys or raw provider hidden reasoning
 
+### Experience rebuild slice 14 (async MiniMax backstage reasoning)
+
+- prompt project creation now returns the deterministic worldline first and queues MiniMax seed reasoning in the background when credentials are configured
+- `GET /api/projects/{projectId}/reasoning` exposes queued/running/completed/fallback/failed/disabled status, progress step, summary, artifact path, and refreshed stage when available
+- completed MiniMax packets merge back into the project snapshot if the viewer has not authored inputs yet
+- if the viewer has already intervened or saved authored state, completed reasoning is archived without overwriting their disturbed worldline
+- the stage UI polls the reasoning endpoint and shows a backstage computation strip while the model job runs
+- real local prompt creation with MiniMax credentials returned in about `0.02s` with the model job running backstage
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -301,7 +311,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Content expression gaps
 
 - the UI display layer cleans old public-opinion terms, but more fixture narratives can still be rewritten around non-human actants and natural/material constraints
-- live MiniMax enrichment is currently a synchronous seed enhancer and can take around two minutes on a fresh generation; the next architecture slice should make it asynchronous and visibly progressive instead of tying the entry action to the full model response
+- live MiniMax enrichment is now asynchronous and visible, but the job runner is still an in-process lightweight worker rather than a durable persisted queue
 - the layer lens is now visible, but its depth is still mostly presentation-layer driven rather than fully model-driven
 - cost narration can become more comparative across branches, not just branch-local
 - archive artifacts can become more authored and less template-like as share formats mature
@@ -313,9 +323,9 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice continues after `Experience Rebuild Slice 13`:
+The next active slice continues after `Experience Rebuild Slice 14`:
 
-- design a true async MiniMax reasoning lane so prompt starts can open immediately while model computation streams or polls into visible process artifacts
 - deepen the authored writing quality of Archive/Ripple local artifacts now that their theatre-native shells are in place
+- consider a durable persisted reasoning queue or streaming progress protocol if in-process jobs prove too fragile for installation deployment
 - keep mobile and low-height visual review active through future UI passes, especially on real exhibition hardware
 - make calibration more theatrical inside the Archive drawer instead of remaining mostly utility-like

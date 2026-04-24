@@ -9,6 +9,7 @@ from referencing import Registry, Resource
 
 from main import app
 from features.projects.llm_adapter import OpenAICompatibleLLMAdapter
+from features.projects.reasoning_jobs import ReasoningJobManager
 from features.projects.router import service as project_service
 from features.projects.seed_compiler import SeedCompiler
 
@@ -86,6 +87,147 @@ def test_prompt_project_creation(monkeypatch):
   assert "museum dispute" not in event_blob
   assert len(stage["observatory"]["key_events"]) == 3
   assert all(len(event["branches"]) >= 3 for event in stage["observatory"]["key_events"])
+
+
+def fake_llm_reasoning_packet():
+  return {
+    "title": "Bridge Tide Shear",
+    "summary": "A bridge, tide, steel fatigue, and commuter pressure form a coupled worldline.",
+    "seed_words": ["bridge load", "tide", "steel fatigue", "commuter path"],
+    "actants": ["bridge deck", "tide table", "steel cable", "commuter route"],
+    "reasoning_steps": [
+      {
+        "layer": "FACT",
+        "title": "Visible coupling",
+        "inputs": ["bridge load", "tide"],
+        "outputs": ["tide changes load timing"],
+        "confidence_note": "seed-level inference",
+        "confidence": 0.81,
+      }
+    ],
+    "events": [
+      {
+        "stage": "Entry",
+        "title": "Tide enters the bridge load field",
+        "summary": "The tide table changes how the bridge deck receives pressure.",
+        "impact_level": "high",
+        "affected_entities": ["bridge deck", "tide table"],
+        "evidence_notes": ["load timing and water level become coupled"],
+        "causal_note": "The rule change makes the coupling visible.",
+        "branches": [
+          {
+            "label": "Expose the load rhythm",
+            "description": "Make the tide-load relation observable.",
+            "confidence": 0.69,
+            "premises": ["water level modulates stress"],
+            "signals_for": ["commuter peaks align with tide"],
+            "signals_against": ["steel fatigue remains uncertain"],
+            "cost_hint": "inspection slows traffic",
+          }
+        ],
+      }
+    ],
+  }
+
+
+def test_prompt_project_creation_queues_backstage_reasoning(monkeypatch):
+  manager = ReasoningJobManager(provider="MiniMax", model_name="MiniMax-M2.7-highspeed")
+  manager.auto_start = False
+  monkeypatch.setattr(project_service, "reasoning_jobs", manager)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_seed_compiler_enabled", True)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_api_key", "test-local-key")
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_model_name", "MiniMax-M2.7-highspeed")
+
+  calls = {"count": 0}
+
+  def fake_generate(**_kwargs):
+    calls["count"] += 1
+    return fake_llm_reasoning_packet()
+
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter, "generate_json", fake_generate)
+  response = client.post(
+    "/api/projects",
+    json={
+      "seed_prompt": "A bridge load rule changes overnight; tide and commuter paths begin pulling on each other.",
+      "language": "en",
+    },
+  )
+  assert response.status_code == 200
+  payload = response.json()["data"]
+  assert payload["reasoning"]["status"] == "queued"
+  assert payload["stage"]["project_context"]["source_label"] == "seed_prompt"
+  assert payload["stage"]["process_trace"]["reasoning_run"] is None
+  assert calls["count"] == 0
+
+  status_response = client.get(f"/api/projects/{payload['project_id']}/reasoning", params={"language": "en"})
+  assert status_response.status_code == 200
+  status_payload = status_response.json()["data"]
+  assert_schema("reasoning-status.schema.json", status_payload)
+  assert status_payload["status"] == "queued"
+  assert status_payload["stage"] is None
+
+
+def test_backstage_reasoning_merges_completed_packet(monkeypatch):
+  manager = ReasoningJobManager(provider="MiniMax", model_name="MiniMax-M2.7-highspeed")
+  manager.auto_start = False
+  monkeypatch.setattr(project_service, "reasoning_jobs", manager)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_seed_compiler_enabled", True)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_api_key", "test-local-key")
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_model_name", "MiniMax-M2.7-highspeed")
+  monkeypatch.setattr(
+    project_service.seed_compiler.llm_adapter,
+    "generate_json",
+    lambda **_kwargs: fake_llm_reasoning_packet(),
+  )
+  create_response = client.post(
+    "/api/projects",
+    json={
+      "seed_prompt": "A bridge load rule changes overnight; tide and commuter paths begin pulling on each other.",
+      "language": "en",
+    },
+  )
+  project_id = create_response.json()["data"]["project_id"]
+  manager.run_queued_for_tests(project_id)
+
+  status_response = client.get(f"/api/projects/{project_id}/reasoning", params={"language": "en"})
+  assert status_response.status_code == 200
+  status_payload = status_response.json()["data"]
+  assert_schema("reasoning-status.schema.json", status_payload)
+  assert status_payload["status"] == "completed"
+  assert status_payload["artifact_path"].endswith("00-minimax-seed-reasoning.json")
+  assert status_payload["stage"]["project_context"]["source_label"] == "seed_prompt+MiniMax"
+  assert status_payload["stage"]["process_trace"]["reasoning_run"]["status"] == "completed"
+  assert "Tide enters" in status_payload["stage"]["observatory"]["key_events"][0]["title"]
+
+
+def test_backstage_reasoning_records_fallback_without_leaking_key(monkeypatch):
+  manager = ReasoningJobManager(provider="MiniMax", model_name="MiniMax-M2.7-highspeed")
+  manager.auto_start = False
+  monkeypatch.setattr(project_service, "reasoning_jobs", manager)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_seed_compiler_enabled", True)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_api_key", "test-local-key")
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_model_name", "MiniMax-M2.7-highspeed")
+
+  def fail_generation(**_kwargs):
+    project_service.seed_compiler.llm_adapter.last_error = "TimeoutException: request timed out"
+    return None
+
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter, "generate_json", fail_generation)
+  create_response = client.post(
+    "/api/projects",
+    json={
+      "seed_prompt": "A storm surge pushes hospital power and harbor timing into one track.",
+      "language": "en",
+    },
+  )
+  project_id = create_response.json()["data"]["project_id"]
+  manager.run_queued_for_tests(project_id)
+  status_payload = client.get(f"/api/projects/{project_id}/reasoning", params={"language": "en"}).json()["data"]
+  assert_schema("reasoning-status.schema.json", status_payload)
+  assert status_payload["status"] == "fallback"
+  assert status_payload["artifact_path"].endswith("00-minimax-seed-fallback.json")
+  artifact = json.loads((ROOT / status_payload["artifact_path"]).read_text(encoding="utf-8"))
+  assert "test-local-key" not in json.dumps(artifact)
 
 
 def test_llm_adapter_extracts_json_after_think_block():

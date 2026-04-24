@@ -19,12 +19,13 @@ service = ProjectService()
 
 @router.post("")
 def create_project(payload: ProjectCreateRequest):
-  snapshot = service.create_project(payload)
+  snapshot, reasoning = service.create_project(payload)
   return {
     "success": True,
     "data": {
       "project_id": snapshot.project.project_id,
       "stage": service.get_stage(snapshot.project.project_id, payload.language),
+      "reasoning": reasoning,
     },
   }
 
@@ -34,6 +35,14 @@ def get_stage(project_id: str, language: str = "zh"):
   return {
     "success": True,
     "data": service.get_stage(project_id, language),
+  }
+
+
+@router.get("/{project_id}/reasoning")
+def get_reasoning_status(project_id: str, language: str = "zh"):
+  return {
+    "success": True,
+    "data": service.get_reasoning_status(project_id, language),
   }
 
 
