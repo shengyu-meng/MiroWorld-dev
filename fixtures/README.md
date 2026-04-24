@@ -1,6 +1,6 @@
 # Mirror World Fixture Corpus
 
-These fixtures are the first smoke-test corpus for the art-first public prototype.
+These fixtures are the first smoke-test corpus for the art-first world-simulation prototype.
 
 They are not model benchmarks.
 
@@ -16,7 +16,7 @@ They are stable world seeds used to answer one question:
 
 ## Current fixtures
 
-- `campus-public-opinion.json`
+- `campus-field-threshold.json`
 - `brand-crisis-response.json`
 - `literary-branching-world.json`
 - `manifest.json`

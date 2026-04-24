@@ -2,9 +2,9 @@
   "version": 1,
   "fixtures": [
     {
-      "fixture_id": "campus-public-opinion",
-      "file": "campus-public-opinion.json",
-      "purpose": "Public-event and organization-response baseline",
+      "fixture_id": "campus-field-threshold",
+      "file": "campus-field-threshold.json",
+      "purpose": "Campus rule, environment, and institution-response baseline",
       "must_produce": [
         "world_headline",
         "key_events>=3",
@@ -16,7 +16,7 @@
     {
       "fixture_id": "brand-crisis-response",
       "file": "brand-crisis-response.json",
-      "purpose": "Brand apology, platform reaction, and replay baseline",
+      "purpose": "Brand safety, material evidence, and replay baseline",
       "must_produce": [
         "world_headline",
         "key_events>=3",
@@ -38,9 +38,9 @@
       ]
     },
     {
-      "fixture_id": "public-policy-debate",
-      "file": "public-policy-debate.json",
-      "purpose": "Policy announcement, public reaction, and implementation-trust baseline",
+      "fixture_id": "civic-rule-trust-fracture",
+      "file": "civic-rule-trust-fracture.json",
+      "purpose": "Civic rule, street condition, and implementation-trust baseline",
       "must_produce": [
         "world_headline",
         "key_events>=3",
@@ -76,7 +76,7 @@
     {
       "fixture_id": "creator-fandom-split",
       "file": "creator-fandom-split.json",
-      "purpose": "Creator apology, fandom fracture, and platform-memory baseline",
+      "purpose": "Creator apology, support-field fracture, and archive-memory baseline",
       "must_produce": [
         "world_headline",
         "key_events>=3",
@@ -100,7 +100,7 @@
     {
       "fixture_id": "gig-worker-strike-wave",
       "file": "gig-worker-strike-wave.json",
-      "purpose": "Platform labor protest, public sympathy, and service-disruption baseline",
+      "purpose": "Algorithmic labor protest, system pressure, and service-disruption baseline",
       "must_produce": [
         "world_headline",
         "key_events>=3",

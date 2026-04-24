@@ -1,8 +1,8 @@
 {
-  "fixture_id": "public-policy-debate",
-  "title": "Public policy trust fracture",
+  "fixture_id": "civic-rule-trust-fracture",
+  "title": "Civic rule trust fracture",
   "source_type": "policy-debate",
-  "summary": "A city announces a new public safety policy. Officials, neighborhood groups, delivery workers, and media framing push the policy into diverging futures of trust, compliance, and backlash.",
+  "summary": "A city announces a new safety rule. Officials, neighborhood groups, delivery workers, street geometry, weather, and enforcement routines push the rule into diverging futures of trust, compliance, and backlash.",
   "seed_materials": [
     "policy release draft",
     "press conference highlights",

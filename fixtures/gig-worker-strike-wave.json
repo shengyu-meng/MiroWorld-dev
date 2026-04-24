@@ -1,11 +1,11 @@
 {
   "fixture_id": "gig-worker-strike-wave",
   "title": "Gig worker strike wave",
-  "source_type": "labor-platform",
-  "summary": "A coordinated strike by delivery and ride-hailing workers collides with platform messaging, customer inconvenience, and media narratives about flexibility, precarity, and public sympathy.",
+  "source_type": "labor-system",
+  "summary": "A coordinated strike by delivery and ride-hailing workers collides with algorithmic dispatch rules, customer inconvenience, weather, fuel costs, and narratives about flexibility and precarity.",
   "seed_materials": [
     "worker statement thread",
-    "platform service notice",
+    "dispatch-rule service notice",
     "customer complaint snapshots",
     "local press interviews"
   ],

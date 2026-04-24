@@ -2,7 +2,7 @@
   "fixture_id": "creator-fandom-split",
   "title": "Creator fandom fracture",
   "source_type": "creator-crisis",
-  "summary": "A major online creator is accused of betrayal by parts of their audience. Apology videos, clipped evidence, fan defense, and platform memory split the community into incompatible narratives.",
+  "summary": "A major online creator is accused of betrayal by parts of their support field. Apology videos, clipped evidence, sponsor constraints, and archive memory split the community into incompatible narratives.",
   "seed_materials": [
     "apology video transcript",
     "fan forum excerpts",
@@ -11,7 +11,7 @@
   ],
   "expected_world_feel": [
     "intimate parasocial rupture",
-    "platform memory stronger than any single apology",
+    "archive memory stronger than any single apology",
     "fans splitting into care, punishment, and exhaustion"
   ],
   "expected_checks": {

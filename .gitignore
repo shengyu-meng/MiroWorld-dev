@@ -14,6 +14,10 @@ Thumbs.db
 AGENTS.md
 agent.md
 
+# Local design references (never upload)
+.ui-ref/
+ui-ref/
+
 # Environment / secrets
 .env
 .env.local

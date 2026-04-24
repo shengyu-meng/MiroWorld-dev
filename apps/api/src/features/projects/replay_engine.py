@@ -37,7 +37,7 @@ class ReplayEngine:
       changed_branches=changed_branches,
       cost_changes=[
         "resource pressure rerouted",
-        "public attention redistributed",
+        "field pressure redistributed",
       ],
       summary=self._build_summary(payload),
     )

@@ -1,18 +1,38 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import App from '@/App.vue'
-import type { StageData } from '@/lib/types'
-import EntryView from '@/views/EntryView.vue'
+import type { Branch, StageData } from '@/lib/types'
 import StageView from '@/views/StageView.vue'
+
+function branch(eventId: string, id: string, label: string, confidence: number, visibility: Branch['visibility']): Branch {
+  return {
+    branch_id: id,
+    event_id: eventId,
+    label,
+    description: `${label} keeps the worldline moving through a rule and material constraint.`,
+    confidence,
+    premises: ['The rule layer is pulling on the material layer.'],
+    signals_for: ['Field signals are becoming denser.'],
+    signals_against: ['A local correction could bend the node.'],
+    visibility,
+    state: visibility === 'primary' ? 'selected' : 'candidate',
+    cost_hint: `${label} shifts cost across actants and constraints.`,
+    player_memory_count: 0,
+    player_memory_note: '',
+    memory_confidence_delta: 0,
+    effective_confidence: confidence,
+    player_influence: 'observer disturbance',
+  }
+}
 
 const sampleStage: StageData = {
   project_context: {
     project_id: 'proj_test',
-    headline: 'Test Worldline',
-    summary: 'A stage for test coverage.',
+    headline: 'Campus public opinion spiral',
+    summary: 'A platform-shaped public opinion fixture that should be rewritten at display time.',
     status: 'active',
-    source_label: 'literary-branching-world',
+    source_label: 'campus-public-opinion',
     display_language: 'zh',
   },
   surface_defaults: {
@@ -25,165 +45,103 @@ const sampleStage: StageData = {
     key_events: [
       {
         event_id: 'evt_1',
-        title: 'Event One',
-        summary: 'Summary one',
-        stage: 'Entry',
+        title: '触发材料进入公共视野',
+        summary: '第一波传播开始塑造入口温度。',
+        stage: '入口',
         impact_level: 'high',
-        affected_entities: ['Public'],
-        evidence_notes: ['Evidence'],
+        affected_entities: ['发起者', '公众气候'],
+        evidence_notes: ['事实层与价值层正在彼此牵引。'],
         branches: [
-          {
-            branch_id: 'br_1',
-            event_id: 'evt_1',
-            label: 'Primary',
-            description: 'Primary branch',
-            confidence: 0.66,
-            premises: ['Premise A'],
-            signals_for: ['Signal A'],
-            signals_against: ['Signal B'],
-            visibility: 'primary',
-            state: 'selected',
-            cost_hint: 'Cost A',
-            player_memory_count: 0,
-            player_memory_note: '',
-            memory_confidence_delta: 0,
-            effective_confidence: 0.66,
-            player_influence: 'neutral',
-          },
-          {
-            branch_id: 'br_2',
-            event_id: 'evt_1',
-            label: 'Alternate',
-            description: 'Alternate branch',
-            confidence: 0.22,
-            premises: ['Premise B'],
-            signals_for: ['Signal C'],
-            signals_against: ['Signal D'],
-            visibility: 'alternate',
-            state: 'candidate',
-            cost_hint: 'Cost B',
-            player_memory_count: 0,
-            player_memory_note: '',
-            memory_confidence_delta: 0,
-            effective_confidence: 0.22,
-            player_influence: 'neutral',
-          },
+          branch('evt_1', 'br_1', '主分支', 0.66, 'primary'),
+          branch('evt_1', 'br_2', '替代分支', 0.22, 'alternate'),
         ],
       },
       {
         event_id: 'evt_2',
-        title: 'Event Two',
-        summary: 'Summary two',
-        stage: 'Aftermath',
+        title: '机构与平台开始重新分配位置',
+        summary: '规则与材料开始决定谁承担代价。',
+        stage: '扭转',
         impact_level: 'medium',
-        affected_entities: ['Students', 'Media'],
-        evidence_notes: ['Evidence two'],
+        affected_entities: ['规则层', '材料供应'],
+        evidence_notes: ['新的约束开始显影。'],
         branches: [
-          {
-            branch_id: 'br_3',
-            event_id: 'evt_2',
-            label: 'Continuation',
-            description: 'Continuation branch',
-            confidence: 0.58,
-            premises: ['Premise C'],
-            signals_for: ['Signal E'],
-            signals_against: ['Signal F'],
-            visibility: 'primary',
-            state: 'selected',
-            cost_hint: 'Cost C',
-            player_memory_count: 0,
-            player_memory_note: '',
-            memory_confidence_delta: 0,
-            effective_confidence: 0.58,
-            player_influence: 'tilting',
-          },
-          {
-            branch_id: 'br_4',
-            event_id: 'evt_2',
-            label: 'Backlash',
-            description: 'Backlash branch',
-            confidence: 0.31,
-            premises: ['Premise D'],
-            signals_for: ['Signal G'],
-            signals_against: ['Signal H'],
-            visibility: 'alternate',
-            state: 'candidate',
-            cost_hint: 'Cost D',
-            player_memory_count: 0,
-            player_memory_note: '',
-            memory_confidence_delta: 0,
-            effective_confidence: 0.31,
-            player_influence: 'volatile',
-          },
+          branch('evt_2', 'br_3', '延续', 0.58, 'primary'),
+          branch('evt_2', 'br_4', '回折', 0.31, 'alternate'),
+        ],
+      },
+      {
+        event_id: 'evt_3',
+        title: '后果沉淀为新的公众记忆',
+        summary: '系统留下新的世界残影。',
+        stage: '回响',
+        impact_level: 'medium',
+        affected_entities: ['制度', '环境'],
+        evidence_notes: ['回响继续传导。'],
+        branches: [
+          branch('evt_3', 'br_5', '沉淀', 0.52, 'primary'),
+          branch('evt_3', 'br_6', '再分叉', 0.28, 'alternate'),
         ],
       },
     ],
     worldline_track: [
       {
         event_id: 'evt_1',
-        title: 'Event One',
-        stage: 'Entry',
+        title: '触发材料进入公共视野',
+        stage: '入口',
         primary_branch_id: 'br_1',
-        primary_branch_label: 'Primary',
+        primary_branch_label: '主分支',
         confidence: 0.66,
       },
       {
         event_id: 'evt_2',
-        title: 'Event Two',
-        stage: 'Aftermath',
+        title: '机构与平台开始重新分配位置',
+        stage: '扭转',
         primary_branch_id: 'br_3',
-        primary_branch_label: 'Continuation',
+        primary_branch_label: '延续',
         confidence: 0.58,
+      },
+      {
+        event_id: 'evt_3',
+        title: '后果沉淀为新的公众记忆',
+        stage: '回响',
+        primary_branch_id: 'br_5',
+        primary_branch_label: '沉淀',
+        confidence: 0.52,
       },
     ],
   },
   intervention: {
     available_input_types: ['observation', 'correction', 'intervention', 'preference'],
-    selected_branch_cards: [
-      {
-        label: 'Primary',
-        description: 'Primary branch',
-        premises: ['Premise A'],
-        signals_for: ['Signal A'],
-        signals_against: ['Signal B'],
-      },
-    ],
+    selected_branch_cards: [],
   },
   cost_lens: {
     lenses: [
       {
         cost_lens_id: 'cl_1',
         target_branch_id: 'br_1',
-        first_order_costs: ['Cost 1'],
-        second_order_costs: ['Cost 2'],
-        affected_groups: ['Group 1'],
-        ethical_notes: ['Note'],
+        first_order_costs: ['规则层吸收第一轮压力。'],
+        second_order_costs: ['材料供应承担后续约束。'],
+        affected_groups: ['规则层', '自然物'],
+        ethical_notes: ['不要把清晰误认为正当。'],
       },
     ],
     passive_floor: {
-      title: 'passive floor',
-      summary: 'Cost exists even when nobody touches the branch.',
+      title: '被动代价',
+      summary: '不触碰世界线，也仍然有代价沉积。',
     },
   },
   ripple: {
-    latest_bend: 'The branch has bent.',
+    latest_bend: '主分支获得第一轮可见优势。',
     ripple_cards: [
-      {
-        title: 'Ripple',
-        summary: 'Ripple summary',
-        branch_label: 'Primary',
-      },
-      {
-        title: 'Aftershock',
-        summary: 'Aftershock summary',
-        branch_label: 'Continuation',
-      },
+      { title: '入口回响', summary: '第一节点开始传导。', branch_label: '主分支' },
+      { title: '扭转回响', summary: '第二节点继续弯折。', branch_label: '延续' },
+      { title: '档案回响', summary: '第三节点进入残影。', branch_label: '沉淀' },
     ],
     saved_replay_sets: [],
   },
   archive: {
     share_snapshot: {
-      title: 'Test Worldline',
+      title: 'Campus public opinion spiral',
       subtitle: 'Subtitle',
       summary: 'Share summary',
       disclaimer: 'Disclaimer',
@@ -195,422 +153,119 @@ const sampleStage: StageData = {
       wall_label: 'Wall',
       archive_summary: 'Archive summary',
     },
-    player_decision_log: [
-      {
-        entry_id: 'log_1',
-        created_at: '2026-01-01T00:00:00Z',
-        input_type: 'intervention',
-        event_id: 'evt_1',
-        event_title: 'Event One',
-        branch_id: 'br_1',
-        branch_label: 'Primary',
-        content: 'Intervene',
-        replay_summary: 'Replay summary',
-        cost_changes: ['Cost 1'],
-      },
-    ],
-    calibration_records: [
-      {
-        calibration_id: 'cal_1',
-        event_id: 'evt_1',
-        branch_id: 'br_1',
-        result: 'hit',
-        actual_outcome: 'Outcome one aligned with the selected branch.',
-        note: '',
-        created_at: '2026-01-05T00:00:00Z',
-      },
-      {
-        calibration_id: 'cal_2',
-        event_id: 'evt_1',
-        branch_id: 'br_1',
-        result: 'partial',
-        actual_outcome: 'Outcome two only partially aligned.',
-        note: '',
-        created_at: '2026-01-04T00:00:00Z',
-      },
-      {
-        calibration_id: 'cal_3',
-        event_id: 'evt_1',
-        branch_id: 'br_2',
-        result: 'miss',
-        actual_outcome: 'Outcome three broke away from the branch.',
-        note: '',
-        created_at: '2026-01-03T00:00:00Z',
-      },
-      {
-        calibration_id: 'cal_4',
-        event_id: 'evt_1',
-        branch_id: 'br_1',
-        result: 'partial',
-        actual_outcome: 'Outcome four stayed contested.',
-        note: '',
-        created_at: '2026-01-02T00:00:00Z',
-      },
-    ],
+    player_decision_log: [],
+    calibration_records: [],
     calibration_summary: {
-      count: 4,
-      summary: 'The archive now shows a split but partially stabilizing calibration pattern.',
+      count: 0,
+      summary: 'No calibration yet.',
     },
   },
   version: 1,
 }
 
-const savedReplaySetResponse = [
-  {
-    replay_set_id: 'rset_1',
-    saved_at: '2026-01-06T00:00:00Z',
-    replay_set_key: 'pressure',
-    replay_set_label: 'Pressure Chronicle',
-    replay_set_note: 'Hold the hinge open.',
-    authored_note: 'This replay dossier reads through Pressure Chronicle, covering 2 events with 27% average confidence and 2.7 average pressure. Hold the hinge open. Enters through Event One / Alternate, takes pressure at Event Two / Backlash, and exposes its tail at Event Two / Backlash.',
-    language: 'en',
-    artifact: {
-      title: 'Pressure Chronicle / Event Two / Backlash',
-      deck: 'Bends inward and stains the civic surface.',
-      wall_text: 'This Pressure Chronicle replay spans 2 events, holds 27% effective confidence, carries 2.7 visible pressure, and keeps 2 alternate turns in frame. Hold the hinge open.',
-      pressure_note: 'This is a high-pressure reading: it stays with the branch where counter-signals and costs remain most exposed.',
-      closing_note: 'Leave the fracture visible on the way out.',
-      tags: ['Pressure Chronicle', 'Event Two / Backlash', '2 Event Count'],
-    },
-    focus: {
-      event_id: 'evt_2',
-      event_title: 'Event Two',
-      branch_id: 'br_4',
-      branch_label: 'Backlash',
-    },
-    metrics: {
-      event_count: 2,
-      average_confidence: 0.265,
-      average_pressure: 2.7,
-      alternate_count: 2,
-    },
-    dossier: {
-      summary: 'Enters through Event One / Alternate, takes pressure at Event Two / Backlash, and exposes its tail at Event Two / Backlash.',
-      entry: {
-        title: 'Event One / Alternate',
-        summary: 'Alternate branch',
-      },
-      hinge: {
-        title: 'Event Two / Backlash',
-        summary: 'Cost D',
-      },
-      terminal: {
-        title: 'Event Two / Backlash',
-        summary: 'Cost D',
-      },
-    },
-    timeline: [
-      {
-        index: 'ARCHIVE 01',
-        stage: 'Entry',
-        event_title: 'Event One',
-        branch_label: 'Alternate',
-        confidence: 0.22,
-        counter_signal_count: 1,
-        description: 'Alternate branch',
-        upstream: {
-          title: 'Archive Origin',
-          summary: 'The replay opens where the visible archive begins.',
-        },
-        downstream: {
-          title: 'Event Two / Backlash',
-          summary: 'Cost D',
-        },
-        focus: {
-          event_id: 'evt_1',
-          event_title: 'Event One',
-          branch_id: 'br_2',
-          branch_label: 'Alternate',
-        },
-      },
-      {
-        index: 'ARCHIVE 02',
-        stage: 'Aftermath',
-        event_title: 'Event Two',
-        branch_label: 'Backlash',
-        confidence: 0.31,
-        counter_signal_count: 1,
-        description: 'Backlash branch',
-        upstream: {
-          title: 'Event One / Alternate',
-          summary: 'Cost B',
-        },
-        downstream: {
-          title: 'Archive Open End',
-          summary: 'The replay keeps leaking into the next unread event.',
-        },
-        focus: {
-          event_id: 'evt_2',
-          event_title: 'Event Two',
-          branch_id: 'br_4',
-          branch_label: 'Backlash',
-        },
-      },
-    ],
-  },
-]
-
-function makeRouter(initialPath: string) {
-  return createRouter({
-    history: createMemoryHistory(),
-    routes: [
-      { path: '/', component: EntryView },
-      { path: '/world/:projectId', component: StageView },
-    ],
-  })
+function apiResponse<T>(data: T, status = 200) {
+  return Promise.resolve(new Response(JSON.stringify({ success: status < 400, data }), { status }))
 }
 
-describe('app routes', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.unstubAllGlobals()
-    window.localStorage.clear()
-  })
-
-  it('loads the entry route and renders fixtures', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({
-      success: true,
-      data: {
-        version: 1,
-        fixtures: [
-          {
-            fixture_id: 'literary-branching-world',
-            file: 'literary-branching-world.json',
-            purpose: 'Literary branch baseline',
-            must_produce: ['share_artifact'],
-          },
-        ],
-      },
-    })))
-
-    const router = makeRouter('/')
-    router.push('/')
-    await router.isReady()
-
-    const wrapper = mount(App, {
-      global: {
-        plugins: [router],
-      },
-    })
-    await flushPromises()
-
-    expect(wrapper.find('[data-testid="fixture-grid"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('literary-branching-world')
-    expect(wrapper.text()).toContain('MIROWORLD')
-  })
-
-  it('loads the stage route, allows branch selection, language switching, and archive drawer toggle', async () => {
-    const fetchMock = vi.spyOn(global, 'fetch')
-    const createObjectURLMock = vi.fn(() => 'blob:miroworld')
-    const revokeObjectURLMock = vi.fn()
-    const anchorClickMock = vi.fn()
-    const clipboardWriteTextMock = vi.fn().mockResolvedValue(undefined)
-    const canvasToDataURLMock = vi.fn(() => 'data:image/png;base64,bWlyb3dvcmxk')
-    const canvasFillRectMock = vi.fn()
-    const canvasDrawImageMock = vi.fn()
-    const canvasContext = {
-      fillStyle: '',
-      strokeStyle: '',
-      lineWidth: 1,
-      setTransform: vi.fn(),
-      clearRect: vi.fn(),
-      createRadialGradient: vi.fn(() => ({
-        addColorStop: vi.fn(),
-      })),
-      fillRect: canvasFillRectMock,
-      beginPath: vi.fn(),
-      moveTo: vi.fn(),
-      lineTo: vi.fn(),
-      stroke: vi.fn(),
-      bezierCurveTo: vi.fn(),
-      arc: vi.fn(),
-      fill: vi.fn(),
+async function mountStage(stage: StageData = sampleStage) {
+  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url.includes('/stage')) return apiResponse(stage)
+    if (url.includes('/share')) return apiResponse(stage.archive.share_snapshot)
+    if (url.includes('/calibration')) return apiResponse(stage)
+    if (url.includes('/inputs')) {
+      return apiResponse({
+        stage,
+        replay_result: {
+          replay_id: 'rp_1',
+          checkpoint_id: 'evt_1',
+          before_branch_id: 'br_1',
+          after_branch_id: 'br_1',
+          input_style: 'intervention',
+          impact_mode: 'world_state',
+          changed_events: ['evt_2'],
+          changed_branches: ['br_3'],
+          cost_changes: ['field pressure redistributed'],
+          summary: 'The intervention bent the downstream line.',
+        },
+      })
     }
-    Object.defineProperty(global.URL, 'createObjectURL', {
-      writable: true,
-      value: createObjectURLMock,
-    })
-    Object.defineProperty(global.URL, 'revokeObjectURL', {
-      writable: true,
-      value: revokeObjectURLMock,
-    })
-    Object.defineProperty(global.navigator, 'clipboard', {
-      configurable: true,
-      value: {
-        writeText: clipboardWriteTextMock,
-      },
-    })
-    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
-      writable: true,
-      value: vi.fn(() => ({
-        ...canvasContext,
-        drawImage: canvasDrawImageMock,
-      })),
-    })
-    Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
-      writable: true,
-      value: canvasToDataURLMock,
-    })
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(anchorClickMock)
-    class FakeImage {
-      onload: null | (() => void) = null
-      onerror: null | (() => void) = null
+    return apiResponse({}, 404)
+  })
+  vi.stubGlobal('fetch', fetchMock)
 
-      set src(_value: string) {
-        Promise.resolve().then(() => {
-          this.onload?.()
-        })
-      }
-    }
-    vi.stubGlobal('Image', FakeImage)
-    fetchMock
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: sampleStage })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: savedReplaySetResponse })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: [] })))
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/world/:projectId', component: StageView }],
+  })
+  router.push('/world/proj_test?lang=zh')
+  await router.isReady()
 
-    const router = makeRouter('/world/proj_test')
-    router.push('/world/proj_test?lang=zh')
-    await router.isReady()
+  const wrapper = mount(StageView, {
+    global: {
+      plugins: [router],
+    },
+  })
+  await flushPromises()
+  return { wrapper, fetchMock }
+}
 
-    const wrapper = mount(App, {
-      global: {
-        plugins: [router],
-      },
-    })
-    await flushPromises()
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
 
-    expect(wrapper.find('[data-testid="observatory-section"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="worldline-overlay"]').exists()).toBe(true)
-    await wrapper.findAll('.branch-chip')[1]?.trigger('click')
-    expect(wrapper.text()).toContain('Alternate branch')
+describe('worldline theatre stage', () => {
+  it('progressively reveals the worldline when the viewer only presses next', async () => {
+    const { wrapper } = await mountStage()
 
-    await wrapper.findAll('.language-button')[1]?.trigger('click')
-    await flushPromises()
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('1 / 3')
+    expect(wrapper.find('[data-testid="worldline-event-evt_1"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(false)
 
-    await wrapper.findAll('.surface-chip')[3]?.trigger('click')
-    await flushPromises()
-    expect(wrapper.find('[data-testid="ripple-continuity-explorer"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="ripple-path-archive"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="ripple-replay-set-library"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="ripple-replay-dossier"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="ripple-replay-history"]').exists()).toBe(true)
-    await wrapper.find('[data-testid="ripple-event-node-evt_2"]').trigger('click')
-    expect(wrapper.find('[data-testid="ripple-focus-card"]').text()).toContain('Event Two')
-    await wrapper.find('[data-testid="ripple-path-node-alternate-evt_2"]').trigger('click')
-    expect(wrapper.find('[data-testid="ripple-focus-card"]').text()).toContain('Event Two')
-    expect(wrapper.text()).toContain('Backlash branch')
-    await wrapper.find('[data-testid="replay-set-pressure"]').trigger('click')
-    expect(wrapper.find('[data-testid="ripple-replay-set-library"]').text()).toContain('Pressure Set')
-    expect(wrapper.find('[data-testid="replay-author-deck"]').exists()).toBe(true)
-    await wrapper.find('[data-testid="author-title-input"]').setValue('Pressure Chronicle')
-    await wrapper.find('[data-testid="author-note-input"]').setValue('Hold the hinge open.')
-    await wrapper.find('[data-testid="author-deck-line-input"]').setValue('Bends inward and stains the civic surface.')
-    await wrapper.find('[data-testid="author-closing-input"]').setValue('Leave the fracture visible on the way out.')
-    expect(wrapper.find('[data-testid="ripple-replay-dossier"]').text()).toContain('Hinge Pressure')
-    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Replay Artifact')
-    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Pressure Chronicle')
-    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Bends inward and stains the civic surface.')
-    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Leave the fracture visible on the way out.')
-    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Enters through')
-    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Hold the hinge open.')
-    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).not.toContain(' 路 ')
-    await wrapper.find('[data-testid="copy-replay-excerpt"]').trigger('click')
-    expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1)
-    expect(clipboardWriteTextMock).toHaveBeenCalledWith(expect.stringContaining('Enters through'))
-    await wrapper.find('[data-testid="copy-replay-artifact"]').trigger('click')
-    expect(clipboardWriteTextMock).toHaveBeenCalledTimes(2)
-    expect(clipboardWriteTextMock).toHaveBeenCalledWith(expect.stringContaining('Pressure Chronicle'))
-    await wrapper.find('[data-testid="download-replay-dossier"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(1)
-    await wrapper.find('[data-testid="download-replay-packet"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(2)
-    await wrapper.find('[data-testid="download-replay-exhibit"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(3)
-    await wrapper.find('[data-testid="save-replay-shelf"]').trigger('click')
-    await flushPromises()
-    expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('Pressure Chronicle')
-    expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').text()).toContain('High Pressure')
-    expect(fetchMock).toHaveBeenCalledTimes(3)
-    await wrapper.find('[data-testid="download-replay-atlas"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(4)
-    await wrapper.find('[data-testid="download-saved-replay-dossier"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(5)
-    await wrapper.find('[data-testid="download-saved-replay-packet"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(6)
-    await wrapper.find('[data-testid="download-saved-replay-exhibit"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(7)
-    await wrapper.find('[data-testid="replay-set-current"]').trigger('click')
-    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Current Set')
-    await wrapper.find('[data-testid="restore-saved-replay"]').trigger('click')
-    await flushPromises()
-    expect(wrapper.find('[data-testid="ripple-replay-excerpt"]').text()).toContain('Pressure Chronicle')
-    expect(wrapper.find('[data-testid="ripple-authored-artifact"]').text()).toContain('Bends inward and stains the civic surface.')
-    await wrapper.find('[data-testid="remove-saved-replay"]').trigger('click')
-    await flushPromises()
-    expect(wrapper.find('[data-testid="ripple-replay-shelf"]').text()).toContain('No replay packets')
-    expect(wrapper.find('[data-testid="ripple-shelf-atlas"]').exists()).toBe(false)
-    expect(fetchMock).toHaveBeenCalledTimes(4)
-    await wrapper.find('[data-testid="ripple-history-entry-pressure-evt_2"]').trigger('click')
-    expect(wrapper.text()).toContain('Counter-Signal Density')
-    expect(wrapper.text()).toContain('Backlash')
+    await wrapper.get('[data-testid="worldline-next"]').trigger('click')
+    expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('2 / 3')
+    expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(true)
 
-    await wrapper.findAll('.surface-chip')[4]?.trigger('click')
-    await flushPromises()
+    await wrapper.get('[data-testid="worldline-next"]').trigger('click')
+    expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('3 / 3')
+    expect(wrapper.find('[data-testid="worldline-event-evt_3"]').exists()).toBe(true)
+
+    await wrapper.get('[data-testid="worldline-next"]').trigger('click')
     expect(wrapper.find('[data-testid="archive-section"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="calibration-atlas"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="calibration-window-slices"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="calibration-branch-slices"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="calibration-decision-slices"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="calibration-longitudinal-slices"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="calibration-branch-slices"]').text()).toContain('Primary')
-    expect(wrapper.find('[data-testid="calibration-decision-slices"]').text()).toContain('Intervention')
-    expect(wrapper.find('[data-testid="calibration-longitudinal-slices"]').text()).toContain('Origin Window')
-    await wrapper.find('[data-testid="download-poster"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(8)
-    await wrapper.find('[data-testid="download-bundle"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(9)
-    await wrapper.find('[data-testid="download-exhibit"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(10)
-    await wrapper.find('[data-testid="download-poster-png"]').trigger('click')
-    await flushPromises()
-    expect(canvasToDataURLMock).toHaveBeenCalledTimes(1)
-    expect(createObjectURLMock).toHaveBeenCalledTimes(11)
-    await wrapper.find('[data-testid="download-artifact-bundle"]').trigger('click')
-    expect(createObjectURLMock).toHaveBeenCalledTimes(12)
-    await wrapper.find('[data-testid="download-media-packet"]').trigger('click')
-    await flushPromises()
-    for (let attempt = 0; attempt < 10 && createObjectURLMock.mock.calls.length < 14; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 10))
-    }
-    expect(canvasToDataURLMock).toHaveBeenCalledTimes(2)
-    expect(createObjectURLMock).toHaveBeenCalledTimes(14)
-    expect(anchorClickMock).toHaveBeenCalledTimes(13)
-    expect(revokeObjectURLMock).toHaveBeenCalledTimes(14)
-    expect(canvasFillRectMock).toHaveBeenCalled()
-    expect(canvasDrawImageMock).toHaveBeenCalledTimes(2)
-    await wrapper.find('[data-testid="archive-section"] .secondary-action').trigger('click')
-    expect(wrapper.find('[data-testid="calibration-drawer"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="archive-terminal"]').exists()).toBe(true)
   })
 
-  it('renders an error state when stage loading fails', async () => {
-    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('boom'))
+  it('removes legacy public-opinion wording from the rendered core UI', async () => {
+    const { wrapper } = await mountStage()
+    const text = wrapper.text()
 
-    const router = makeRouter('/world/proj_test')
-    router.push('/world/proj_test?lang=zh')
-    await router.isReady()
+    expect(text).toContain('触发源')
+    expect(text).toContain('场域气候')
+    expect(text).toContain('可观测层')
+    expect(text).not.toContain('发起者')
+    expect(text).not.toContain('公众气候')
+    expect(text).not.toContain('公共视野')
+    expect(text).not.toContain('舆论')
+  })
 
-    const wrapper = mount(App, {
-      global: {
-        plugins: [router],
-      },
-    })
+  it('keeps branch selection and intervention flow available inside the theatre', async () => {
+    const { wrapper, fetchMock } = await mountStage()
+
+    const branches = wrapper.findAll('.branch-chip')
+    await branches[1].trigger('click')
+    expect(branches[1].classes()).toContain('active')
+
+    await wrapper.findAll('.surface-chip')[1].trigger('click')
+    expect(wrapper.find('[data-testid="intervention-section"]').exists()).toBe(true)
+    await wrapper.find('[data-testid="intervention-section"] textarea').setValue('Let the material constraint become visible.')
+    await wrapper.find('[data-testid="intervention-section"] form').trigger('submit.prevent')
     await flushPromises()
 
-    expect(wrapper.find('[data-testid="error-state"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('boom')
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/inputs'),
+      expect.objectContaining({ method: 'POST' }),
+    )
+    expect(wrapper.find('[data-testid="ripple-section"]').exists()).toBe(true)
   })
 })

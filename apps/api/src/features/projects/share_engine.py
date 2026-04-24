@@ -8,7 +8,7 @@ class ShareEngine:
     branch = self._resolve_branch(world_state, branch_id)
     title = world_state.headline
     if language == "zh":
-      summary = f"{title} 正在沿着“{branch.label}”推进，观众能看到代价如何重新分配。"
+      summary = f"{title} 正在沿着“{branch.label}”推进，观测者能看到规则、材料与行动如何重新分配代价。"
       return ShareArtifact(
         title=title,
         subtitle="世界线不是答案，是代价的显影剂",
@@ -18,8 +18,8 @@ class ShareEngine:
         tags=["miroworld", "worldline", "cost"],
         short_excerpt="选择不仅改变方向，也改变谁来承担。",
         poster_caption="观察分支，承担选择。",
-        curator_note="观众不是旁观者，而是世界线的变量。",
-        wall_label=f"{title}：一条会因 intervention 与 correction 而偏折的公共世界线。",
+        curator_note="观测者不是旁观者，而是世界线的变量。",
+        wall_label=f"{title}：一条会因 intervention 与 correction 而偏折的世界推演线。",
         archive_summary=f"当前归档焦点：{branch.label}。",
       )
     summary = f"{title} is currently moving through '{branch.label}', making visible who absorbs the cost."
@@ -32,8 +32,8 @@ class ShareEngine:
       tags=["miroworld", "worldline", "cost"],
       short_excerpt="Choices do not only change direction. They change who carries the burden.",
       poster_caption="Observe the branch. Carry the choice.",
-      curator_note="The audience is not a spectator, but a variable inside the worldline.",
-      wall_label=f"{title}: a public worldline that bends under intervention and correction.",
+      curator_note="The observer is not outside the field, but a variable inside the worldline.",
+      wall_label=f"{title}: a world-simulation line that bends under intervention and correction.",
       archive_summary=f"Current archive focus: {branch.label}.",
     )
 

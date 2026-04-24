@@ -1,361 +1,289 @@
 <template>
-  <main class="stage-page">
+  <main class="theatre-page stage-page">
     <WorldlineCanvas
       :active-surface="activeSurface"
-      :events="stage?.observatory.key_events ?? []"
+      :events="revealedEvents"
       :selected-event-id="selectedEventId"
       :selected-branch-id="selectedBranchId"
+      :revealed-event-count="revealedCount"
+      :pulse-key="pulseKey"
       scene="stage"
     />
 
-    <div class="stage-shell stage-shell--immersive">
-      <header class="stage-header">
-        <div class="stage-heading">
-          <p class="eyebrow">{{ copy.stage.sourcePrefix }} / {{ stage?.project_context.source_label ?? 'fixture' }}</p>
-          <h1>{{ stage?.project_context.headline ?? copy.stage.loading }}</h1>
-          <p class="stage-summary">{{ stage?.project_context.summary ?? copy.stage.actionLine }}</p>
+    <div class="theatre-shell">
+      <header class="theatre-topbar">
+        <div class="theatre-title-block">
+          <p class="eyebrow">{{ t.kicker }} / {{ cleanText(stage?.project_context.source_label ?? 'fixture') }}</p>
+          <h1>{{ cleanText(stage?.project_context.headline ?? t.loading) }}</h1>
+          <p>{{ cleanText(stage?.project_context.summary ?? t.summaryFallback) }}</p>
         </div>
-        <div class="stage-header-tools">
+        <div class="theatre-tools">
           <LanguageToggle v-model="language" />
-          <p class="stage-action-line">{{ copy.stage.actionLine }}</p>
+          <span class="theatre-live-dot">{{ t.live }}</span>
         </div>
       </header>
 
-      <section v-if="loading" class="status-card" data-testid="loading-state">{{ copy.stage.loading }}</section>
-      <section v-else-if="errorMessage" class="status-card error" data-testid="error-state">{{ errorMessage }}</section>
+      <section v-if="loading" class="theatre-status" data-testid="loading-state">{{ t.loading }}</section>
+      <section v-else-if="errorMessage" class="theatre-status theatre-status--error" data-testid="error-state">
+        {{ errorMessage }}
+      </section>
 
       <template v-else-if="stage && selectedEvent && selectedBranch && shareSnapshot">
-        <section class="stage-overview">
-          <article class="annotation-block stage-frame-card">
-            <span class="annotation-label">{{ copy.currentFrame }}</span>
-            <strong>{{ selectedEvent.title }}</strong>
-            <p>{{ selectedEvent.summary }}</p>
-          </article>
-
-          <article class="annotation-block layer-lens-card">
-            <span class="annotation-label">{{ copy.stage.layerLabel }}</span>
-            <div class="layer-chip-row">
-              <button
-                v-for="layer in availableLayers"
-                :key="layer"
-                type="button"
-                class="layer-chip"
-                :class="{ active: layer === selectedLayer }"
-                @click="selectedLayer = layer"
-              >
-                {{ layer }}
-              </button>
-            </div>
-            <strong>{{ copy.layers[selectedLayer].title }}</strong>
-            <p>{{ copy.layers[selectedLayer].note }}</p>
-            <ul class="layer-highlight-list">
-              <li v-for="item in layerHighlights" :key="item">{{ item }}</li>
-            </ul>
-          </article>
-        </section>
-
-        <WorldlineOverlay
-          :event="selectedEvent"
-          :selected-branch-id="selectedBranchId"
-          :confidence-label="copy.stage.confidenceLabel"
-          :branch-field-label="copy.stage.branchFieldLabel"
-          :branch-field-note="copy.stage.branchFieldNote"
-          :labels="{
-            primary: copy.labels.primary,
-            alternate: copy.labels.alternate,
-            actionVector: copy.labels.actionVector,
-          }"
-          @select-branch="handleSelectBranch(selectedEvent.event_id, $event)"
-        />
-
-        <SurfaceRail :surfaces="surfaces" :active-surface="activeSurface" @select="activeSurface = $event" />
-
-        <div class="stage-grid">
-          <section class="scene-panel" :class="`scene-panel--${activeSurface}`">
-            <header class="scene-panel-header">
-              <div>
-                <span class="surface-kicker">{{ activeSurfaceCopy.index }} / {{ activeSurfaceCopy.label }}</span>
-                <h2>{{ activeSurfaceCopy.title }}</h2>
+        <section class="worldline-theatre" data-testid="worldline-theatre">
+          <aside class="theatre-left-rail">
+            <article class="theatre-panel theatre-panel--quiet">
+              <span class="annotation-label">{{ t.progressLabel }}</span>
+              <strong data-testid="revealed-event-count">{{ revealedCount }} / {{ events.length }}</strong>
+              <div class="theatre-progress-track" aria-hidden="true">
+                <i :style="{ width: `${stageProgress * 100}%` }"></i>
               </div>
-              <p class="scene-panel-blurb">{{ activeSurfaceCopy.blurb }}</p>
-            </header>
+              <p>{{ progressComplete ? t.progressComplete : t.progressHint }}</p>
+            </article>
 
-            <ObservatorySection
-              v-if="activeSurface === 'observatory'"
-              :events="stage.observatory.key_events"
-              :selected-event-id="selectedEventId"
-              :selected-branch-id="selectedBranchId"
-              :labels="{
-                primary: copy.labels.primary,
-                alternate: copy.labels.alternate,
-                affected: copy.labels.affected,
-                comparisonBoard: copy.stage.comparisonBoard,
-                confidenceLabel: copy.stage.confidenceLabel,
-                costHint: copy.labels.costHint,
-                actionVector: copy.labels.actionVector,
-              }"
-              @select-event="handleSelectEvent"
-              @select-branch="handleSelectBranch"
-            />
-
-            <InterventionSection
-              v-else-if="activeSurface === 'intervention'"
-              :input-modes="stage.intervention.available_input_types"
-              :current-input-type="currentInputType"
-              :draft="draft"
-              :is-submitting="submitting"
-              :placeholder="inputPlaceholder"
-              :submit-label="copy.stage.submitAction"
-              :loading-label="copy.stage.replaying"
-              :input-copy="copy.inputs"
-              :branch-cards="stage.intervention.selected_branch_cards"
-              :empty-copy="copy.noData"
-              @update:currentInputType="handleModeChange"
-              @update:draft="draft = $event"
-              @submit="submitInput"
-            />
-
-            <CostLensSection
-              v-else-if="activeSurface === 'cost'"
-              :lenses="stage.cost_lens.lenses"
-              :selected-branch-id="selectedBranchId"
-              :passive-floor="stage.cost_lens.passive_floor"
-              :labels="copy.labels"
-              :empty-copy="copy.noData"
-            />
-
-            <RippleSection
-              v-else-if="activeSurface === 'ripple'"
-              :project-id="stage.project_context.project_id"
-              :language="language"
-              :latest-bend="latestBend"
-              :events="stage.observatory.key_events"
-              :worldline-track="stage.observatory.worldline_track"
-              :saved-replay-sets="stage.ripple.saved_replay_sets"
-              :selected-event-id="selectedEventId"
-              :selected-branch-id="selectedBranchId"
-              :ripple-cards="stage.ripple.ripple_cards"
-              :empty-copy="copy.noData"
-              :labels="{
-                primary: copy.labels.primary,
-                alternate: copy.labels.alternate,
-                actionVector: copy.labels.actionVector,
-              }"
-              :confidence-label="copy.stage.confidenceLabel"
-              :copy="{
-                rippleTrack: copy.archive.rippleTrack,
-                latestBendLabel: copy.archive.latestBendLabel,
-                continuityAtlas: copy.ripple.continuityAtlas,
-                continuityNote: copy.ripple.continuityNote,
-                focusEvent: copy.ripple.focusEvent,
-                branchSpread: copy.ripple.branchSpread,
-                evidenceDensity: copy.ripple.evidenceDensity,
-                pathArchive: copy.ripple.pathArchive,
-                pathArchiveNote: copy.ripple.pathArchiveNote,
-                activePath: copy.ripple.activePath,
-                primaryPath: copy.ripple.primaryPath,
-                alternateDrift: copy.ripple.alternateDrift,
-                replayHistory: copy.ripple.replayHistory,
-                replayHistoryNote: copy.ripple.replayHistoryNote,
-                upstreamTension: copy.ripple.upstreamTension,
-                hingeBranch: copy.ripple.hingeBranch,
-                downstreamDrift: copy.ripple.downstreamDrift,
-                archiveOrigin: copy.ripple.archiveOrigin,
-                archiveOriginNote: copy.ripple.archiveOriginNote,
-                archiveOpenEnd: copy.ripple.archiveOpenEnd,
-                archiveOpenEndNote: copy.ripple.archiveOpenEndNote,
-                counterSignalDensity: copy.ripple.counterSignalDensity,
-                replaySetLibrary: copy.ripple.replaySetLibrary,
-                replaySetLibraryNote: copy.ripple.replaySetLibraryNote,
-                currentSet: copy.ripple.currentSet,
-                currentSetNote: copy.ripple.currentSetNote,
-                stabilizingSet: copy.ripple.stabilizingSet,
-                stabilizingSetNote: copy.ripple.stabilizingSetNote,
-                pressureSet: copy.ripple.pressureSet,
-                pressureSetNote: copy.ripple.pressureSetNote,
-                eventCount: copy.ripple.eventCount,
-                setConfidence: copy.ripple.setConfidence,
-                setPressure: copy.ripple.setPressure,
-                setAlternateCount: copy.ripple.setAlternateCount,
-                replayDossier: copy.ripple.replayDossier,
-                replayDossierNote: copy.ripple.replayDossierNote,
-                authorDeck: language === 'zh' ? '重演作者台' : 'Replay Author Deck',
-                authorDeckNote: language === 'zh'
-                  ? '在保存和导出之前，为当前重演写下标题、策展注记、导语和收束尾句。'
-                  : 'Write the title, curator note, deck line, and closing note for the current replay before you save or export it.',
-                authorDeckLine: language === 'zh' ? '展签导语' : 'Deck Line',
-                authorClosingLine: language === 'zh' ? '收束尾句' : 'Closing Note',
-                authorTitlePlaceholder: language === 'zh' ? '例如：裂缝中的共振线' : 'For example: Resonance Through The Fracture',
-                authorNotePlaceholder: language === 'zh'
-                  ? '写下这一版重演为什么值得被保存、展示或带走。'
-                  : 'Write why this replay cut deserves to be saved, exhibited, or carried away.',
-                authorDeckLinePlaceholder: language === 'zh'
-                  ? '例如：从裂缝内部折返，朝公共表面留下余波。'
-                  : 'For example: Bends inward through the fracture and leaves an afterimage on the public surface.',
-                authorClosingPlaceholder: language === 'zh'
-                  ? '写下这一版重演最后留给观众的一句收束。'
-                  : 'Write the final line this replay should leave with the audience.',
-                resetAuthorDeck: language === 'zh' ? '恢复派生文案' : 'Reset To Derived Copy',
-                replayArtifact: language === 'zh' ? '重演展签' : 'Replay Artifact',
-                replayArtifactNote: language === 'zh'
-                  ? '把当前重演读成一张可带走的展签，而不是只留在技术 dossier 里。'
-                  : 'Read the current replay as an exhibition label instead of leaving it inside a technical dossier only.',
-                replayExcerpt: language === 'zh' ? '重演摘录' : 'Replay Excerpt',
-                copyReplayExcerpt: language === 'zh' ? '复制重演摘录' : 'Copy Replay Excerpt',
-                copyReplayArtifact: language === 'zh' ? '复制重演展签' : 'Copy Replay Artifact',
-                downloadReplayDossier: language === 'zh' ? '导出 Replay Dossier' : 'Download Replay Dossier',
-                downloadReplayPacket: language === 'zh' ? '导出 Replay Packet' : 'Download Replay Packet',
-                downloadReplayExhibit: language === 'zh' ? '导出 Replay Exhibit' : 'Download Replay Exhibit',
-                replayDossierSummaryTemplate: language === 'zh'
-                  ? '从 {entry} 进入，在 {hinge} 承压，并在 {terminal} 暴露尾迹。'
-                  : 'Enters through {entry}, takes pressure at {hinge}, and exposes its tail at {terminal}.',
-                replayPacketIntroTemplate: language === 'zh'
-                  ? '这份重演案卷以 {setLabel} 为视角，覆盖 {eventCount} 个事件，平均置信 {confidence}，平均压力 {pressure}。'
-                  : 'This replay dossier reads through {setLabel}, covering {eventCount} events with {confidence} average confidence and {pressure} average pressure.',
-                replayArtifactDeckTemplate: language === 'zh'
-                  ? '从 {entry} 倾入，在 {hinge} 拐折，朝 {terminal} 留下余波。'
-                  : 'Pours in from {entry}, bends at {hinge}, and leaves its afterimage toward {terminal}.',
-                replayArtifactWallTemplate: language === 'zh'
-                  ? '这条 {setLabel} 重演跨越 {eventCount} 个事件，维持 {confidence} 有效置信，同时携带 {pressure} 可见压力，并把 {alternateCount} 次替代转向保留在画面里。'
-                  : 'This {setLabel} replay spans {eventCount} events, holds {confidence} effective confidence, carries {pressure} visible pressure, and keeps {alternateCount} alternate turns in frame.',
-                replayArtifactClosingTemplate: language === 'zh'
-                  ? '它在 {terminal} 留下的并不是一个无代价的结尾，因为整条线仍把 {alternateCount} 次替代转向压在背景里。'
-                  : 'What remains at {terminal} is not a free ending, because the line still keeps {alternateCount} alternate turns under pressure in the background.',
-                replayArtifactPressureHigh: language === 'zh'
-                  ? '这是一条高压读法：它主动停留在反证更密、代价更重的支路上。'
-                  : 'This is a high-pressure reading: it stays with the branch where counter-signals and costs remain most exposed.',
-                replayArtifactPressureMedium: language === 'zh'
-                  ? '这条线并未彻底失稳，但它持续把压力集中在转折节点附近。'
-                  : 'This line is not fully unstable, but it keeps pressure concentrated near the hinge.',
-                replayArtifactPressureLow: language === 'zh'
-                  ? '这是一条相对克制的读法：它让压力保持可见，却没有让整条线彻底断裂。'
-                  : 'This is a more restrained reading: it keeps pressure visible without letting the line fully tear open.',
-                replayAtlas: language === 'zh' ? '重演图册' : 'Replay Atlas',
-                replayAtlasNote: language === 'zh'
-                  ? '把已保存的 replay set 读成一组可浏览、可恢复、可整体导出的重演目录。'
-                  : 'Read saved replay sets as a browsable atlas that can be restored and exported as one object.',
-                downloadReplayAtlas: language === 'zh' ? '导出 Replay Atlas' : 'Download Replay Atlas',
-                pressureHighBand: language === 'zh' ? '高压' : 'High Pressure',
-                pressureMediumBand: language === 'zh' ? '中压' : 'Medium Pressure',
-                pressureLowBand: language === 'zh' ? '低压' : 'Low Pressure',
-                replayShelf: language === 'zh' ? '重演架' : 'Replay Shelf',
-                replayShelfNote: language === 'zh'
-                  ? '把当前重演包保存到项目重演架上，之后可以回看、恢复和再次导出。'
-                  : 'Keep authored replay packets on this project shelf so they can be revisited, restored, and exported again.',
-                saveReplayShelf: language === 'zh' ? '保存到 Replay Shelf' : 'Save To Replay Shelf',
-                restoreReplayShelf: language === 'zh' ? '恢复重演' : 'Restore Replay',
-                removeReplayShelf: language === 'zh' ? '移除' : 'Remove',
-                emptyReplayShelf: language === 'zh'
-                  ? '当前项目还没有保存的 replay packet。'
-                  : 'No replay packets have been saved for this project yet.',
-                savedAtLabel: language === 'zh' ? '保存时间' : 'Saved At',
-                savedFocus: language === 'zh' ? '聚焦锚点' : 'Saved Focus',
-                downloadSavedReplayDossier: language === 'zh' ? '导出已存 Dossier' : 'Download Saved Dossier',
-                downloadSavedReplayPacket: language === 'zh' ? '导出已存 Packet' : 'Download Saved Packet',
-                downloadSavedReplayExhibit: language === 'zh' ? '导出已存 Exhibit' : 'Download Saved Exhibit',
-                entryAnchor: copy.ripple.entryAnchor,
-                hingePressure: copy.ripple.hingePressure,
-                terminalExposure: copy.ripple.terminalExposure,
-              }"
-              @select-event="handleSelectEvent"
-              @select-branch="handleSelectBranch"
-              @save-replay-set="saveReplaySetToProject"
-              @delete-replay-set="deleteReplaySetFromProject"
-            />
-
-            <ArchiveSection
-              v-else
-              :share-snapshot="shareSnapshot"
-              :decision-log="stage.archive.player_decision_log"
-              :calibration-summary="stage.archive.calibration_summary"
-              :calibration-records="stage.archive.calibration_records"
-              :calibration-open="calibrationOpen"
-              :calibration-draft="calibrationDraft"
-              :calibration-result="calibrationResult"
-              :project-id="stage.project_context.project_id"
-              :copy="{
-                ...copy.archive,
-                decisionSlices: language === 'zh' ? '决策切片' : 'Decision Slices',
-                longitudinalSlices: language === 'zh' ? '纵深切片' : 'Longitudinal Slices',
-                originWindow: language === 'zh' ? '起始窗口' : 'Origin Window',
-                hingeWindow: language === 'zh' ? '中段窗口' : 'Hinge Window',
-                latestWindow: language === 'zh' ? '最新窗口' : 'Latest Window',
-                observationType: copy.inputs.observation.label,
-                correctionType: copy.inputs.correction.label,
-                interventionType: copy.inputs.intervention.label,
-                preferenceType: copy.inputs.preference.label,
-                unknownDecisionType: language === 'zh' ? '未映射输入' : 'Unmapped Input',
-              }"
-              @share="generateShare"
-              @toggle-calibration="calibrationOpen = !calibrationOpen"
-              @update:calibrationDraft="calibrationDraft = $event"
-              @update:calibrationResult="handleCalibrationResult"
-              @save-calibration="saveCalibration"
-            />
-          </section>
-
-          <aside class="annotation-rail">
-            <div class="annotation-block">
-              <span class="annotation-label">{{ copy.stage.selectedBranch }}</span>
-              <strong>{{ selectedBranch.label }}</strong>
-              <p>{{ selectedBranch.description }}</p>
-              <small>{{ copy.stage.confidenceLabel }} / {{ formatConfidence(selectedBranch.effective_confidence ?? selectedBranch.confidence) }}</small>
-            </div>
-
-            <div class="annotation-block">
-              <span class="annotation-label">{{ copy.stage.selectedEvent }}</span>
-              <strong>{{ selectedEvent.title }}</strong>
-              <p>{{ selectedEvent.stage }} / {{ selectedEvent.impact_level }}</p>
-              <ul>
-                <li v-for="entity in selectedEvent.affected_entities" :key="entity">{{ entity }}</li>
-              </ul>
-            </div>
-
-            <div class="annotation-block">
-              <span class="annotation-label">{{ copy.labels.premises }}</span>
-              <ul>
-                <li v-for="premise in selectedBranch.premises" :key="premise">{{ premise }}</li>
-              </ul>
-            </div>
-
-            <div class="annotation-block">
-              <span class="annotation-label">{{ copy.labels.signalsFor }}</span>
-              <ul>
-                <li v-for="signal in selectedBranch.signals_for" :key="signal">{{ signal }}</li>
-              </ul>
-            </div>
-
-            <div class="annotation-block">
-              <span class="annotation-label">{{ copy.labels.signalsAgainst }}</span>
-              <ul>
-                <li v-for="signal in selectedBranch.signals_against" :key="signal">{{ signal }}</li>
-              </ul>
-            </div>
-
-            <div class="annotation-block">
-              <span class="annotation-label">{{ copy.stage.trackLabel }}</span>
-              <div class="track-list">
+            <article class="theatre-panel">
+              <span class="annotation-label">{{ t.layerLabel }}</span>
+              <div class="layer-chip-row">
                 <button
-                  v-for="track in stage.observatory.worldline_track"
-                  :key="track.event_id"
+                  v-for="layer in availableLayers"
+                  :key="layer"
                   type="button"
-                  class="track-node"
-                  :class="{ active: track.event_id === selectedEventId }"
-                  @click="handleSelectEvent(track.event_id)"
+                  class="layer-chip"
+                  :class="{ active: layer === selectedLayer }"
+                  @click="selectedLayer = layer"
                 >
-                  <span>{{ track.stage }}</span>
-                  <strong>{{ track.title }}</strong>
-                  <small>{{ formatConfidence(track.confidence) }}</small>
+                  {{ layer }}
                 </button>
               </div>
+              <strong>{{ t.layers[selectedLayer].title }}</strong>
+              <p>{{ t.layers[selectedLayer].note }}</p>
+              <ul class="theatre-mini-list">
+                <li v-for="item in layerHighlights" :key="item">{{ item }}</li>
+              </ul>
+            </article>
+
+            <nav class="surface-orbit" aria-label="Worldline lenses">
+              <button
+                v-for="surface in surfaces"
+                :key="surface.key"
+                type="button"
+                class="surface-chip"
+                :class="{ active: surface.key === activeSurface }"
+                @click="activeSurface = surface.key"
+              >
+                <span>{{ surface.index }}</span>
+                {{ surface.label }}
+              </button>
+            </nav>
+          </aside>
+
+          <section class="theatre-center-field">
+            <div class="singularity-caption">
+              <span>{{ t.singularityLabel }}</span>
+              <strong>{{ t.singularityNote }}</strong>
             </div>
 
-            <div class="annotation-block" v-if="latestBend">
-              <span class="annotation-label">{{ copy.stage.replayLabel }}</span>
+            <ol class="progressive-worldline" data-testid="progressive-worldline">
+              <li
+                v-for="(event, index) in revealedEvents"
+                :key="event.event_id"
+                :data-testid="`worldline-event-${event.event_id}`"
+                :class="{ active: event.event_id === selectedEventId }"
+              >
+                <button type="button" @click="handleSelectEvent(event.event_id)">
+                  <span>{{ String(index + 1).padStart(2, '0') }}</span>
+                  <strong>{{ cleanText(event.title) }}</strong>
+                  <small>{{ cleanText(event.stage) }} / {{ event.impact_level }}</small>
+                </button>
+              </li>
+              <li v-if="!progressComplete" class="ghost-node">
+                <span>{{ t.nextGhost }}</span>
+              </li>
+            </ol>
+          </section>
+
+          <aside class="theatre-right-rail" data-testid="observatory-section">
+            <article class="theatre-panel selected-event-card">
+              <span class="annotation-label">{{ t.selectedEvent }}</span>
+              <h2>{{ cleanText(selectedEvent.title) }}</h2>
+              <p>{{ cleanText(selectedEvent.summary) }}</p>
+              <div class="theatre-tag-row">
+                <span v-for="entity in focusTags" :key="entity">{{ t.actantLabel }} / {{ entity }}</span>
+              </div>
+            </article>
+
+            <article class="theatre-panel worldline-overlay" data-testid="worldline-overlay">
+              <span class="annotation-label">{{ t.branchField }}</span>
+              <div class="branch-constellation">
+                <button
+                  v-for="branch in selectedEvent.branches"
+                  :key="branch.branch_id"
+                  type="button"
+                  class="branch-chip"
+                  :class="{ active: branch.branch_id === selectedBranchId }"
+                  @click="handleSelectBranch(selectedEvent.event_id, branch.branch_id)"
+                >
+                  <span>{{ branch.visibility === 'primary' ? t.primary : t.alternate }}</span>
+                  <strong>{{ cleanText(branch.label) }}</strong>
+                  <small>{{ formatConfidence(branch.effective_confidence ?? branch.confidence) }}</small>
+                </button>
+              </div>
+              <p class="branch-description">{{ cleanText(selectedBranch.description) }}</p>
+            </article>
+
+            <article class="theatre-panel">
+              <span class="annotation-label">{{ t.premises }}</span>
+              <ul class="theatre-mini-list">
+                <li v-for="item in selectedBranch.premises" :key="item">{{ cleanText(item) }}</li>
+              </ul>
+            </article>
+
+            <article class="theatre-panel">
+              <span class="annotation-label">{{ t.costLabel }}</span>
+              <p>{{ cleanText(selectedBranch.cost_hint) }}</p>
+              <ul class="theatre-mini-list">
+                <li v-for="item in currentCosts" :key="item">{{ item }}</li>
+              </ul>
+            </article>
+
+            <article class="theatre-panel">
+              <span class="annotation-label">{{ t.rippleLabel }}</span>
               <p>{{ latestBend }}</p>
-            </div>
+            </article>
           </aside>
-        </div>
+        </section>
+
+        <section class="theatre-drawer" :class="`theatre-drawer--${activeSurface}`">
+          <header>
+            <span class="surface-kicker">{{ activeSurfaceCopy.index }} / {{ activeSurfaceCopy.label }}</span>
+            <h2>{{ activeSurfaceCopy.title }}</h2>
+            <p>{{ activeSurfaceCopy.blurb }}</p>
+          </header>
+
+          <div v-if="activeSurface === 'intervention'" class="drawer-grid" data-testid="intervention-section">
+            <div>
+              <div class="input-mode-row">
+                <button
+                  v-for="mode in stage.intervention.available_input_types"
+                  :key="mode"
+                  type="button"
+                  class="input-mode-chip"
+                  :class="{ active: mode === currentInputType }"
+                  @click="handleModeChange(mode)"
+                >
+                  {{ t.inputs[mode].label }}
+                </button>
+              </div>
+              <p>{{ t.inputs[currentInputType].note }}</p>
+            </div>
+            <form class="theatre-input-form" @submit.prevent="submitInput">
+              <textarea v-model="draft" :placeholder="t.inputPlaceholder"></textarea>
+              <button type="submit" class="theatre-primary-action" :disabled="submitting || !draft.trim()">
+                {{ submitting ? t.replaying : t.submitAction }}
+              </button>
+            </form>
+          </div>
+
+          <div v-else-if="activeSurface === 'cost'" class="drawer-grid" data-testid="cost-lens-section">
+            <article v-for="lens in selectedLenses" :key="lens.cost_lens_id" class="drawer-card">
+              <span class="annotation-label">{{ t.costLabel }}</span>
+              <ul class="theatre-mini-list">
+                <li v-for="item in lens.first_order_costs" :key="item">{{ cleanText(item) }}</li>
+                <li v-for="item in lens.second_order_costs" :key="item">{{ cleanText(item) }}</li>
+              </ul>
+            </article>
+            <article class="drawer-card">
+              <span class="annotation-label">{{ t.passiveFloor }}</span>
+              <strong>{{ cleanText(stage.cost_lens.passive_floor.title) }}</strong>
+              <p>{{ cleanText(stage.cost_lens.passive_floor.summary) }}</p>
+            </article>
+          </div>
+
+          <div v-else-if="activeSurface === 'ripple'" class="drawer-grid" data-testid="ripple-section">
+            <article class="drawer-card">
+              <span class="annotation-label">{{ t.worldlineTrack }}</span>
+              <ol class="drawer-track">
+                <li v-for="track in revealedTrack" :key="track.event_id">
+                  <strong>{{ cleanText(track.title) }}</strong>
+                  <span>{{ cleanText(track.primary_branch_label) }} / {{ formatConfidence(track.confidence) }}</span>
+                </li>
+              </ol>
+            </article>
+            <article class="drawer-card">
+              <span class="annotation-label">{{ t.rippleLabel }}</span>
+              <p>{{ latestBend }}</p>
+              <ul class="theatre-mini-list">
+                <li v-for="card in visibleRippleCards" :key="`${card.title}-${card.branch_label}`">
+                  {{ cleanText(card.title) }} / {{ cleanText(card.summary) }}
+                </li>
+              </ul>
+            </article>
+          </div>
+
+          <div v-else-if="activeSurface === 'archive'" class="drawer-grid" data-testid="archive-section">
+            <article class="drawer-card" :data-testid="progressComplete ? 'archive-terminal' : 'archive-preview'">
+              <span class="annotation-label">{{ t.archiveLabel }}</span>
+              <strong>{{ cleanText(shareSnapshot.title) }}</strong>
+              <p>{{ cleanText(shareSnapshot.summary) }}</p>
+              <button type="button" class="theatre-secondary-action" @click="generateShare">
+                {{ t.shareAction }}
+              </button>
+            </article>
+            <article class="drawer-card">
+              <span class="annotation-label">{{ t.calibrationLabel }}</span>
+              <button type="button" class="theatre-secondary-action" @click="calibrationOpen = !calibrationOpen">
+                {{ calibrationOpen ? t.hideCalibration : t.openCalibration }}
+              </button>
+              <div v-if="calibrationOpen" class="calibration-drawer" data-testid="calibration-drawer">
+                <div class="input-mode-row">
+                  <button
+                    v-for="result in calibrationResults"
+                    :key="result"
+                    type="button"
+                    class="input-mode-chip"
+                    :class="{ active: result === calibrationResult }"
+                    @click="handleCalibrationResult(result)"
+                  >
+                    {{ t.calibrationResults[result] }}
+                  </button>
+                </div>
+                <textarea v-model="calibrationDraft" :placeholder="t.calibrationPlaceholder"></textarea>
+                <button type="button" class="theatre-primary-action" @click="saveCalibration">
+                  {{ t.saveCalibration }}
+                </button>
+              </div>
+            </article>
+            <article class="drawer-card">
+              <span class="annotation-label">{{ t.decisionLog }}</span>
+              <ul class="theatre-mini-list">
+                <li v-for="entry in stage.archive.player_decision_log.slice(0, 4)" :key="entry.entry_id">
+                  {{ cleanText(entry.event_title) }} / {{ cleanText(entry.branch_label) }}
+                </li>
+              </ul>
+            </article>
+          </div>
+
+          <div v-else class="drawer-grid">
+            <article class="drawer-card">
+              <span class="annotation-label">{{ t.selectedEvent }}</span>
+              <p>{{ t.observatoryNote }}</p>
+            </article>
+          </div>
+        </section>
+
+        <footer class="theatre-bottombar">
+          <div>
+            <span class="annotation-label">{{ t.currentLens }}</span>
+            <strong>{{ activeSurfaceCopy.label }} / {{ cleanText(selectedBranch.label) }}</strong>
+          </div>
+          <div class="theatre-bottom-actions">
+            <button type="button" class="theatre-secondary-action" @click="activeSurface = 'intervention'">
+              {{ t.interveneShortcut }}
+            </button>
+            <button type="button" class="theatre-primary-action" data-testid="worldline-next" @click="advanceWorldline">
+              {{ nextActionLabel }}
+            </button>
+          </div>
+        </footer>
       </template>
     </div>
   </main>
@@ -366,22 +294,29 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import LanguageToggle from '@/components/LanguageToggle.vue'
-import SurfaceRail from '@/components/SurfaceRail.vue'
 import WorldlineCanvas from '@/components/WorldlineCanvas.vue'
-import WorldlineOverlay from '@/components/WorldlineOverlay.vue'
-import ArchiveSection from '@/components/sections/ArchiveSection.vue'
-import CostLensSection from '@/components/sections/CostLensSection.vue'
-import InterventionSection from '@/components/sections/InterventionSection.vue'
-import ObservatorySection from '@/components/sections/ObservatorySection.vue'
-import RippleSection from '@/components/sections/RippleSection.vue'
-import { applyInput, buildShare, deleteReplaySet, getStage, recordCalibration, saveReplaySet } from '@/lib/api'
-import { getAppCopy } from '@/lib/copy'
-import type { Branch, DisplayLanguage, InputType, KnowledgeLayer, SavedReplaySet, SavedReplaySetDraft, StageData, SurfaceKey } from '@/lib/types'
+import {
+  applyInput,
+  buildShare,
+  getStage,
+  recordCalibration,
+} from '@/lib/api'
+import type {
+  Branch,
+  CalibrationRecord,
+  CostLens,
+  DisplayLanguage,
+  InputType,
+  KnowledgeLayer,
+  StageData,
+  SurfaceKey,
+} from '@/lib/types'
 
 const route = useRoute()
 const router = useRouter()
-const language = ref<DisplayLanguage>((route.query.lang as DisplayLanguage) || 'zh')
+
 const stage = ref<StageData | null>(null)
+const language = ref<DisplayLanguage>(route.query.lang === 'en' ? 'en' : 'zh')
 const loading = ref(true)
 const errorMessage = ref('')
 const activeSurface = ref<SurfaceKey>('observatory')
@@ -393,46 +328,255 @@ const draft = ref('')
 const replaySummary = ref('')
 const calibrationOpen = ref(false)
 const calibrationDraft = ref('')
-const calibrationResult = ref<'hit' | 'partial' | 'miss' | 'insufficient_data'>('partial')
+const calibrationResult = ref<CalibrationRecord['result']>('partial')
 const submitting = ref(false)
 const shareSnapshot = ref<StageData['archive']['share_snapshot'] | null>(null)
+const revealedCount = ref(1)
+const pulseKey = ref(0)
+const branchMemory = ref<Record<string, string>>({})
 
-const copy = computed(() => getAppCopy(language.value))
 const surfaceKeys: SurfaceKey[] = ['observatory', 'intervention', 'cost', 'ripple', 'archive']
+const calibrationResults: CalibrationRecord['result'][] = ['hit', 'partial', 'miss', 'insufficient_data']
 
-const surfaces = computed(() => surfaceKeys.map((key) => ({
-  key,
-  index: copy.value.surfaces[key].index,
-  label: copy.value.surfaces[key].label,
-  title: copy.value.surfaces[key].title,
-})))
+const textReplacements: Array<[RegExp, string]> = [
+  [/public opinion/gi, 'world-field'],
+  [/public memory/gi, 'world afterimage'],
+  [/public view/gi, 'observable layer'],
+  [/public climate/gi, 'field climate'],
+  [/platforms?/gi, 'rule layers'],
+  [/media/gi, 'signal layer'],
+  [/audience/gi, 'observer field'],
+  [/public/gi, 'open'],
+  [/opinion/gi, 'field reading'],
+  [/viral/gi, 'high-transmission'],
+  [/舆论/g, '观测场'],
+  [/公众记忆/g, '世界残影'],
+  [/公共视野/g, '可观测层'],
+  [/公众气候/g, '场域气候'],
+  [/受影响对象/g, '作用体'],
+  [/发起者/g, '触发源'],
+  [/传播/g, '传导'],
+  [/平台/g, '规则层'],
+  [/观众/g, '观测者'],
+  [/公众/g, '场域'],
+]
 
-const selectedEvent = computed(() => stage.value?.observatory.key_events.find((event) => event.event_id === selectedEventId.value) ?? null)
-const selectedBranch = computed<Branch | null>(() => selectedEvent.value?.branches.find((branch) => branch.branch_id === selectedBranchId.value) ?? null)
-const latestBend = computed(() => replaySummary.value || stage.value?.ripple.latest_bend || '')
-const activeSurfaceCopy = computed(() => copy.value.surfaces[activeSurface.value])
-const selectedLenses = computed(() => stage.value?.cost_lens.lenses.filter((lens) => lens.target_branch_id === selectedBranchId.value) ?? [])
+const theatreCopy = {
+  zh: {
+    kicker: 'MIROWORLD THEATRE',
+    live: '世界线在线',
+    loading: '正在装配世界线剧场...',
+    summaryFallback: '世界线先显影，解释稍后抵达。',
+    progressLabel: '显影进度',
+    progressHint: '只点下一步，也会逐段打开事件、分支、代价与回响。',
+    progressComplete: '当前世界线已经显影到档案端。',
+    layerLabel: '知识层',
+    singularityLabel: '小型奇点',
+    singularityNote: '黑洞只是引力锚点，真正的主角是正在弯折的线。',
+    nextGhost: '下一节点尚未显影',
+    selectedEvent: '当前节点',
+    actantLabel: '作用体',
+    branchField: '分支场',
+    primary: '主分支',
+    alternate: '替代分支',
+    premises: '成立条件',
+    costLabel: '代价质量',
+    rippleLabel: '最新回响',
+    passiveFloor: '被动代价底线',
+    worldlineTrack: '世界线轨道',
+    archiveLabel: '档案残影',
+    shareAction: '生成分享文本',
+    calibrationLabel: '校准',
+    openCalibration: '打开校准',
+    hideCalibration: '收起校准',
+    calibrationPlaceholder: '写下后来真实发生的结果，用它校准这条分支。',
+    saveCalibration: '保存校准',
+    decisionLog: '介入记录',
+    currentLens: '当前镜头',
+    interveneShortcut: '写入扰动',
+    next: '下一步：显影下一个节点',
+    finish: '进入档案残影',
+    submitAction: '运行重演',
+    replaying: '正在折弯世界线...',
+    inputPlaceholder: '写下观测、修正、介入或偏好约束，它会成为世界线的扰动。',
+    observatoryNote: '先看节点如何成立，再决定是否触碰它。',
+    surfaces: {
+      observatory: { index: '01', label: '观测台', title: '先看线如何成立。', blurb: '分支不是结论，而是条件、约束和材料共同推演出的轨道。' },
+      intervention: { index: '02', label: '介入', title: '声明你的扰动。', blurb: '介入会改变后续轨道，观测和修正只改变对应层。' },
+      cost: { index: '03', label: '代价镜', title: '看压力被谁吸收。', blurb: '规则、材料、环境与行动者都会承担代价。' },
+      ripple: { index: '04', label: '回响', title: '看偏折如何向后传导。', blurb: '回响不是报告摘要，而是节点之间的连续弯曲。' },
+      archive: { index: '05', label: '档案', title: '留下这次观测的残影。', blurb: '分享、介入记录与真实结果在这里汇合。' },
+    },
+    layers: {
+      FACT: { title: '事实层', note: '只处理已经可观测的事件、材料、对象与痕迹。' },
+      INFERENCE: { title: '推断层', note: '解释分支为什么能成立，以及哪些信号在反向牵引。' },
+      VALUE: { title: '价值层', note: '观察谁承担代价，谁获得余量，规则如何分配压力。' },
+      ACTION: { title: '行动层', note: '决定观测者以何种方式扰动世界线，以及从哪里开始重演。' },
+    },
+    inputs: {
+      observation: { label: '观测', note: '增加证据和材料，不直接改写世界状态。' },
+      correction: { label: '修正', note: '修正事实层，让原有分支重新稳定或失衡。' },
+      intervention: { label: '介入', note: '改变世界线本身，从当前节点之后重新展开。' },
+      preference: { label: '偏好约束', note: '表达价值排序，改变建议权重而不是伪造事实。' },
+    },
+    calibrationResults: {
+      hit: '命中',
+      partial: '部分命中',
+      miss: '偏离',
+      insufficient_data: '数据不足',
+    },
+  },
+  en: {
+    kicker: 'MIROWORLD THEATRE',
+    live: 'worldline live',
+    loading: 'Assembling the worldline theatre...',
+    summaryFallback: 'The line appears first. Explanation arrives later.',
+    progressLabel: 'Reveal Progress',
+    progressHint: 'Press Next to open events, branches, costs, and ripples without writing anything.',
+    progressComplete: 'This worldline has reached its archive edge.',
+    layerLabel: 'Knowledge Layer',
+    singularityLabel: 'Small Singularity',
+    singularityNote: 'The black hole is only an anchor. The bending line is the subject.',
+    nextGhost: 'Next node is still latent',
+    selectedEvent: 'Current Node',
+    actantLabel: 'Actant',
+    branchField: 'Branch Field',
+    primary: 'Primary',
+    alternate: 'Alternate',
+    premises: 'Premises',
+    costLabel: 'Cost Mass',
+    rippleLabel: 'Latest Ripple',
+    passiveFloor: 'Passive Cost Floor',
+    worldlineTrack: 'Worldline Track',
+    archiveLabel: 'Archive Afterimage',
+    shareAction: 'Generate Share Text',
+    calibrationLabel: 'Calibration',
+    openCalibration: 'Open Calibration',
+    hideCalibration: 'Hide Calibration',
+    calibrationPlaceholder: 'Write what actually happened so this branch can be calibrated.',
+    saveCalibration: 'Save Calibration',
+    decisionLog: 'Intervention Log',
+    currentLens: 'Current Lens',
+    interveneShortcut: 'Write Disturbance',
+    next: 'Next: reveal the next node',
+    finish: 'Enter Archive Afterimage',
+    submitAction: 'Run Replay',
+    replaying: 'Bending worldline...',
+    inputPlaceholder: 'Write an observation, correction, intervention, or preference constraint.',
+    observatoryNote: 'Read how the node holds before deciding whether to touch it.',
+    surfaces: {
+      observatory: { index: '01', label: 'Observatory', title: 'Read how the line holds.', blurb: 'Branches are not conclusions. They are tracks produced by conditions, rules, materials, and constraints.' },
+      intervention: { index: '02', label: 'Intervention', title: 'Declare your disturbance.', blurb: 'Intervention changes later tracks; observation and correction only touch their declared layers.' },
+      cost: { index: '03', label: 'Cost Lens', title: 'See where pressure lands.', blurb: 'Rules, materials, environments, and actors can all carry cost.' },
+      ripple: { index: '04', label: 'Ripple', title: 'Watch the bend travel downstream.', blurb: 'Ripple is not a report summary. It is continuity between nodes.' },
+      archive: { index: '05', label: 'Archive', title: 'Keep the afterimage.', blurb: 'Share text, interventions, and actual outcomes meet here.' },
+    },
+    layers: {
+      FACT: { title: 'Fact Layer', note: 'Visible events, materials, objects, and traces only.' },
+      INFERENCE: { title: 'Inference Layer', note: 'Why a branch holds, and which signals pull against it.' },
+      VALUE: { title: 'Value Layer', note: 'Who carries cost, who gains slack, and how rules distribute pressure.' },
+      ACTION: { title: 'Action Layer', note: 'How the observer disturbs the line and where replay begins.' },
+    },
+    inputs: {
+      observation: { label: 'Observation', note: 'Adds evidence and material without directly mutating the world state.' },
+      correction: { label: 'Correction', note: 'Corrects the fact layer and forces branches to restabilize.' },
+      intervention: { label: 'Intervention', note: 'Changes the worldline itself and unfolds again from this node.' },
+      preference: { label: 'Preference Constraint', note: 'Changes value ranking without pretending to rewrite facts.' },
+    },
+    calibrationResults: {
+      hit: 'Hit',
+      partial: 'Partial',
+      miss: 'Miss',
+      insufficient_data: 'Insufficient Data',
+    },
+  },
+} satisfies Record<DisplayLanguage, {
+  kicker: string
+  live: string
+  loading: string
+  summaryFallback: string
+  progressLabel: string
+  progressHint: string
+  progressComplete: string
+  layerLabel: string
+  singularityLabel: string
+  singularityNote: string
+  nextGhost: string
+  selectedEvent: string
+  actantLabel: string
+  branchField: string
+  primary: string
+  alternate: string
+  premises: string
+  costLabel: string
+  rippleLabel: string
+  passiveFloor: string
+  worldlineTrack: string
+  archiveLabel: string
+  shareAction: string
+  calibrationLabel: string
+  openCalibration: string
+  hideCalibration: string
+  calibrationPlaceholder: string
+  saveCalibration: string
+  decisionLog: string
+  currentLens: string
+  interveneShortcut: string
+  next: string
+  finish: string
+  submitAction: string
+  replaying: string
+  inputPlaceholder: string
+  observatoryNote: string
+  surfaces: Record<SurfaceKey, { index: string; label: string; title: string; blurb: string }>
+  layers: Record<KnowledgeLayer, { title: string; note: string }>
+  inputs: Record<InputType, { label: string; note: string }>
+  calibrationResults: Record<CalibrationRecord['result'], string>
+}>
+
+const t = computed(() => theatreCopy[language.value])
+const events = computed(() => stage.value?.observatory.key_events ?? [])
+const revealedEvents = computed(() => events.value.slice(0, Math.min(revealedCount.value, events.value.length)))
+const revealedIds = computed(() => new Set(revealedEvents.value.map((event) => event.event_id)))
+const progressComplete = computed(() => events.value.length > 0 && revealedCount.value >= events.value.length)
+const stageProgress = computed(() => (events.value.length === 0 ? 0 : Math.min(1, revealedCount.value / events.value.length)))
+
+const selectedEvent = computed(() => (
+  revealedEvents.value.find((event) => event.event_id === selectedEventId.value)
+  ?? revealedEvents.value.at(-1)
+  ?? null
+))
+const selectedBranch = computed<Branch | null>(() => selectedEvent.value?.branches.find((branch) => branch.branch_id === selectedBranchId.value) ?? selectedEvent.value?.branches[0] ?? null)
+const selectedLenses = computed<CostLens[]>(() => stage.value?.cost_lens.lenses.filter((lens) => lens.target_branch_id === selectedBranchId.value) ?? [])
+const latestBend = computed(() => cleanText(replaySummary.value || stage.value?.ripple.latest_bend || t.value.progressHint))
+const currentCosts = computed(() => selectedLenses.value.flatMap((lens) => [...lens.first_order_costs, ...lens.second_order_costs]).map(cleanText).slice(0, 4))
+const visibleRippleCards = computed(() => stage.value?.ripple.ripple_cards.slice(0, revealedCount.value) ?? [])
+const revealedTrack = computed(() => stage.value?.observatory.worldline_track.filter((track) => revealedIds.value.has(track.event_id)) ?? [])
+const activeSurfaceCopy = computed(() => t.value.surfaces[activeSurface.value])
+const nextActionLabel = computed(() => (progressComplete.value ? t.value.finish : t.value.next))
 
 const availableLayers = computed<KnowledgeLayer[]>(() => {
   const layers = stage.value?.observatory.knowledge_layers ?? []
-  return layers.filter((layer): layer is KnowledgeLayer => layer in copy.value.layers)
+  return layers.filter((layer): layer is KnowledgeLayer => layer === 'FACT' || layer === 'INFERENCE' || layer === 'VALUE' || layer === 'ACTION')
 })
 
-const inputPlaceholder = computed(() => (
-  language.value === 'zh'
-    ? '写下你的 observation / correction / intervention / preference'
-    : 'Write your observation / correction / intervention / preference'
-))
+const surfaces = computed(() => surfaceKeys.map((key) => ({
+  key,
+  index: t.value.surfaces[key].index,
+  label: t.value.surfaces[key].label,
+})))
+
+const focusTags = computed(() => (selectedEvent.value?.affected_entities ?? []).map(cleanText).slice(0, 5))
 
 const layerHighlights = computed(() => {
   if (!selectedEvent.value || !selectedBranch.value) return []
 
   if (selectedLayer.value === 'FACT') {
-    return [...selectedEvent.value.affected_entities, ...selectedEvent.value.evidence_notes].slice(0, 4)
+    return [...selectedEvent.value.affected_entities, ...selectedEvent.value.evidence_notes].map(cleanText).slice(0, 4)
   }
 
   if (selectedLayer.value === 'INFERENCE') {
-    return [...selectedBranch.value.premises, ...selectedBranch.value.signals_for].slice(0, 4)
+    return [...selectedBranch.value.premises, ...selectedBranch.value.signals_for].map(cleanText).slice(0, 4)
   }
 
   if (selectedLayer.value === 'VALUE') {
@@ -440,14 +584,14 @@ const layerHighlights = computed(() => {
       ...selectedLenses.value.flatMap((lens) => lens.affected_groups),
       ...selectedLenses.value.flatMap((lens) => lens.ethical_notes),
       stage.value?.cost_lens.passive_floor.summary ?? '',
-    ].filter(Boolean).slice(0, 4)
+    ].filter(Boolean).map(cleanText).slice(0, 4)
   }
 
   return [
-    copy.value.inputs[currentInputType.value].note,
+    t.value.inputs[currentInputType.value].note,
     selectedBranch.value.player_influence,
-    latestBend.value || copy.value.stage.archivePrompt,
-  ].filter(Boolean).slice(0, 4)
+    latestBend.value,
+  ].filter(Boolean).map(cleanText).slice(0, 4)
 })
 
 watch(
@@ -472,7 +616,7 @@ async function loadStage() {
   try {
     const projectId = route.params.projectId as string
     const nextStage = await getStage(projectId, language.value)
-    syncSelection(nextStage, nextStage.surface_defaults.active_surface)
+    syncSelection(nextStage)
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
   } finally {
@@ -485,18 +629,16 @@ function syncSelection(nextStage: StageData, nextSurface = activeSurface.value) 
   activeSurface.value = nextSurface
   shareSnapshot.value = nextStage.archive.share_snapshot
 
-  const events = nextStage.observatory.key_events
-  const nextEvent = events.find((event) => event.event_id === selectedEventId.value)
-    ?? events.find((event) => event.event_id === nextStage.surface_defaults.selected_event_id)
-    ?? events[0]
+  const nextEvents = nextStage.observatory.key_events
+  revealedCount.value = Math.max(1, Math.min(revealedCount.value, nextEvents.length || 1))
 
-  selectedEventId.value = nextEvent?.event_id ?? ''
+  const visibleEvents = nextEvents.slice(0, revealedCount.value)
+  const nextEvent = visibleEvents.find((event) => event.event_id === selectedEventId.value)
+    ?? visibleEvents.find((event) => event.event_id === nextStage.surface_defaults.selected_event_id)
+    ?? visibleEvents[visibleEvents.length - 1]
+    ?? nextEvents[0]
 
-  const nextBranch = nextEvent?.branches.find((branch) => branch.branch_id === selectedBranchId.value)
-    ?? nextEvent?.branches.find((branch) => branch.branch_id === nextStage.surface_defaults.selected_branch_id)
-    ?? nextEvent?.branches[0]
-
-  selectedBranchId.value = nextBranch?.branch_id ?? ''
+  selectEvent(nextEvent)
 
   if (!availableLayers.value.includes(selectedLayer.value)) {
     selectedLayer.value = availableLayers.value[0] ?? 'FACT'
@@ -507,23 +649,45 @@ function syncSelection(nextStage: StageData, nextSurface = activeSurface.value) 
   }
 }
 
-function formatConfidence(value: number) {
-  return `${Math.round(value * 100)}%`
+function selectEvent(event?: StageData['observatory']['key_events'][number]) {
+  if (!event) return
+  selectedEventId.value = event.event_id
+  const rememberedBranchId = branchMemory.value[event.event_id]
+  const nextBranch = event.branches.find((branch) => branch.branch_id === rememberedBranchId)
+    ?? event.branches.find((branch) => branch.visibility === 'primary')
+    ?? event.branches[0]
+  selectedBranchId.value = nextBranch?.branch_id ?? ''
+}
+
+function advanceWorldline() {
+  if (!stage.value || events.value.length === 0) return
+
+  if (revealedCount.value < events.value.length) {
+    const nextEvent = events.value[revealedCount.value]
+    revealedCount.value += 1
+    selectEvent(nextEvent)
+    activeSurface.value = revealedCount.value === events.value.length ? 'ripple' : 'observatory'
+  } else {
+    activeSurface.value = 'archive'
+  }
+
+  pulseKey.value += 1
 }
 
 function handleSelectEvent(eventId: string) {
-  selectedEventId.value = eventId
-  const event = stage.value?.observatory.key_events.find((item) => item.event_id === eventId)
-  if (event) {
-    selectedBranchId.value = event.branches.find((branch) => branch.branch_id === selectedBranchId.value)?.branch_id
-      ?? event.branches[0]?.branch_id
-      ?? ''
-  }
+  const index = events.value.findIndex((event) => event.event_id === eventId)
+  if (index < 0) return
+  if (index + 1 > revealedCount.value) revealedCount.value = index + 1
+  selectEvent(events.value[index])
 }
 
 function handleSelectBranch(eventId: string, branchId: string) {
   selectedEventId.value = eventId
   selectedBranchId.value = branchId
+  branchMemory.value = {
+    ...branchMemory.value,
+    [eventId]: branchId,
+  }
 }
 
 function handleModeChange(mode: InputType) {
@@ -580,9 +744,9 @@ async function generateShare() {
     activeSurface.value = 'archive'
     if (navigator.clipboard) {
       try {
-        await navigator.clipboard.writeText(artifact.share_text)
+        await navigator.clipboard.writeText(cleanText(artifact.share_text))
       } catch {
-        // Ignore clipboard permission failures; the share artifact is still usable in the UI.
+        // Clipboard permission can fail; the artifact still remains visible in the drawer.
       }
     }
   } catch (error) {
@@ -610,35 +774,12 @@ async function saveCalibration() {
   }
 }
 
-async function saveReplaySetToProject(payload: SavedReplaySetDraft) {
-  try {
-    const projectId = route.params.projectId as string
-    const savedReplaySets = await saveReplaySet(projectId, payload)
-    updateSavedReplaySets(savedReplaySets)
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : String(error)
-  }
+function cleanText(value?: string | null) {
+  if (!value) return ''
+  return textReplacements.reduce((next, [pattern, replacement]) => next.replace(pattern, replacement), value)
 }
 
-async function deleteReplaySetFromProject(replaySetId: string) {
-  try {
-    const projectId = route.params.projectId as string
-    const savedReplaySets = await deleteReplaySet(projectId, replaySetId)
-    updateSavedReplaySets(savedReplaySets)
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : String(error)
-  }
-}
-
-function updateSavedReplaySets(savedReplaySets: SavedReplaySet[]) {
-  if (!stage.value) return
-
-  stage.value = {
-    ...stage.value,
-    ripple: {
-      ...stage.value.ripple,
-      saved_replay_sets: savedReplaySets,
-    },
-  }
+function formatConfidence(value: number) {
+  return `${Math.round(value * 100)}%`
 }
 </script>

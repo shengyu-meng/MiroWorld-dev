@@ -1,16 +1,19 @@
 # Current Status
 
-Updated: 2026-04-23
+Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / scene-shell slice 4 replay curation field pass completed`
+Phase: `experience-first rebuild / slice 5 worldline theatre completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a scene-based public shell whose archive now exports poster, png, bundle, and exhibit artifacts while calibration reads through wider window, branch, decision-type, and longitudinal slices and Ripple now supports a replay-set library, replay dossier, an editable authored replay deck with wider curatorial fields, authored replay artifact, replay atlas, local replay packet and exhibit export, and a project-persisted replay shelf.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. The canvas has been lightened with a smaller black-hole anchor, `.ui-ref/` is protected from upload, and core UI / prompt / fixture wording has moved away from old public-opinion simulation language toward broader world simulation with actants, rules, environments, materials, natural objects, institutions, and constraints.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
-- the shell now reads as a scene-based worldline interface instead of a long panel stack
+- the shell now reads as a progressive worldline theatre instead of a long panel stack or report page
+- a viewer can press Next without writing an intervention and still reach a complete Archive afterimage
+- core display text now rewrites old public-opinion terms such as initiator, public climate, platform, and public view into trigger source, field conditions, rule layer, and observable layer
+- the canvas now uses lower line density, pointer throttling, reduced-motion fallback, and a smaller singularity so the worldline remains primary
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - and the archive can now leave the UI as a self-contained exhibit HTML artifact instead of only fragmented exports
@@ -190,24 +193,35 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the dossier now surfaces entry anchor, hinge pressure, and terminal exposure so the line reads more like an authored replay
 - frontend route tests now cover the replay dossier interaction layer
 
+### Frontend experience rebuild slice 5 (worldline theatre pass)
+
+- `/world/:projectId` now opens as a worldline theatre with a left lens rail, central progressive linefield, right observation rail, drawer surfaces, and a bottom Next control
+- pressing Next with no input progressively reveals key events, selects the default primary branch, updates the visible track, and reaches Archive
+- legacy public-opinion wording is removed from the rendered core UI and seed-generation defaults now frame the system through actants, rules, environments, materials, natural objects, institutions, and constraints
+- `.ui-ref/` and `ui-ref/` are ignored so the local reference package cannot be staged accidentally
+- the canvas now reduces line density, throttles pointer sampling, supports reduced motion, and keeps the black hole as a smaller anchor rather than the visual center of gravity
+
 ### Verification baseline
 
 - `npm run build` passes
 - `npm run test` passes
 - `npm run smoke` passes
+- `git diff --check` passes
+- secret pattern scan returns no matches for the MiniMax key fragment
+- `git ls-files .ui-ref ui-ref` returns no tracked reference files
 
 ## Still Missing
 
 ### Product / experience gaps
 
-- the linefield and Ripple now act more like a multi-path replay surface with named replay sets, but they are not yet a fuller replay archive across multiple synthesized histories or saved authored collections
-- Ripple now exposes replay sets, dossier anchors, an editable authored replay deck, a more authored replay artifact, a replay atlas, local replay exhibit export, and a project-persisted shelf, but it still does not yet support deeper authored replay writing or richer replay-set curation beyond this first curatorial field set
-- the archive now exports local svg, png, text, exhibit html, artifact bundle, and a zipped media packet, but it still does not yet generate richer image pipelines or broader packaged media sets beyond this first denser bundle
-- calibration history is now comparative across windows, branches, decision types, and longer-horizon slices, but it can still become denser if later we need deeper longitudinal narration
-- ripple continuity now includes a replay set library and dossier layer, but it still may need persisted replay sets or deeper authored narration later
+- the new theatre shell restores progressive unfolding, but the Archive/Ripple advanced authored-export surfaces are now visually secondary and may need re-integration into the theatre language
+- the current reveal state is frontend-local; if reload persistence becomes important, progression should move into project snapshot state
+- the canvas is lighter, but a dedicated FPS benchmark or in-browser performance budget is still needed before exhibition deployment
+- calibration history is still available but can become more theatrical inside the Archive drawer instead of remaining mostly utility-like
 
 ### Content expression gaps
 
+- the UI display layer cleans old public-opinion terms, but more fixture narratives can still be rewritten around non-human actants and natural/material constraints
 - the layer lens is now visible, but its depth is still mostly presentation-layer driven rather than fully model-driven
 - cost narration can become more comparative across branches, not just branch-local
 - archive artifacts can become more authored and less template-like as share formats mature
@@ -219,9 +233,9 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice is still `Experience Rebuild Slice 4`:
+The next active slice should continue after `Experience Rebuild Slice 5`:
 
-- deepen the export path beyond the current SVG / PNG / TXT / HTML / JSON / ZIP packet set if richer packaged media becomes necessary
-- deepen Ripple beyond the current authored replay artifact and replay atlas into richer authored replay sets such as wider curatorial fields, saved collections, or stronger narration
-- deepen calibration comparison beyond the current slice deck into richer decision-type or longer-horizon archive perspectives if needed
-- keep extending the linefield / ripple system toward richer authored or persisted replay sets without regressing shell speed
+- run a visual/browser review of the new theatre shell against `.ui-ref` and tune spacing, scale, and black-hole size
+- re-integrate the deeper Ripple/Archive authored export tools into the theatre drawer language without returning to report density
+- decide whether reveal progress should persist in the project snapshot or remain a local exhibition reading
+- add a repeatable canvas performance benchmark before pushing the visual system further

@@ -1,0 +1,24 @@
+{
+  "fixture_id": "campus-field-threshold",
+  "title": "Campus field threshold",
+  "source_type": "world-field",
+  "summary": "A university changes a late-night access rule after a safety incident. Building schedules, student routes, weather, security staffing, and institutional trust push the campus into multiple possible futures.",
+  "seed_materials": [
+    "timeline of the incident",
+    "first official rule update",
+    "student route fragments",
+    "weather and access-control notes"
+  ],
+  "expected_world_feel": [
+    "fast field tension",
+    "visible consequence paths",
+    "clear rule, institution, and environment constraints"
+  ],
+  "expected_checks": {
+    "minimum_key_events": 3,
+    "primary_branches_per_event": 1,
+    "alternate_branches_per_event": 2,
+    "requires_cost_lens": true,
+    "requires_intervention_flow": true
+  }
+}

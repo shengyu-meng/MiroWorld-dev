@@ -30,7 +30,12 @@ HTMLCanvasElement.prototype.getContext = (() => ({
   bezierCurveTo: () => undefined,
   stroke: () => undefined,
   arc: () => undefined,
+  ellipse: () => undefined,
   fill: () => undefined,
+  save: () => undefined,
+  restore: () => undefined,
+  translate: () => undefined,
+  rotate: () => undefined,
   createRadialGradient: () => ({
     addColorStop: () => undefined,
   }),

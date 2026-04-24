@@ -38,8 +38,8 @@ class SeedCompiler:
     title = self._translate(language, fixture["title"], fixture["title"])
     summary = self._translate(
       language,
-      f"{fixture['summary']} 观众会在这条世界线里观察选择如何改变代价、共识与后果。",
-      f"{fixture['summary']} The audience watches choices redistribute cost, legitimacy, and consequence.",
+      f"{fixture['summary']} 观测者会在这条世界线里观察规则、材料、环境与行动者如何共同改写代价和后果。",
+      f"{fixture['summary']} The observer watches rules, materials, environments, and actors redistribute cost and consequence.",
     )
     project = ProjectRecord(
       project_id=project_id,
@@ -71,14 +71,14 @@ class SeedCompiler:
       operation="seed_compiler",
       language=language,
       payload={
-        "task": "Build a short public-audience worldline seed",
+        "task": "Build a short world-simulation seed with human and non-human actants",
         "seed_prompt": seed_prompt,
         "language": language,
       },
     )
     generated_title = seed_prompt.strip()[:60]
     generated_summary = seed_prompt.strip()
-    seed_words = ["fragile consensus", "redistributed cost", "audience tension"]
+    seed_words = ["field tension", "rule pressure", "material constraint"]
     if llm_payload:
       generated_title = llm_payload.get("title") or generated_title
       generated_summary = llm_payload.get("summary") or generated_summary
@@ -86,8 +86,8 @@ class SeedCompiler:
     title = self._translate(language, generated_title, generated_title)
     summary = self._translate(
       language,
-      f"{generated_summary} 这个版本会优先生成可观察、可干预、可分享的公共世界线。",
-      f"{generated_summary} This version prioritizes a public worldline that can be observed, bent, and shared.",
+      f"{generated_summary} 这个版本会优先生成可观察、可干预、可校准的世界推演线。",
+      f"{generated_summary} This version prioritizes a world-simulation line that can be observed, bent, and calibrated.",
     )
     project = ProjectRecord(
       project_id=project_id,
@@ -124,14 +124,14 @@ class SeedCompiler:
     language: DisplayLanguage,
   ) -> WorldState:
     entities = [
-      SourceEntity(entity_id=make_id("ent"), entity_kind="agent", name=self._translate(language, "发起者", "Initiator"), description=self._translate(language, "引发这条世界线的人与组织", "The people and groups that trigger the worldline.")),
-      SourceEntity(entity_id=make_id("ent"), entity_kind="system", name=self._translate(language, "平台与制度", "Platforms and institutions"), description=self._translate(language, "决定可见度、节奏与阈值的系统外壳", "The systems that shape visibility, tempo, and thresholds.")),
+      SourceEntity(entity_id=make_id("ent"), entity_kind="agent", name=self._translate(language, "触发源", "Trigger source"), description=self._translate(language, "引发这条世界线的人、组织、材料或自然条件", "The people, groups, materials, or natural conditions that trigger the worldline.")),
+      SourceEntity(entity_id=make_id("ent"), entity_kind="system", name=self._translate(language, "规则与制度", "Rules and institutions"), description=self._translate(language, "决定可见度、节奏、阈值与可行动边界的系统外壳", "The systems that shape visibility, tempo, thresholds, and possible action.")),
       SourceEntity(entity_id=make_id("ent"), entity_kind="constraint", name=self._translate(language, "资源约束", "Resource pressure"), description=self._translate(language, "成本、时间与注意力限制", "Limits around cost, time, and attention.")),
-      SourceEntity(entity_id=make_id("ent"), entity_kind="environment", name=self._translate(language, "公众气候", "Public climate"), description=self._translate(language, "观众情绪与社会背景场", "The social atmosphere surrounding the event.")),
+      SourceEntity(entity_id=make_id("ent"), entity_kind="environment", name=self._translate(language, "场域条件", "Field conditions"), description=self._translate(language, "环境、时间、自然物与背景压力构成的作用场", "The field made of environment, timing, natural objects, and background pressure.")),
     ]
 
     knowledge_items = [
-      KnowledgeItem(id=make_id("ki"), layer="FACT", content=self._translate(language, "触发材料已经进入公共视野。", "The triggering material has entered public view."), source_type="fixture", confidence=0.82),
+      KnowledgeItem(id=make_id("ki"), layer="FACT", content=self._translate(language, "触发材料已经进入可观测层。", "The triggering material has entered the observable layer."), source_type="fixture", confidence=0.82),
       KnowledgeItem(id=make_id("ki"), layer="INFERENCE", content=self._translate(language, "最初的解释框架会决定后续世界线的分叉角度。", "The first interpretation frame will determine how the worldline forks."), source_type="system", confidence=0.68),
       KnowledgeItem(id=make_id("ki"), layer="VALUE", content=self._translate(language, "人们会争论谁承担代价，以及什么被视为公平。", "People will argue about who absorbs the cost and what counts as fair."), source_type="system", confidence=0.73),
       KnowledgeItem(id=make_id("ki"), layer="ACTION", content=self._translate(language, "一次清晰但有代价的 intervention 会显著改变后续轨迹。", "A clear but costly intervention can noticeably bend the next trajectory."), source_type="system", confidence=0.76),
@@ -144,12 +144,12 @@ class SeedCompiler:
       subtitle=self._translate(language, "不是唯一未来，而是一张判断地图", "Not the only future, but a map of judgment"),
       summary=summary,
       disclaimer=self._translate(language, "这是一件可重演、可校准的判断作品，不是确定性预测。", "This is a replayable, calibratable judgment work, not a deterministic prediction."),
-      share_text=self._translate(language, f"我进入了《{title}》的世界线，看到主分支如何形成，也看到选择会把代价转移给谁。", f"I stepped into the worldline of {title} and watched how the main branch forms while cost shifts between people."),
-      tags=["miroworld", "worldline", "public-futures"],
+      share_text=self._translate(language, f"我进入了《{title}》的世界线，看到主分支如何形成，也看到规则、材料与行动如何重新分配代价。", f"I stepped into the worldline of {title} and watched rules, materials, and actions redistribute cost."),
+      tags=["miroworld", "worldline", "field-simulation"],
       short_excerpt=self._translate(language, "世界线不是答案，它让代价发光。", "A worldline is not an answer. It makes the cost visible."),
       poster_caption=self._translate(language, "观察分支，承担选择。", "Observe the branch. Carry the choice."),
-      curator_note=self._translate(language, "观众不是旁观者，而是变量。", "The audience is not a spectator, but a variable."),
-      wall_label=self._translate(language, "一条由判断、误差与代价构成的公共世界线。", "A public worldline made of judgment, error, and cost."),
+      curator_note=self._translate(language, "观测者不是旁观者，而是变量。", "The observer is not outside the field, but a variable within it."),
+      wall_label=self._translate(language, "一条由判断、误差、规则与代价构成的世界线。", "A worldline made of judgment, error, rules, and cost."),
       archive_summary=self._translate(language, "第一版档案已经建立，后续 replay 与 calibration 会持续写入。", "The first archive is ready; later replays and calibrations will continue to write into it."),
     )
 
@@ -164,7 +164,7 @@ class SeedCompiler:
       source_mode="fixture" if project.source_mode == "fixture" else "project_graph",
       source_label=source_label,
       disclaimer=share_artifact.disclaimer,
-      share_context=self._translate(language, "公共体验 MVP", "Public experience MVP"),
+      share_context=self._translate(language, "世界推演体验 MVP", "World-simulation experience MVP"),
       share_artifact=share_artifact,
       entities=entities,
       key_events=key_events,
@@ -199,26 +199,26 @@ class SeedCompiler:
   def _build_events(self, world_state_id: str, language: DisplayLanguage, seed_words: list[str]) -> list[KeyEvent]:
     templates = [
       {
-        "title_zh": "触发材料进入公共视野",
-        "title_en": "Trigger material enters public view",
-        "summary_zh": "第一波观看、截图与解释开始塑造这条世界线的入口温度。",
-        "summary_en": "The first wave of viewing, clipping, and framing shapes the entry temperature of the worldline.",
+        "title_zh": "触发材料进入可观测层",
+        "title_en": "Trigger material enters the observable layer",
+        "summary_zh": "第一批材料、环境信号与解释框架开始塑造这条世界线的入口温度。",
+        "summary_en": "The first materials, environmental signals, and frames shape the entry temperature of the worldline.",
         "stage_zh": "入口",
         "stage_en": "Entry",
       },
       {
-        "title_zh": "机构与平台开始重新分配位置",
-        "title_en": "Institutions and platforms redistribute position",
-        "summary_zh": "回应节奏、道歉方式与资源调度，决定公众会把谁放在代价中心。",
-        "summary_en": "The response tempo, apology form, and resource routing decide who the public places at the center of cost.",
+        "title_zh": "制度与规则层开始重新分配位置",
+        "title_en": "Institutions and rule layers redistribute position",
+        "summary_zh": "回应节奏、约束变化与资源调度，决定哪些作用体会被放在代价中心。",
+        "summary_en": "Response tempo, constraint changes, and resource routing decide which actants sit at the center of cost.",
         "stage_zh": "扭转",
         "stage_en": "Bend",
       },
       {
-        "title_zh": "后果沉淀为新的公众记忆",
-        "title_en": "Consequences settle into new public memory",
-        "summary_zh": "人们不只记住发生了什么，更记住谁承担、谁回避、谁被留下。",
-        "summary_en": "People remember not only what happened, but who carried the burden, who avoided it, and who was left behind.",
+        "title_zh": "后果沉淀为新的世界残影",
+        "title_en": "Consequences settle into a new world afterimage",
+        "summary_zh": "系统不只留下发生了什么，也留下谁承担、谁回避、哪些规则被改写。",
+        "summary_en": "The system keeps not only what happened, but who carried burden, who avoided it, and which rules changed.",
         "stage_zh": "回响",
         "stage_en": "Ripple",
       },
@@ -237,11 +237,11 @@ class SeedCompiler:
           description=self._translate(language, f"主线沿着“{seed_words[0] if seed_words else 'visible pressure'}”推进，世界线被重新定向。", f"The mainline advances through “{seed_words[0] if seed_words else 'visible pressure'}” and redirects the worldline."),
           confidence=confidences[index][0],
           premises=[
-            self._translate(language, "最容易传播的解释先获得优势。", "The most transmissible interpretation gains the first advantage."),
+            self._translate(language, "最容易传导的解释先获得优势。", "The most conductive interpretation gains the first advantage."),
             self._translate(language, "资源会先流向最能降低失控风险的动作。", "Resources flow first toward the action that reduces runaway risk."),
           ],
           signals_for=[
-            self._translate(language, "平台排序与注意力密度同步增强。", "Platform ranking and attention density intensify together."),
+            self._translate(language, "规则排序与信号密度同步增强。", "Rule ordering and signal density intensify together."),
             self._translate(language, "关键机构开始对齐话语。", "Key institutions begin aligning their language."),
           ],
           signals_against=[
@@ -258,13 +258,13 @@ class SeedCompiler:
           description=self._translate(language, "如果更多反证进入现场，世界线会转向更慢但更复杂的协调路径。", "If more counter-signals enter the scene, the worldline bends toward a slower but richer coordination path."),
           confidence=confidences[index][1],
           premises=[
-            self._translate(language, "观众仍保留判断弹性。", "The audience still retains judgment elasticity.")
+            self._translate(language, "观测者仍保留判断弹性。", "The observer field still retains judgment elasticity.")
           ],
           signals_for=[
             self._translate(language, "新的细节开始削弱单一叙事。", "New detail weakens the single narrative.")
           ],
           signals_against=[
-            self._translate(language, "节奏过慢会被平台惩罚。", "A slow response may be punished by platform tempo.")
+            self._translate(language, "节奏过慢会被规则层惩罚。", "A slow response may be punished by rule-layer tempo.")
           ],
           visibility="alternate",
           state="candidate",
@@ -305,8 +305,8 @@ class SeedCompiler:
             self._translate(language, "事实层与价值层正在彼此牵引。", "The fact layer and value layer are already pulling on each other.")
           ],
           affected_entities=[
-            self._translate(language, "发起者", "Initiator"),
-            self._translate(language, "公众气候", "Public climate"),
+            self._translate(language, "触发源", "Trigger source"),
+            self._translate(language, "场域条件", "Field conditions"),
           ],
           depends_on_event_id=events[-1].event_id if events else "",
           causal_note=self._translate(language, "上一阶段形成的解释惯性继续施压。", "The interpretive inertia from the previous stage keeps pressing forward."),
@@ -332,7 +332,7 @@ class SeedCompiler:
             ],
             affected_groups=[
               self._translate(language, "被动承受者", "Passive bearers"),
-              self._translate(language, "观察中的公众", "Watching public"),
+              self._translate(language, "观测中的场域", "Observing field"),
             ],
             ethical_notes=[
               self._translate(language, "不要把清晰误认为正当。", "Do not mistake clarity for legitimacy."),

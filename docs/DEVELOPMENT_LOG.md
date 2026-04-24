@@ -602,6 +602,8 @@ Verification:
 - `npm run test` passed
 - `npm run smoke` passed
 - `git diff --check` passed
+- secret pattern scan returned no matches for the MiniMax secret prefix or provided key fragment
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files
 - secret pattern scan returned no matches for the provided MiniMax key fragment
 
 Still open inside slice 4:
@@ -671,3 +673,43 @@ Still open inside slice 4:
 - keep extending the export path if the current SVG / PNG / TXT / HTML / JSON / ZIP artifact set still feels too fragmented
 - deepen Ripple beyond the current curatorial field set into saved authored collections or stronger long-form narration if needed
 - continue polishing Observatory density and wording if the public shell needs tighter reading cues
+
+## 2026-04-24 - Experience Rebuild Slice 5 (worldline theatre pass started)
+
+Planned in this iteration:
+
+- replace the report-like stage with a worldline theatre that can unfold through a Next button
+- protect the local `.ui-ref` reference package from GitHub upload before using it as visual direction
+- remove old public-opinion / platform-era wording from the visible UI, prompt defaults, and curated fixture metadata
+- reduce canvas density and black-hole scale so the page feels lighter and the worldline remains primary
+
+## 2026-04-24 - Experience Rebuild Slice 5 (worldline theatre pass completed)
+
+Completed in this iteration:
+
+- added `.ui-ref/` and `ui-ref/` to `.gitignore` and verified the reference package is not tracked
+- rebuilt `/world/:projectId` as a worldline theatre with progressive reveal, a central linefield, left lens rail, right observation rail, active drawer, and bottom Next control
+- added frontend-local reveal state so a viewer can press Next through all key events and arrive at Archive without writing an intervention
+- kept branch selection, intervention, replay, share, and calibration entry points available as secondary surfaces
+- updated the canvas renderer with lower line density, smaller singularity, adaptive drawing, pointer throttling, and reduced-motion behavior
+- cleaned seed compiler, replay/share text, entry copy, fixture metadata, and rendered stage text away from old public-opinion framing toward actants, rules, environments, materials, natural objects, institutions, and constraints
+- renamed the campus fixture to `campus-field-threshold` and renamed the policy fixture to `civic-rule-trust-fracture`
+- replaced frontend and e2e tests with the new theatre acceptance path, including a no-input Next-only smoke flow
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test:api` passed
+- `npm run test:web` passed
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed
+- `git diff --check` passed
+
+Still open after slice 5:
+
+- visual review against `.ui-ref` can further tune spacing, scale, and atmosphere
+- Archive and Ripple advanced export tools should be re-integrated into the theatre language without returning to report density
+- reveal progress is currently frontend-local and may later need backend project persistence
+- canvas performance has targeted optimizations but still needs a repeatable benchmark before exhibition deployment

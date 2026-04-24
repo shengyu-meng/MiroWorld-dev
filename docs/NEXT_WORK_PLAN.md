@@ -1,16 +1,17 @@
 # Next Work Plan
 
-Updated: 2026-04-23
+Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 4`
+Current slice: `Experience Rebuild Slice 5 / Worldline Theatre completed`
 
 ## Goal
 
-Continue moving `MiroWorld-dev` from a working scene-shell MVP toward a stronger public-facing worldline artwork that better matches:
+Continue moving `MiroWorld-dev` from a working scene-shell MVP toward a stronger world-simulation artwork that better matches:
 
 - the legacy Mirror World product principles
 - the rebuild direction documented in the old repo
-- the reference `miroworld_abstract_worldline_ui_v3` visual language
+- the local `.ui-ref` visual language, without committing the reference folder
+- the user's requirement that the worldline unfolds even when the viewer only presses Next
 
 ## Scope
 
@@ -26,7 +27,36 @@ This slice does include:
 - stronger exportable artifact output
 - more comparative calibration reading
 - deeper event-to-event ripple and branch exploration
+- a non-report-like theatre shell with progressive reveal
+- cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
+- performance-focused canvas simplification with a smaller black-hole anchor
 - further documentation sync after each iteration
+
+## Slice 5 Acceptance Criteria
+
+- [x] `.ui-ref/` and `ui-ref/` are ignored and never staged
+- [x] `/world/:projectId` reads as a worldline theatre instead of a report panel stack
+- [x] pressing Next with no user input progressively reveals all key events and reaches Archive
+- [x] legacy public-opinion wording is removed from core UI copy and seed-generation defaults
+- [x] actors are framed as agents, rules, environments, materials, natural objects, institutions, and constraints
+- [x] canvas density adapts to device size and reduced motion, with the black hole reduced to an anchor rather than the whole scene
+- [x] build, tests, smoke, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 5 Completed
+
+- [x] replaced the report-like stage body with a theatre shell: left lens rail, central progressive worldline, right observation rail, active drawer, and bottom Next control
+- [x] added frontend-local reveal state so the viewer can press Next through all key events without writing an intervention
+- [x] kept branch selection and intervention/replay entry available without making them the only way to experience the worldline
+- [x] cleaned seed-generation defaults, share/replay wording, fixture metadata, entry copy, and rendered stage copy away from old public-opinion language
+- [x] renamed the campus fixture to `campus-field-threshold` and moved policy wording toward civic rules and field conditions
+- [x] lightened `WorldlineCanvas` with lower density, smaller singularity, adaptive drawing, pointer throttling, and reduced-motion support
+
+## Next Candidate Slice
+
+- [ ] run a visual review of the theatre shell against `.ui-ref` and tune spatial rhythm, black-hole scale, and drawer density
+- [ ] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
+- [ ] decide whether reveal progress should persist in backend project snapshots
+- [ ] add a repeatable browser performance benchmark for canvas FPS and interaction latency
 
 ## Slice 1 Completed
 

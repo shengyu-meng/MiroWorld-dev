@@ -21,6 +21,8 @@ const props = defineProps<{
   events: KeyEvent[]
   selectedEventId?: string
   selectedBranchId?: string
+  revealedEventCount?: number
+  pulseKey?: number
   scene?: 'entry' | 'stage'
 }>()
 
@@ -33,6 +35,7 @@ let frameId = 0
 let resizeObserver: ResizeObserver | null = null
 let precomputedLines: LineModel[] = []
 let dpr = Math.min(window.devicePixelRatio || 1, 2)
+let lastPointerSample = 0
 
 const accent = computed(() => ({
   observatory: 'rgba(149, 224, 255, 0.92)',
@@ -59,17 +62,17 @@ const nodePosition = computed(() => {
   }
 
   return {
-    observatory: { x: 0.68, y: 0.56, radius: 13 },
-    intervention: { x: 0.61, y: 0.59, radius: 14 },
-    cost: { x: 0.72, y: 0.63, radius: 13 },
-    ripple: { x: 0.56, y: 0.52, radius: 14 },
-    archive: { x: 0.73, y: 0.5, radius: 12 },
+    observatory: { x: 0.52, y: 0.55, radius: 8 },
+    intervention: { x: 0.48, y: 0.57, radius: 9 },
+    cost: { x: 0.55, y: 0.6, radius: 8 },
+    ripple: { x: 0.5, y: 0.52, radius: 9 },
+    archive: { x: 0.56, y: 0.51, radius: 8 },
   }[props.activeSurface]
 })
 
 function buildLines(width: number, height: number) {
   const eventCount = Math.max(windowedEvents.value.length, 1)
-  const density = reducedMotion.matches ? 14 : scene.value === 'entry' ? (width < 720 ? 26 : 54) : width < 720 ? 22 : 40
+  const density = reducedMotion.matches ? 9 : scene.value === 'entry' ? (width < 720 ? 18 : 38) : width < 720 ? 14 : 26
   const lines: LineModel[] = []
 
   for (let eventIndex = 0; eventIndex < eventCount; eventIndex += 1) {
@@ -138,7 +141,8 @@ function draw() {
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
 
-  for (let i = 0; i < 7; i += 1) {
+  const guideCount = reducedMotion.matches ? 3 : 5
+  for (let i = 0; i < guideCount; i += 1) {
     const y = height * (0.08 + i * 0.12 + pointer.value.y * 0.01)
     const x = width * (0.08 + (i % 4) * 0.17)
     ctx.beginPath()
@@ -203,10 +207,37 @@ function draw() {
     }
   }
 
+  const progressRatio = Math.min(
+    1,
+    Math.max(0.08, (props.revealedEventCount ?? windowedEvents.value.length) / Math.max(props.events.length, 1)),
+  )
+  const centerX = width * node.x
+  const centerY = height * node.y
   const ringBase = node.radius
 
+  ctx.save()
+  ctx.translate(centerX, centerY)
+  ctx.rotate(scene.value === 'entry' ? -0.18 : -0.12 + pointer.value.x * 0.04)
+  const diskRadius = Math.max(28, Math.min(width, height) * (scene.value === 'entry' ? 0.12 : 0.07))
+  const diskGradient = ctx.createRadialGradient(0, 0, ringBase, diskRadius * 0.14, 0, diskRadius)
+  diskGradient.addColorStop(0, 'rgba(255, 213, 138, 0)')
+  diskGradient.addColorStop(0.42, `rgba(255, 194, 96, ${0.08 + progressRatio * 0.18})`)
+  diskGradient.addColorStop(0.7, `rgba(123, 220, 255, ${0.03 + progressRatio * 0.08})`)
+  diskGradient.addColorStop(1, 'rgba(255, 213, 138, 0)')
   ctx.beginPath()
-  ctx.arc(width * node.x, height * node.y, ringBase, 0, Math.PI * 2)
+  ctx.ellipse(0, 0, diskRadius * 1.85, diskRadius * 0.34, 0, 0, Math.PI * 2)
+  ctx.fillStyle = diskGradient
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.ellipse(0, 0, diskRadius * 1.92, diskRadius * 0.38, 0, 0, Math.PI * 2)
+  ctx.strokeStyle = `rgba(255, 198, 103, ${0.08 + progressRatio * 0.14})`
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.restore()
+
+  ctx.beginPath()
+  ctx.arc(centerX, centerY, ringBase, 0, Math.PI * 2)
   ctx.fillStyle = 'rgba(9, 12, 14, 0.94)'
   ctx.fill()
   ctx.strokeStyle = accent.value
@@ -215,8 +246,8 @@ function draw() {
 
   for (let ring = 1; ring <= 3; ring += 1) {
     ctx.beginPath()
-    ctx.arc(width * node.x, height * node.y, ringBase + ring * 8 + pointer.value.x * 2, 0, Math.PI * 2)
-    ctx.strokeStyle = `rgba(144, 222, 255, ${0.14 / ring})`
+    ctx.arc(centerX, centerY, ringBase + ring * 6 + pointer.value.x * 1.4, 0, Math.PI * 2)
+    ctx.strokeStyle = `rgba(144, 222, 255, ${(0.1 + progressRatio * 0.04) / ring})`
     ctx.lineWidth = 1
     ctx.stroke()
   }
@@ -234,6 +265,9 @@ function handleVisibility() {
 
 function handlePointerMove(event: PointerEvent) {
   if (!containerRef.value) return
+  const now = performance.now()
+  if (now - lastPointerSample < 32) return
+  lastPointerSample = now
   const rect = containerRef.value.getBoundingClientRect()
   pointer.value = {
     x: (event.clientX - rect.left) / rect.width,
@@ -257,7 +291,7 @@ onMounted(() => {
 })
 
 watch(
-  () => [props.activeSurface, props.selectedEventId, props.selectedBranchId, props.events, props.scene],
+  () => [props.activeSurface, props.selectedEventId, props.selectedBranchId, props.events, props.scene, props.revealedEventCount, props.pulseKey],
   () => {
     resizeCanvas()
     cancelAnimationFrame(frameId)
