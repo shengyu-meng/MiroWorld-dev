@@ -1,14 +1,35 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
+import re
+from dataclasses import dataclass, field
 from threading import Lock, Thread
 from typing import Any, Callable
 
+from config import get_settings
 from shared.utils import make_id, utc_now
 
 
 ReasoningProgress = Callable[[str, str], None]
 ReasoningWorker = Callable[[ReasoningProgress], dict[str, Any]]
+
+
+@dataclass
+class ReasoningArtifactTrailItem:
+  step: str
+  status: str
+  summary: str
+  artifact_path: str
+  created_at: str
+
+  def to_payload(self) -> dict[str, str]:
+    return {
+      "step": self.step,
+      "status": self.status,
+      "summary": self.summary,
+      "artifact_path": self.artifact_path,
+      "created_at": self.created_at,
+    }
 
 
 @dataclass
@@ -24,6 +45,7 @@ class ReasoningJob:
   artifact_path: str | None
   created_at: str
   updated_at: str
+  artifact_trail: list[ReasoningArtifactTrailItem] = field(default_factory=list)
 
   def to_payload(self) -> dict[str, Any]:
     return {
@@ -36,6 +58,7 @@ class ReasoningJob:
       "progress_step": self.progress_step,
       "summary": self.summary,
       "artifact_path": self.artifact_path,
+      "artifact_trail": [item.to_payload() for item in self.artifact_trail],
       "updated_at": self.updated_at,
       "stage": None,
     }
@@ -71,6 +94,7 @@ class ReasoningJobManager:
         created_at=now,
         updated_at=now,
       )
+      job.artifact_path = self._record_artifact_locked(job)
       self._jobs[job.job_id] = job
       self._project_jobs[project_id] = job.job_id
       self._workers[job.job_id] = worker
@@ -159,3 +183,50 @@ class ReasoningJobManager:
       if artifact_path:
         job.artifact_path = artifact_path
       job.updated_at = utc_now()
+      if status or progress_step or summary:
+        trail_path = self._record_artifact_locked(job)
+        if not artifact_path:
+          job.artifact_path = trail_path
+
+  def _record_artifact_locked(self, job: ReasoningJob) -> str:
+    created_at = utc_now()
+    safe_step = re.sub(r"[^a-zA-Z0-9_-]+", "-", job.progress_step).strip("-") or "step"
+    sequence = len(job.artifact_trail)
+    relative_path = (
+      f"data/runtime/process/{job.project_id}/reasoning/"
+      f"{job.job_id}/{sequence:02d}-{safe_step}.json"
+    )
+    absolute_path = (
+      get_settings().data_dir
+      / "process"
+      / job.project_id
+      / "reasoning"
+      / job.job_id
+      / f"{sequence:02d}-{safe_step}.json"
+    )
+    absolute_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact = {
+      "generated_at": created_at,
+      "artifact_type": "miroworld_backstage_reasoning_checkpoint",
+      "job_id": job.job_id,
+      "project_id": job.project_id,
+      "operation": job.operation,
+      "provider": job.provider,
+      "model_name": job.model_name,
+      "status": job.status,
+      "progress_step": job.progress_step,
+      "summary": job.summary,
+      "result_artifact_path": job.artifact_path,
+      "note": "This checkpoint stores only public job progress metadata; no API key, seed prompt, raw provider hidden reasoning, or user secret is stored.",
+    }
+    absolute_path.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
+    job.artifact_trail.append(
+      ReasoningArtifactTrailItem(
+        step=job.progress_step,
+        status=job.status,
+        summary=job.summary,
+        artifact_path=relative_path,
+        created_at=created_at,
+      )
+    )
+    return relative_path

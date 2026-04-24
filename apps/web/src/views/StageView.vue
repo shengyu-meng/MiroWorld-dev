@@ -142,6 +142,17 @@
                 <span>{{ processText.backstageLabel }}</span>
                 <strong>{{ reasoningStatusLabel }}</strong>
                 <small>{{ visibleReasoningStatus.summary }}</small>
+                <ol
+                  v-if="visibleReasoningTrail.length"
+                  class="backstage-artifact-trail"
+                  :aria-label="processText.trailLabel"
+                  data-testid="backstage-artifact-trail"
+                >
+                  <li v-for="item in visibleReasoningTrail" :key="item.artifact_path">
+                    <span>{{ item.status }} / {{ item.step }}</span>
+                    <code>{{ item.artifact_path }}</code>
+                  </li>
+                </ol>
               </div>
 
               <div
@@ -737,6 +748,7 @@ const processCopy = {
     fileLabel: 'runtime artifact',
     modelLabel: 'model reasoning',
     backstageLabel: 'backstage reasoning',
+    trailLabel: 'artifact trail',
     queuedLabel: 'queued',
     runningLabel: 'running',
     completedLabel: 'completed',
@@ -756,6 +768,7 @@ const processCopy = {
     fileLabel: 'runtime artifact',
     modelLabel: 'model reasoning',
     backstageLabel: 'backstage reasoning',
+    trailLabel: 'artifact trail',
     queuedLabel: 'queued',
     runningLabel: 'running',
     completedLabel: 'completed',
@@ -775,6 +788,7 @@ const processCopy = {
   fileLabel: string
   modelLabel: string
   backstageLabel: string
+  trailLabel: string
   queuedLabel: string
   runningLabel: string
   completedLabel: string
@@ -913,6 +927,7 @@ const visibleReasoningStatus = computed(() => {
   if (stage.value?.process_trace.reasoning_run && !['queued', 'running'].includes(status.status)) return null
   return status
 })
+const visibleReasoningTrail = computed(() => visibleReasoningStatus.value?.artifact_trail.slice(-4) ?? [])
 const reasoningStatusLabel = computed(() => {
   const status = visibleReasoningStatus.value?.status
   if (status === 'queued') return processText.value.queuedLabel

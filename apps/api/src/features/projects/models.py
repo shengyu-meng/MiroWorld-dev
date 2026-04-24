@@ -301,6 +301,14 @@ class ProjectCreateResponse(BaseModel):
   reasoning: "ReasoningStatusResponse | None" = None
 
 
+class ReasoningArtifactTrailItem(BaseModel):
+  step: str
+  status: str
+  summary: str
+  artifact_path: str
+  created_at: str
+
+
 class ReasoningStatusResponse(BaseModel):
   job_id: str
   project_id: str
@@ -311,6 +319,7 @@ class ReasoningStatusResponse(BaseModel):
   progress_step: str
   summary: str
   artifact_path: str | None = None
+  artifact_trail: list[ReasoningArtifactTrailItem] = Field(default_factory=list)
   updated_at: str
   stage: dict | None = None
 

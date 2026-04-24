@@ -255,6 +255,7 @@ function disabledReasoningStatus() {
     progress_step: 'not_started',
     summary: 'MiniMax backstage reasoning is not active for this project.',
     artifact_path: null,
+    artifact_trail: [],
     updated_at: '2026-04-24T00:00:00Z',
     stage: null,
   }
@@ -451,10 +452,21 @@ describe('worldline theatre stage', () => {
       status: 'queued',
       progress_step: 'queued',
       summary: 'MiniMax seed reasoning is queued as backstage computation.',
+      artifact_path: 'data/runtime/process/proj_test/reasoning/rjob_test/00-queued.json',
+      artifact_trail: [
+        {
+          step: 'queued',
+          status: 'queued',
+          summary: 'MiniMax seed reasoning is queued as backstage computation.',
+          artifact_path: 'data/runtime/process/proj_test/reasoning/rjob_test/00-queued.json',
+          created_at: '2026-04-24T00:00:00Z',
+        },
+      ],
     })
 
     expect(wrapper.get('[data-testid="backstage-reasoning-status"]').text()).toContain('queued')
     expect(wrapper.get('[data-testid="backstage-reasoning-status"]').text()).toContain('backstage')
+    expect(wrapper.get('[data-testid="backstage-artifact-trail"]').text()).toContain('00-queued.json')
   })
 
   it('keeps branch selection and intervention flow available inside the theatre', async () => {

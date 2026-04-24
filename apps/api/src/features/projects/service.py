@@ -96,6 +96,7 @@ class ProjectService:
         "progress_step": latest_run.status,
         "summary": latest_run.summary,
         "artifact_path": latest_run.artifact_path,
+        "artifact_trail": [],
         "updated_at": latest_run.created_at,
         "stage": self.get_stage(project_id, language),
       }
@@ -113,6 +114,7 @@ class ProjectService:
       "progress_step": "not_started",
       "summary": "MiniMax backstage reasoning is not active for this project.",
       "artifact_path": None,
+      "artifact_trail": [],
       "updated_at": snapshot.world_state.updated_at,
       "stage": None,
     }

@@ -1027,3 +1027,43 @@ Still open after slice 14:
 - the current worker is intentionally lightweight and in-process; exhibition deployment may need a durable persisted queue or streaming protocol
 - background progress is visible at a coarse step level, but not yet a fine-grained file-by-file computation theatre
 - Archive/Ripple artifact writing and calibration dramaturgy remain good next product slices
+
+## 2026-04-24 - Experience Rebuild Slice 15 (backstage reasoning artifact trail started)
+
+Planned in this iteration:
+
+- turn the coarse backstage reasoning status into a visible ordered process-file trail
+- write safe local JSON artifacts for queued, model-request, merge, completed, fallback, and failed phases
+- expose the artifact trail through `GET /api/projects/{projectId}/reasoning`
+- show the trail inside the theatre process panel so viewers can see model work happening without waiting
+- keep raw provider hidden reasoning and all secrets out of tracked files, frontend code, logs, and runtime artifacts
+- update tests, docs, smoke, secret checks, and push only after verification
+
+## 2026-04-24 - Experience Rebuild Slice 15 (backstage reasoning artifact trail completed)
+
+Completed in this iteration:
+
+- added safe checkpoint JSON artifacts for queued, model-request, merge, completed, fallback, and failed reasoning phases
+- added `artifact_trail` to the reasoning status contract, backend response model, and frontend types
+- exposed the ordered backstage trail in the theatre process panel so the viewer can inspect computation files while continuing the worldline
+- added API assertions that every trail file exists and does not contain local provider keys
+- added frontend coverage for the rendered backstage artifact trail
+
+Verification:
+
+- `python -m pytest apps/api/tests/test_api.py -q` passed
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `npm run test:perf` passed
+- `git diff --check` passed
+- secret pattern scan returned no matches
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files
+
+Still open after slice 15:
+
+- the reasoning queue is still in-process and should become durable or streamable if installation deployment needs stronger recovery
+- the visible file trail is now real, but Archive/Ripple artifact writing can still become more authored and less template-like
+- calibration can still move further from utility archive toward dramaturgical exhibition instrument

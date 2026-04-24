@@ -13,6 +13,7 @@
     "progress_step",
     "summary",
     "artifact_path",
+    "artifact_trail",
     "updated_at",
     "stage"
   ],
@@ -33,6 +34,21 @@
         { "type": "string" },
         { "type": "null" }
       ]
+    },
+    "artifact_trail": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step", "status", "summary", "artifact_path", "created_at"],
+        "properties": {
+          "step": { "type": "string" },
+          "status": { "type": "string" },
+          "summary": { "type": "string" },
+          "artifact_path": { "type": "string" },
+          "created_at": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
     },
     "updated_at": { "type": "string" },
     "stage": {

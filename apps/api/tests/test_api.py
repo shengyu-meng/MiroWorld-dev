@@ -45,6 +45,19 @@ def assert_process_trace(stage):
   assert artifact_file.exists()
 
 
+def assert_reasoning_artifact_trail(status_payload):
+  trail = status_payload["artifact_trail"]
+  assert trail
+  for item in trail:
+    assert item["artifact_path"].startswith("data/runtime/process/")
+    artifact_file = ROOT / item["artifact_path"]
+    assert artifact_file.exists()
+    artifact = json.loads(artifact_file.read_text(encoding="utf-8"))
+    assert artifact["artifact_type"] == "miroworld_backstage_reasoning_checkpoint"
+    assert artifact["progress_step"] == item["step"]
+    assert "test-local-key" not in json.dumps(artifact)
+
+
 def create_fixture_project():
   response = client.post("/api/projects", json={"fixture_id": "literary-branching-world", "language": "zh"})
   assert response.status_code == 200
@@ -155,6 +168,7 @@ def test_prompt_project_creation_queues_backstage_reasoning(monkeypatch):
   assert response.status_code == 200
   payload = response.json()["data"]
   assert payload["reasoning"]["status"] == "queued"
+  assert payload["reasoning"]["artifact_trail"][0]["step"] == "queued"
   assert payload["stage"]["project_context"]["source_label"] == "seed_prompt"
   assert payload["stage"]["process_trace"]["reasoning_run"] is None
   assert calls["count"] == 0
@@ -165,6 +179,7 @@ def test_prompt_project_creation_queues_backstage_reasoning(monkeypatch):
   assert_schema("reasoning-status.schema.json", status_payload)
   assert status_payload["status"] == "queued"
   assert status_payload["stage"] is None
+  assert_reasoning_artifact_trail(status_payload)
 
 
 def test_backstage_reasoning_merges_completed_packet(monkeypatch):
@@ -195,6 +210,10 @@ def test_backstage_reasoning_merges_completed_packet(monkeypatch):
   assert_schema("reasoning-status.schema.json", status_payload)
   assert status_payload["status"] == "completed"
   assert status_payload["artifact_path"].endswith("00-minimax-seed-reasoning.json")
+  assert {"queued", "requesting_model", "merging_worldline", "merged"}.issubset(
+    {item["step"] for item in status_payload["artifact_trail"]}
+  )
+  assert_reasoning_artifact_trail(status_payload)
   assert status_payload["stage"]["project_context"]["source_label"] == "seed_prompt+MiniMax"
   assert status_payload["stage"]["process_trace"]["reasoning_run"]["status"] == "completed"
   assert "Tide enters" in status_payload["stage"]["observatory"]["key_events"][0]["title"]
@@ -226,6 +245,8 @@ def test_backstage_reasoning_records_fallback_without_leaking_key(monkeypatch):
   assert_schema("reasoning-status.schema.json", status_payload)
   assert status_payload["status"] == "fallback"
   assert status_payload["artifact_path"].endswith("00-minimax-seed-fallback.json")
+  assert "fallback" in {item["step"] for item in status_payload["artifact_trail"]}
+  assert_reasoning_artifact_trail(status_payload)
   artifact = json.loads((ROOT / status_payload["artifact_path"]).read_text(encoding="utf-8"))
   assert "test-local-key" not in json.dumps(artifact)
 

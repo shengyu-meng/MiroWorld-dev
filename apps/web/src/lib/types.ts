@@ -232,6 +232,13 @@ export interface ReasoningStatus {
   progress_step: string
   summary: string
   artifact_path: string | null
+  artifact_trail: Array<{
+    step: string
+    status: string
+    summary: string
+    artifact_path: string
+    created_at: string
+  }>
   updated_at: string
   stage: StageData | null
 }

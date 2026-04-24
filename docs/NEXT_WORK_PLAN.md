@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 14 / Async MiniMax Backstage Reasoning completed`
+Current slice: `Experience Rebuild Slice 15 / Backstage Reasoning Artifact Trail completed`
 
 ## Goal
 
@@ -247,6 +247,23 @@ This slice does include:
 - [x] updated API, frontend, and E2E coverage for async reasoning behavior
 - [x] updated docs after verification
 
+## Slice 15 Acceptance Criteria
+
+- [x] every queued/running/merge/completed/fallback/failed backstage reasoning phase writes a safe local JSON process artifact under ignored `data/runtime/process/...`
+- [x] `GET /api/projects/{projectId}/reasoning` returns an ordered artifact trail with step label, status, summary, timestamp, and relative artifact path
+- [x] artifact trail files never include provider secrets, raw hidden reasoning, or frontend-sensitive payloads
+- [x] the stage process panel shows the latest backstage artifact trail while the viewer can continue pressing Next
+- [x] tests cover artifact trail creation for queued, running, completed, and fallback paths
+- [x] build, tests, smoke, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 15 Completed
+
+- [x] extended the reasoning job manager with a safe artifact journal under ignored runtime data
+- [x] added `artifact_trail` to the reasoning-status contract, Pydantic response, and frontend types
+- [x] showed a compact backstage file trail in the theatre process panel
+- [x] updated API and frontend tests for artifact trail creation, schema validation, redaction, and visibility
+- [x] updated docs after verification
+
 ## Next Candidate Slice
 
 - [ ] deepen Archive/Ripple artifact writing quality now that their theatre-native instrument shells are in place
@@ -343,7 +360,8 @@ This slice does include:
 - [x] tighten the existing browser performance benchmark into stricter exhibition thresholds
 - [x] fix prompt-generated project creation so deterministic mode immediately produces a driveable, seed-specific worldline without waiting on live LLM work
 - [x] reconnect local MiniMax prompt generation so Pro-style starts can produce a real structured reasoning packet when credentials are configured
-- [ ] add a background/async model-enrichment lane that can enrich prompt starts after the deterministic worldline is already visible
+- [x] add a background/async model-enrichment lane that can enrich prompt starts after the deterministic worldline is already visible
+- [x] add a backstage reasoning artifact trail so async model work is visible as ordered local process files
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
