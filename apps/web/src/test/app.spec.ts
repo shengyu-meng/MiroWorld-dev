@@ -476,12 +476,19 @@ describe('worldline theatre stage', () => {
     expect(wrapper.get('[data-testid="calibration-drift-reading"]').text()).toContain('全部校准残影 / 校准漂移')
     expect(wrapper.get('[data-testid="calibration-drift-reading"]').text()).toContain('3 个真实结果')
     expect(wrapper.get('[data-testid="calibration-branch-filters"]').text()).toContain('回折')
+    expect(wrapper.get('[data-testid="calibration-drift-map"]').text()).toContain('全部校准残影 / 3 个校准节点')
+    expect(wrapper.findAll('[data-testid="calibration-drift-node"]')).toHaveLength(3)
+    expect(wrapper.get('[data-testid="calibration-transition-list"]').text()).toContain('部分命中 -> 偏离')
+    expect(wrapper.get('[data-testid="calibration-transition-list"]').text()).toContain('偏离 -> 命中')
 
     await wrapper.get('[data-testid="calibration-filter-br_4"]').trigger('click')
     const filteredReading = wrapper.get('[data-testid="calibration-drift-reading"]').text()
     expect(filteredReading).toContain('回折 / 校准漂移')
     expect(filteredReading).toContain('偏离')
     expect(filteredReading).toContain('rule gate moved away from the predicted branch')
+    expect(wrapper.get('[data-testid="calibration-drift-map"]').text()).toContain('回折 / 1 个校准节点')
+    expect(wrapper.findAll('[data-testid="calibration-drift-node"]')).toHaveLength(1)
+    expect(wrapper.get('[data-testid="calibration-drift-map"]').text()).toContain('至少需要两个校准节点')
   })
 
   it('removes legacy public-opinion wording from the rendered core UI', async () => {

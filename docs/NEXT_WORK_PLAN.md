@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 19 / Archive Calibration Drift Reading completed`
+Current slice: `Experience Rebuild Slice 20 / Archive Calibration Drift Map completed`
 
 ## Goal
 
@@ -355,6 +355,31 @@ This slice does include:
 - [x] included the selected calibration drift reading in the local Archive capsule packet
 - [x] updated frontend coverage for branch filtering and rendered calibration text
 
+## Slice 20 Acceptance Criteria
+
+- [x] Archive exposes an event-to-event calibration drift map derived from the currently selected calibration slice
+- [x] the map shows calibrated nodes, chronological transitions, result labels, branch labels, and actual outcomes without backend calls or public contract churn
+- [x] the map stays tied to the existing branch filter, so selecting a branch updates the visible drift sequence
+- [x] Archive capsule export includes the selected calibration drift map payload
+- [x] frontend tests cover all-record drift sequence and branch-filtered drift sequence
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 20 Planned Work
+
+- [x] mark Slice 20 as the active doc-tracked iteration before code changes
+- [x] derive chronological calibration nodes and transitions from existing `calibration_records`
+- [x] add compact event-to-event drift map inside Archive calibration constellation
+- [x] include calibration drift map in the Archive capsule packet
+- [x] update frontend tests and docs after verification
+
+## Slice 20 Completed
+
+- [x] added a compact event-to-event calibration drift map inside Archive
+- [x] derived chronological calibration nodes and result transitions from the active all-record or branch-filtered calibration slice
+- [x] kept the drift map local and frontend-derived, without backend calls, schema churn, or live LLM dependency
+- [x] included the selected calibration drift map payload in the local Archive capsule export
+- [x] updated frontend coverage for all-record and branch-filtered drift sequences
+
 ## Slice 1 Completed
 
 - [x] the repo has canonical `CURRENT_STATUS / NEXT_WORK_PLAN / DEVELOPMENT_LOG / BLOCKERS` docs
@@ -421,6 +446,7 @@ This slice does include:
 - [x] deepen calibration into decision-type and longer-horizon longitudinal slices so the archive can compare how different intervention modes age
 - [x] deepen calibration into decision-type and longer-horizon views
 - [x] deepen calibration beyond the current constellation into branch-filtered authored drift readings
+- [x] deepen calibration into event-to-event drift maps so actual outcomes show temporal movement, not only slice summaries
 - [x] turn Ripple into a continuity explorer instead of a single replay strip
 - [x] deepen ripple continuity beyond the current replay track
 - [x] turn Ripple into a multi-path replay archive instead of a single continuity chain
@@ -452,6 +478,7 @@ This slice does include:
 - [x] make Archive calibration read as a constellation / afterimage instrument instead of only an input drawer
 - [x] add authored Ripple drift-reading output so continuity is not only a technical trace packet
 - [x] add branch-filtered authored calibration drift reading so Archive can explain how actual outcomes reshape specific branches
+- [x] add event-to-event calibration drift map so Archive can show actual outcomes moving across the worldline
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 

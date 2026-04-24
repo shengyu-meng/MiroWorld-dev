@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 19 archive calibration drift reading completed`
+Phase: `experience-first rebuild / slice 20 archive calibration drift map completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose an ordered trail of safe runtime computation artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console, authored drift reading, local trace export, and copy/export actions, while Archive exposes an afterimage capsule, authored wall reading, calibration constellation, branch-filtered calibration drift reading, and copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose an ordered trail of safe runtime computation artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console, authored drift reading, local trace export, and copy/export actions, while Archive exposes an afterimage capsule, authored wall reading, calibration constellation, branch-filtered calibration drift reading, event-to-event calibration drift map, and copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -51,6 +51,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and Archive now has a theatre-native afterimage capsule with reveal, decision, calibration, and export/copy affordances
 - and Archive calibration now reads as a constellation of actual outcomes, dominant result, latest return, calibrated branches, and confidence residue
 - and Archive calibration can now be filtered by branch slice and read as authored calibration drift instead of only constellation metrics
+- and Archive calibration now also shows event-to-event drift maps so actual outcomes read as temporal movement across the worldline
 - and Archive now produces an authored wall-reading text derived from the selected worldline, branch, cost, ripple, and calibration state instead of only a structured data capsule
 - and the performance benchmark now targets 45 FPS desktop frame cadence plus sub-150 ms Next-step reveal latency instead of the earlier loose MVP budget
 - and mobile / low-height viewport checks now guard theatre reachability, process panel visibility, Next control access, and horizontal overflow
@@ -330,6 +331,14 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the local afterimage capsule export now includes the selected calibration drift-reading payload
 - frontend tests cover branch filter interaction and rendered calibration drift text
 
+### Experience rebuild slice 20 (archive calibration drift map)
+
+- Archive now exposes a compact event-to-event calibration drift map for the selected calibration slice
+- the map shows chronological calibration nodes, branch labels, result labels, actual outcomes, and result-to-result transitions
+- the existing branch filter now updates both the authored reading and the temporal drift map
+- the local afterimage capsule export now includes the selected calibration drift-map payload
+- frontend tests cover all-record and branch-filtered drift sequences
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -346,7 +355,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 - the new theatre shell restores progressive unfolding, and both Archive/Ripple now have first authored reading outputs, while future writing passes can still become more model-assisted and less deterministic
 - the canvas is lighter and now has stricter exhibition budget checks, but real physical display testing is still needed before installation
-- calibration history now has a theatre-native constellation plus branch-filtered drift reading, but it can still become more interactive through event-to-event calibration drift and model-assisted takeaways
+- calibration history now has a theatre-native constellation, branch-filtered drift reading, and event-to-event drift map, but it can still gain model-assisted takeaways and richer visual navigation
 - mobile and low-height exhibition layouts need another visual pass after the new orbital polish
 
 ### Content expression gaps
@@ -364,9 +373,9 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice continues after `Experience Rebuild Slice 19`:
+The next active slice continues after `Experience Rebuild Slice 20`:
 
 - consider a durable persisted reasoning queue or streaming progress protocol now that checkpoint files are visible but still in-process
 - keep mobile and low-height visual review active through future UI passes, especially on real exhibition hardware
-- deepen calibration interaction with event-to-event drift or model-assisted calibration takeaways
+- deepen calibration interaction with model-assisted calibration takeaways
 - consider a second editorial pass that lets the async MiniMax lane safely enrich Archive/Ripple writing without blocking the theatre

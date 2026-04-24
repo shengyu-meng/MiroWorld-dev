@@ -513,6 +513,27 @@
                   <li>{{ calibrationDriftReading.confidence_line }}</li>
                 </ul>
               </div>
+              <div class="calibration-drift-map" data-testid="calibration-drift-map">
+                <span class="annotation-label">{{ instrumentText.calibrationDriftMap }}</span>
+                <strong>{{ calibrationDriftMap.summary }}</strong>
+                <ol>
+                  <li v-for="node in calibrationDriftMap.nodes" :key="node.calibration_id" data-testid="calibration-drift-node">
+                    <i>{{ node.index_label }}</i>
+                    <div>
+                      <strong>{{ node.event_title }}</strong>
+                      <span>{{ node.branch_label }} / {{ node.result_label }}</span>
+                      <p>{{ node.actual_outcome }}</p>
+                    </div>
+                  </li>
+                </ol>
+                <ul v-if="calibrationDriftMap.transitions.length" class="calibration-transition-list" data-testid="calibration-transition-list">
+                  <li v-for="transition in calibrationDriftMap.transitions" :key="transition.transition_id">
+                    <span>{{ transition.transition_label }}</span>
+                    <em>{{ transition.path_label }}</em>
+                  </li>
+                </ul>
+                <p v-else class="archive-empty">{{ calibrationDriftMap.empty_transition_note }}</p>
+              </div>
               <ul v-if="calibrationConstellation.marks.length" class="calibration-afterimage-list">
                 <li v-for="mark in calibrationConstellation.marks.slice(0, 4)" :key="`${mark.calibration_id}-list`">
                   <strong>{{ mark.event_title }} / {{ mark.branch_label }}</strong>
@@ -932,6 +953,7 @@ const instrumentCopy = {
     calibrationConstellation: '校准星图',
     calibrationConstellationHint: '真实结果正在把这条世界线留下的置信残影重新排布。',
     calibrationDriftReading: '校准漂移读法',
+    calibrationDriftMap: '事件漂移图',
     allCalibrationBranches: '全部校准残影',
     noCalibrationAfterimage: '还没有真实结果写入档案。星图会在第一次校准后显影。',
     revealedNodes: '已显影节点',
@@ -966,6 +988,7 @@ const instrumentCopy = {
     calibrationConstellation: 'Calibration Constellation',
     calibrationConstellationHint: 'Actual outcomes are rearranging the confidence residue of this worldline.',
     calibrationDriftReading: 'Calibration Drift Reading',
+    calibrationDriftMap: 'Event Drift Map',
     allCalibrationBranches: 'All Calibration Residue',
     noCalibrationAfterimage: 'No actual outcome has been written yet. The constellation appears after the first calibration.',
     revealedNodes: 'revealed nodes',
@@ -1000,6 +1023,7 @@ const instrumentCopy = {
   calibrationConstellation: string
   calibrationConstellationHint: string
   calibrationDriftReading: string
+  calibrationDriftMap: string
   allCalibrationBranches: string
   noCalibrationAfterimage: string
   revealedNodes: string
@@ -1127,6 +1151,7 @@ const selectedCalibrationRecords = computed(() => {
   return calibrationRecords.value.filter((record) => record.branch_id === normalizedActiveCalibrationBranchId.value)
 })
 const sortedSelectedCalibrationRecords = computed(() => [...selectedCalibrationRecords.value].sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at)))
+const chronologicalSelectedCalibrationRecords = computed(() => [...selectedCalibrationRecords.value].sort((left, right) => Date.parse(left.created_at) - Date.parse(right.created_at)))
 const calibrationConstellation = computed(() => {
   const records = calibrationRecords.value
   const counts = calibrationResults.reduce((nextCounts, result) => {
@@ -1233,6 +1258,51 @@ const calibrationDriftReading = computed(() => {
     latest_line: latest ? `Latest return: ${latestEvent} / ${t.value.calibrationResults[latest.result]} / ${latestOutcome}` : 'Latest return: waiting for the first calibration.',
     event_line: eventTitles.length ? `Event drift: ${eventTitles.join(' -> ')}` : 'Event drift: not formed yet.',
     confidence_line: `Confidence residue: ${confidence}`,
+  }
+})
+const calibrationDriftMap = computed(() => {
+  const nodes = chronologicalSelectedCalibrationRecords.value.map((record, index) => {
+    const event = lookupEvent(record.event_id)
+    const branch = lookupBranch(record.branch_id)
+    return {
+      calibration_id: record.calibration_id,
+      event_id: record.event_id,
+      branch_id: record.branch_id,
+      index_label: String(index + 1).padStart(2, '0'),
+      event_title: cleanText(event?.title ?? record.event_id),
+      branch_label: cleanText(branch?.label ?? record.branch_id),
+      result: record.result,
+      result_label: t.value.calibrationResults[record.result],
+      actual_outcome: cleanText(record.actual_outcome),
+      created_at: record.created_at,
+    }
+  })
+  const transitions = nodes.slice(1).map((node, index) => {
+    const previous = nodes[index]
+    return {
+      transition_id: `${previous.calibration_id}-${node.calibration_id}`,
+      from_calibration_id: previous.calibration_id,
+      to_calibration_id: node.calibration_id,
+      transition_label: `${previous.result_label} -> ${node.result_label}`,
+      path_label: language.value === 'zh'
+        ? `${previous.event_title} → ${node.event_title}`
+        : `${previous.event_title} -> ${node.event_title}`,
+    }
+  })
+  const selectedOption = calibrationBranchOptions.value.find((option) => option.branch_id === normalizedActiveCalibrationBranchId.value)
+  const sliceLabel = selectedOption?.label ?? instrumentText.value.allCalibrationBranches
+
+  return {
+    slice_id: normalizedActiveCalibrationBranchId.value,
+    slice_label: sliceLabel,
+    summary: language.value === 'zh'
+      ? `${sliceLabel} / ${nodes.length} 个校准节点`
+      : `${sliceLabel} / ${nodes.length} calibration node(s)`,
+    empty_transition_note: language.value === 'zh'
+      ? '至少需要两个校准节点，事件之间的漂移才会显影。'
+      : 'At least two calibration nodes are needed before event-to-event drift appears.',
+    nodes,
+    transitions,
   }
 })
 const archiveWallReading = computed(() => {
@@ -1828,6 +1898,7 @@ function buildArchiveCapsulePacket() {
       marks: calibrationConstellation.value.marks,
     },
     calibration_drift_reading: calibrationDriftReading.value,
+    calibration_drift_map: calibrationDriftMap.value,
   }
 }
 
