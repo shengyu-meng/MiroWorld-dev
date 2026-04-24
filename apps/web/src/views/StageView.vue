@@ -383,6 +383,28 @@
                 </li>
               </ol>
             </article>
+            <article class="drawer-card ripple-drift-reading-card" data-testid="ripple-drift-reading">
+              <span class="annotation-label">{{ instrumentText.driftReading }}</span>
+              <div class="ripple-drift-reading">
+                <strong>{{ rippleDriftReading.title }}</strong>
+                <p>{{ rippleDriftReading.thesis }}</p>
+                <blockquote>{{ rippleDriftReading.drift_text }}</blockquote>
+                <ul>
+                  <li>{{ rippleDriftReading.path_line }}</li>
+                  <li>{{ rippleDriftReading.pressure_line }}</li>
+                  <li>{{ rippleDriftReading.archive_line }}</li>
+                  <li>{{ rippleDriftReading.closing_note }}</li>
+                </ul>
+              </div>
+              <div class="instrument-actions">
+                <button type="button" class="instrument-action" data-testid="ripple-drift-reading-copy" @click="copyRippleDriftReading">
+                  {{ instrumentText.copyDriftReading }}
+                </button>
+                <button type="button" class="instrument-action" data-testid="ripple-drift-reading-export" @click="exportRippleDriftReading">
+                  {{ instrumentText.exportDriftReading }}
+                </button>
+              </div>
+            </article>
             <article class="drawer-card theatre-ripple-card">
               <span class="annotation-label">{{ instrumentText.rippleAfterimage }}</span>
               <ul class="ripple-signal-stack">
@@ -874,6 +896,9 @@ const instrumentCopy = {
     rippleConsole: '回响控制台',
     rippleConsoleHint: '这一组读数来自当前已经显影的轨道，不需要等待新的模型调用。',
     rippleAfterimage: '回响残影',
+    driftReading: '漂移读本',
+    copyDriftReading: '复制漂移读本',
+    exportDriftReading: '导出漂移读本',
     archiveCapsule: '残影胶囊',
     wallReading: '展览墙文',
     copyWallReading: '复制墙文',
@@ -896,13 +921,16 @@ const instrumentCopy = {
     copyCapsule: '复制胶囊文本',
     exportCapsule: '导出残影胶囊',
     exportReady: '本地文件已生成',
-    copyReady: '胶囊文本已复制',
+    copyReady: '文本已复制',
     copyUnavailable: '剪贴板不可用，可改用导出',
   },
   en: {
     rippleConsole: 'Ripple Console',
     rippleConsoleHint: 'These readings come from the revealed track; no fresh model call is needed.',
     rippleAfterimage: 'Ripple Afterimage',
+    driftReading: 'Drift Reading',
+    copyDriftReading: 'Copy Drift Text',
+    exportDriftReading: 'Export Drift Text',
     archiveCapsule: 'Afterimage Capsule',
     wallReading: 'Wall Reading',
     copyWallReading: 'Copy Wall Text',
@@ -925,13 +953,16 @@ const instrumentCopy = {
     copyCapsule: 'Copy Capsule Text',
     exportCapsule: 'Export Afterimage Capsule',
     exportReady: 'local file generated',
-    copyReady: 'capsule text copied',
+    copyReady: 'text copied',
     copyUnavailable: 'clipboard unavailable; export instead',
   },
 } satisfies Record<DisplayLanguage, {
   rippleConsole: string
   rippleConsoleHint: string
   rippleAfterimage: string
+  driftReading: string
+  copyDriftReading: string
+  exportDriftReading: string
   archiveCapsule: string
   wallReading: string
   copyWallReading: string
@@ -993,6 +1024,40 @@ const rippleMetrics = computed(() => [
   { value: String(savedReplayCount.value), label: instrumentText.value.savedSets },
   { value: formatConfidence(averageRevealedConfidence.value), label: instrumentText.value.meanConfidence },
 ])
+const rippleDriftReading = computed(() => {
+  const firstTrack = revealedTrack.value[0]
+  const terminalTrack = revealedTrack.value.at(-1)
+  const anchorTitle = cleanText(firstTrack?.title ?? selectedEvent.value?.title ?? stage.value?.project_context.headline ?? 'MiroWorld')
+  const terminalTitle = cleanText(terminalTrack?.title ?? anchorTitle)
+  const branchLabel = cleanText(selectedBranch.value?.label ?? terminalTrack?.primary_branch_label ?? '')
+  const confidence = formatConfidence(selectedBranch.value?.effective_confidence ?? selectedBranch.value?.confidence ?? averageRevealedConfidence.value)
+  const latestRipple = cleanText(visibleRippleCards.value.at(-1)?.summary ?? latestBend.value)
+  const trackCount = `${revealedTrack.value.length}/${events.value.length || 0}`
+  const pressureCount = alternatePressure.value
+  const savedCount = savedReplayCount.value
+
+  if (language.value === 'zh') {
+    return {
+      title: `${anchorTitle} → ${terminalTitle}`,
+      thesis: '回响不是摘要，而是世界线在连续显影中留下的漂移读数。',
+      drift_text: `当前轨道沿着“${branchLabel || '主分支'}”被观测到 ${confidence} 的亮度；${latestRipple}`,
+      path_line: `路径线索：已经显影 ${trackCount} 个节点，起点与终点之间的张力正在被同一条轨道牵引。`,
+      pressure_line: `替代压力：${pressureCount} 条未选择轨道仍在场内施压，提醒观众每一次默认前进也有代价。`,
+      archive_line: `重演档案：${savedCount} 组已存重演会成为之后比较这条漂移的参照物。`,
+      closing_note: '下一次按下“下一步”不是等待结果，而是在把这条轨道继续暴露给新的条件。',
+    }
+  }
+
+  return {
+    title: `${anchorTitle} -> ${terminalTitle}`,
+    thesis: 'Ripple is not a summary; it is a drift reading left by a worldline as it keeps exposing itself.',
+    drift_text: `The current orbit follows "${branchLabel || 'the primary branch'}" at ${confidence} brightness; ${latestRipple}`,
+    path_line: `Path cue: ${trackCount} nodes are exposed, and the tension between origin and terminal point is held by one visible orbit.`,
+    pressure_line: `Alternate pressure: ${pressureCount} unchosen tracks still press on the field, showing that default movement also has cost.`,
+    archive_line: `Replay archive: ${savedCount} saved replay sets can become comparison marks for this drift later.`,
+    closing_note: 'Pressing Next is not waiting for an answer; it exposes the orbit to one more condition.',
+  }
+})
 const archiveMetrics = computed(() => [
   { value: `${revealedTrack.value.length}/${events.value.length || 0}`, label: instrumentText.value.revealedNodes },
   { value: String(stage.value?.archive.player_decision_log.length ?? 0), label: instrumentText.value.decisions },
@@ -1381,6 +1446,29 @@ function exportRippleTrace() {
   exportFeedback.value = instrumentText.value.exportReady
 }
 
+async function copyRippleDriftReading() {
+  if (!navigator.clipboard) {
+    exportFeedback.value = instrumentText.value.copyUnavailable
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(buildRippleDriftReadingText())
+    exportFeedback.value = instrumentText.value.copyReady
+  } catch {
+    exportFeedback.value = instrumentText.value.copyUnavailable
+  }
+}
+
+function exportRippleDriftReading() {
+  downloadTextFile(
+    `${safeFileStem(stage.value?.project_context.project_id ?? 'miroworld')}-ripple-drift-reading.md`,
+    buildRippleDriftReadingText(),
+    'text/markdown;charset=utf-8',
+  )
+  exportFeedback.value = instrumentText.value.exportReady
+}
+
 async function copyArchiveCapsule() {
   if (!navigator.clipboard) {
     exportFeedback.value = instrumentText.value.copyUnavailable
@@ -1510,6 +1598,7 @@ function buildRippleTracePacket() {
         }
       : null,
     metrics: rippleMetrics.value,
+    drift_reading: rippleDriftReading.value,
     latest_bend: latestBend.value,
     revealed_track: revealedTrack.value.map((track) => ({
       event_id: track.event_id,
@@ -1532,6 +1621,23 @@ function buildRippleTracePacket() {
       saved_at: set.saved_at,
     })) ?? [],
   }
+}
+
+function buildRippleDriftReadingText() {
+  const reading = rippleDriftReading.value
+  return [
+    `# ${reading.title}`,
+    '',
+    reading.thesis,
+    '',
+    `> ${reading.drift_text}`,
+    '',
+    `- ${reading.path_line}`,
+    `- ${reading.pressure_line}`,
+    `- ${reading.archive_line}`,
+    '',
+    reading.closing_note,
+  ].join('\n')
 }
 
 function buildArchiveCapsulePacket() {

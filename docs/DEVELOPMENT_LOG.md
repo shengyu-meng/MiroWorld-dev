@@ -1142,3 +1142,41 @@ Still open after slice 17:
 - Ripple exported artifacts can still become more authored and less technical
 - Archive wall text is deterministic and local; later it can optionally receive model-assisted editorial passes if secret-safe async flow is ready
 - the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery
+
+## 2026-04-24 - Experience Rebuild Slice 18 (ripple authored drift reading started)
+
+Planned in this iteration:
+
+- turn Ripple's local trace output from a mostly technical packet into a more authored drift-reading artifact
+- derive the reading from the revealed track, selected branch, latest bend, visible ripple cards, and saved replay count without backend calls or live LLM dependency
+- expose copy/export actions for the drift reading inside Ripple
+- include the drift-reading payload in the local Ripple trace packet export
+- update tests, docs, smoke, perf benchmark, secret checks, and push only after verification
+
+## 2026-04-24 - Experience Rebuild Slice 18 (ripple authored drift reading completed)
+
+Completed in this iteration:
+
+- added a Ripple drift-reading card that turns the revealed continuity track into an authored exhibition artifact
+- derived title, thesis, drift text, path line, pressure line, archive line, and closing note from existing local stage state
+- added local copy/export actions for the drift reading without backend calls, live LLM work, or frontend secrets
+- included the authored `drift_reading` payload in the Ripple trace packet export
+- added frontend coverage for rendered drift text and the drift-reading export path
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `npm run test:perf` passed
+- `git diff --check` passed
+- secret pattern scan returned no matches
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files
+
+Still open after slice 18:
+
+- the authored Ripple and Archive texts are deterministic and local; a later secret-safe async editorial lane can make them more alive without blocking the stage
+- the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery
+- calibration can still become more interactive with branch filters, event-to-event drift, and authored calibration takeaways

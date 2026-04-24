@@ -437,10 +437,15 @@ describe('worldline theatre stage', () => {
     await wrapper.findAll('.surface-chip')[3].trigger('click')
     expect(wrapper.find('[data-testid="ripple-console"]').exists()).toBe(true)
     expect(wrapper.get('[data-testid="ripple-instrument-metrics"]').text()).toContain('1/3')
+    expect(wrapper.find('[data-testid="ripple-drift-reading"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="ripple-drift-reading"]').text()).toContain('回响不是摘要')
+    expect(wrapper.get('[data-testid="ripple-drift-reading"]').text()).toContain('替代压力')
 
     await wrapper.get('[data-testid="ripple-trace-export"]').trigger('click')
     expect(download.createObjectURL).toHaveBeenCalledTimes(1)
     expect(download.click).toHaveBeenCalledTimes(1)
+    await wrapper.get('[data-testid="ripple-drift-reading-export"]').trigger('click')
+    expect(download.createObjectURL).toHaveBeenCalledTimes(2)
 
     await wrapper.findAll('.surface-chip')[4].trigger('click')
     expect(wrapper.find('[data-testid="archive-capsule"]').exists()).toBe(true)
@@ -452,10 +457,10 @@ describe('worldline theatre stage', () => {
     expect(wrapper.find('.archive-empty').exists()).toBe(true)
 
     await wrapper.get('[data-testid="archive-capsule-export"]').trigger('click')
-    expect(download.createObjectURL).toHaveBeenCalledTimes(2)
-    await wrapper.get('[data-testid="archive-wall-reading-export"]').trigger('click')
     expect(download.createObjectURL).toHaveBeenCalledTimes(3)
-    expect(download.revokeObjectURL).toHaveBeenCalledTimes(3)
+    await wrapper.get('[data-testid="archive-wall-reading-export"]').trigger('click')
+    expect(download.createObjectURL).toHaveBeenCalledTimes(4)
+    expect(download.revokeObjectURL).toHaveBeenCalledTimes(4)
   })
 
   it('renders calibration records as an archive constellation instrument', async () => {

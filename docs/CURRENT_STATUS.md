@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 17 archive authored wall reading completed`
+Phase: `experience-first rebuild / slice 18 ripple authored drift reading completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose an ordered trail of safe runtime computation artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule, authored wall reading, calibration constellation, and copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, prompt/fixture project creation, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Prompt-generated projects now compile into prompt-specific key events, actants, cost lenses, process-trace artifacts, and branches immediately; when local MiniMax credentials are configured, a backstage reasoning job can enrich the project asynchronously and expose an ordered trail of safe runtime computation artifacts in the stage. Theatre reading progress persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console, authored drift reading, local trace export, and copy/export actions, while Archive exposes an afterimage capsule, authored wall reading, calibration constellation, and copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -47,6 +47,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and the project replay shelf now also reads as a replay atlas instead of only a plain restore list
 - and saved replay sets now persist with the project snapshot instead of living only inside browser-local state
 - and Ripple now has a theatre-native replay console with revealed-track metrics and a frontend-only trace packet export
+- and Ripple now derives an authored drift-reading text from revealed track, selected branch, latest bend, visible ripple cards, and saved replay count
 - and Archive now has a theatre-native afterimage capsule with reveal, decision, calibration, and export/copy affordances
 - and Archive calibration now reads as a constellation of actual outcomes, dominant result, latest return, calibrated branches, and confidence residue
 - and Archive now produces an authored wall-reading text derived from the selected worldline, branch, cost, ripple, and calibration state instead of only a structured data capsule
@@ -313,6 +314,13 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the local afterimage capsule export now includes the authored wall-reading payload
 - frontend tests cover rendered wall text and local export affordances
 
+### Experience rebuild slice 18 (ripple authored drift reading)
+
+- Ripple now derives a curator-facing drift reading from the revealed track, selected branch, latest bend, visible ripple cards, and saved replay count
+- the drift reading can be copied or exported locally without backend calls, live LLM dependency, or frontend secrets
+- the local Ripple trace packet export now includes the authored `drift_reading` payload
+- frontend tests cover rendered drift text and local export affordances
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -327,7 +335,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ### Product / experience gaps
 
-- the new theatre shell restores progressive unfolding, and Archive now has authored wall-reading output, while Ripple artifact writing can still become more authored and less template-like
+- the new theatre shell restores progressive unfolding, and both Archive/Ripple now have first authored reading outputs, while future writing passes can still become more model-assisted and less deterministic
 - the canvas is lighter and now has stricter exhibition budget checks, but real physical display testing is still needed before installation
 - calibration history now has a theatre-native constellation, but it can still become more interactive through branch filtering and event-to-event calibration drift
 - mobile and low-height exhibition layouts need another visual pass after the new orbital polish
@@ -347,9 +355,9 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice continues after `Experience Rebuild Slice 17`:
+The next active slice continues after `Experience Rebuild Slice 18`:
 
-- deepen Ripple artifact writing quality now that Archive has its first authored wall-reading layer
 - consider a durable persisted reasoning queue or streaming progress protocol now that checkpoint files are visible but still in-process
 - keep mobile and low-height visual review active through future UI passes, especially on real exhibition hardware
 - deepen calibration interaction with branch filters, event-to-event drift, or authored calibration takeaways
+- consider a second editorial pass that lets the async MiniMax lane safely enrich Archive/Ripple writing without blocking the theatre

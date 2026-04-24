@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 17 / Archive Authored Wall Reading completed`
+Current slice: `Experience Rebuild Slice 18 / Ripple Authored Drift Reading completed`
 
 ## Goal
 
@@ -305,6 +305,31 @@ This slice does include:
 - [x] included wall-reading data in the Archive capsule packet
 - [x] updated frontend tests and docs after verification
 
+## Slice 18 Acceptance Criteria
+
+- [x] Ripple exposes an authored drift-reading card derived from the revealed track, selected branch, latest bend, visible ripple cards, and saved replay count
+- [x] the drift reading contains title, thesis, path line, pressure line, and closing note in the active UI language
+- [x] drift reading can be copied/exported locally without backend calls, live LLM dependency, or frontend secrets
+- [x] Ripple trace packet export includes the authored `drift_reading` payload
+- [x] frontend tests cover rendered drift text and local export affordances
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 18 Planned Work
+
+- [x] mark Slice 18 as the active doc-tracked iteration before code changes
+- [x] derive authored Ripple drift-reading text from existing theatre state
+- [x] add drift-reading card and local copy/export actions to Ripple
+- [x] include drift-reading data in the Ripple trace packet
+- [x] update frontend tests and docs after verification
+
+## Slice 18 Completed
+
+- [x] added a Ripple drift-reading card that turns revealed-track continuity into curator-facing text
+- [x] derived path, pressure, archive, confidence, and closing lines from existing local theatre state
+- [x] added copy/export actions for the drift reading without backend calls, live LLM dependency, or frontend secrets
+- [x] included the authored `drift_reading` payload in the local Ripple trace packet
+- [x] updated frontend coverage for the rendered reading and export action
+
 ## Slice 1 Completed
 
 - [x] the repo has canonical `CURRENT_STATUS / NEXT_WORK_PLAN / DEVELOPMENT_LOG / BLOCKERS` docs
@@ -399,6 +424,7 @@ This slice does include:
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [x] add authored Archive wall-reading output so the afterimage is not only a structured data packet
 - [x] make Archive calibration read as a constellation / afterimage instrument instead of only an input drawer
+- [x] add authored Ripple drift-reading output so continuity is not only a technical trace packet
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 
