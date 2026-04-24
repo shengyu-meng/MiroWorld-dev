@@ -8,6 +8,8 @@ test('viewer can unfold a worldline without writing an intervention', async ({ p
 
   await expect(page.getByTestId('worldline-theatre')).toBeVisible()
   await expect(page.getByTestId('revealed-event-count')).toContainText(/1 \/ 3|1 \/ 4|1 \/ 5/)
+  await expect(page.getByTestId('theatre-readout')).toContainText(/1 \/ 3|1 \/ 4|1 \/ 5/)
+  await expect(page.getByTestId('stage-orbit-map')).toBeVisible()
   await expect(page.getByTestId('process-trace-panel')).toBeVisible()
   await expect(page.getByTestId('process-file-path')).toContainText(/data\/runtime\/process/)
 

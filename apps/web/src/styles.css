@@ -1,18 +1,21 @@
 :root {
   color-scheme: dark;
-  font-family: 'Aptos', 'Segoe UI', sans-serif;
+  font-family: 'Bahnschrift', 'Aptos', 'Microsoft YaHei UI', sans-serif;
   --bg: #061017;
+  --void: #020307;
   --bg-soft: rgba(8, 15, 20, 0.72);
   --panel: rgba(8, 15, 20, 0.78);
+  --panel-faint: rgba(7, 10, 20, 0.54);
   --panel-strong: rgba(10, 18, 24, 0.9);
   --line: rgba(120, 176, 194, 0.16);
   --line-strong: rgba(160, 217, 233, 0.34);
   --text: #e8efe9;
   --muted: #8fa7b0;
-  --warm: #ffb979;
-  --cool: #8be2f8;
-  --ripple: #c3b4ff;
-  --archive: #8ef0ce;
+  --warm: #ffb44a;
+  --amber: #ffd58a;
+  --cool: #7de5ff;
+  --ripple: #8f7bff;
+  --archive: #96f7bc;
   --shadow: 0 28px 90px rgba(0, 0, 0, 0.4);
 }
 
@@ -1594,22 +1597,51 @@ li {
 
 /* Worldline Theatre slice */
 .theatre-page {
+  --theatre-border: rgba(255, 213, 138, 0.18);
+  --theatre-border-cool: rgba(125, 229, 255, 0.16);
   background:
-    radial-gradient(circle at 52% 54%, rgba(255, 185, 96, 0.13), transparent 14%),
-    radial-gradient(circle at 18% 20%, rgba(91, 151, 169, 0.16), transparent 24%),
-    linear-gradient(180deg, rgba(3, 8, 11, 0.92), rgba(5, 9, 12, 0.98));
+    radial-gradient(circle at 54% 58%, rgba(255, 180, 74, 0.11), transparent 18%),
+    radial-gradient(circle at 20% 14%, rgba(125, 229, 255, 0.12), transparent 24%),
+    radial-gradient(circle at 78% 78%, rgba(143, 123, 255, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(2, 3, 7, 0.98), rgba(4, 7, 13, 0.98) 58%, rgba(2, 3, 7, 1));
+}
+
+.theatre-page::before,
+.theatre-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.theatre-page::before {
+  z-index: 0;
+  opacity: 0.3;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(244, 239, 231, 0.72) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 82% 24%, rgba(125, 229, 255, 0.58) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 46% 72%, rgba(255, 213, 138, 0.48) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 42%, rgba(244, 239, 231, 0.42) 0 1px, transparent 1.4px);
+  background-size: 180px 180px, 230px 230px, 270px 270px, 320px 320px;
+}
+
+.theatre-page::after {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 52%, transparent 0 42%, rgba(0, 0, 0, 0.18) 68%, rgba(0, 0, 0, 0.58) 100%),
+    linear-gradient(90deg, rgba(125, 229, 255, 0.03), transparent 18%, transparent 82%, rgba(255, 213, 138, 0.03));
 }
 
 .theatre-shell {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   min-height: 100vh;
-  width: min(1640px, calc(100% - 2rem));
+  width: min(1720px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: clamp(1rem, 1.8vw, 1.8rem) 0 1rem;
+  padding: clamp(0.9rem, 1.5vw, 1.45rem) 0 1rem;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-  gap: clamp(0.85rem, 1.6vw, 1.2rem);
+  gap: clamp(0.7rem, 1.2vw, 1rem);
 }
 
 .theatre-topbar,
@@ -1617,19 +1649,22 @@ li {
 .theatre-panel,
 .theatre-drawer,
 .theatre-status {
-  border: 1px solid rgba(149, 216, 232, 0.16);
-  background: linear-gradient(180deg, rgba(4, 12, 16, 0.76), rgba(4, 9, 12, 0.58));
-  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--theatre-border-cool);
+  background:
+    linear-gradient(180deg, rgba(8, 12, 24, 0.64), rgba(5, 7, 15, 0.38)),
+    radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 180, 74, 0.1), transparent 42%);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px);
 }
 
 .theatre-topbar {
-  border-radius: 1.4rem;
-  padding: clamp(1rem, 1.8vw, 1.35rem);
+  border-color: rgba(255, 213, 138, 0.14);
+  border-radius: 1.65rem;
+  padding: clamp(0.9rem, 1.45vw, 1.2rem) clamp(1rem, 1.8vw, 1.45rem);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 1rem;
-  align-items: start;
+  align-items: center;
 }
 
 .theatre-title-block {
@@ -1638,8 +1673,10 @@ li {
 }
 
 .theatre-title-block h1 {
-  max-width: 18ch;
-  font-size: clamp(2.35rem, 5.2vw, 5.2rem);
+  max-width: 19ch;
+  font-size: clamp(2.25rem, 4.7vw, 5rem);
+  letter-spacing: -0.045em;
+  text-shadow: 0 0 58px rgba(255, 180, 74, 0.08);
 }
 
 .theatre-title-block p {
@@ -1649,9 +1686,36 @@ li {
 }
 
 .theatre-tools {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   justify-items: end;
-  gap: 0.7rem;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  align-items: center;
+  min-width: min(420px, 34vw);
+}
+
+.theatre-readout {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 118px;
+  padding: 0.5rem 0.72rem;
+  border: 1px solid rgba(255, 213, 138, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 180, 74, 0.06);
+}
+
+.theatre-readout span {
+  color: var(--muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.theatre-readout strong {
+  color: var(--amber);
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 .theatre-live-dot {
@@ -1674,10 +1738,10 @@ li {
 }
 
 .worldline-theatre {
-  min-height: min(64vh, 760px);
+  min-height: min(72vh, 830px);
   display: grid;
-  grid-template-columns: minmax(250px, 0.72fr) minmax(360px, 1.4fr) minmax(320px, 0.92fr);
-  gap: clamp(0.9rem, 1.4vw, 1.2rem);
+  grid-template-columns: minmax(220px, 0.58fr) minmax(560px, 1.72fr) minmax(300px, 0.78fr);
+  gap: clamp(0.7rem, 1.2vw, 1rem);
 }
 
 .theatre-left-rail,
@@ -1685,22 +1749,47 @@ li {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.7rem;
 }
 
 .theatre-right-rail {
-  max-height: min(64vh, 760px);
+  max-height: min(72vh, 830px);
   overflow: auto;
   padding-right: 0.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 213, 138, 0.34) transparent;
 }
 
 .theatre-panel {
-  border-radius: 1.35rem;
-  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.3rem;
+  padding: 0.95rem;
+}
+
+.theatre-panel::after,
+.theatre-drawer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 24%, transparent 72%, rgba(125, 229, 255, 0.045));
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.theatre-panel > *,
+.theatre-drawer > * {
+  position: relative;
+  z-index: 1;
 }
 
 .theatre-panel--quiet {
-  background: linear-gradient(180deg, rgba(7, 18, 22, 0.56), rgba(4, 10, 13, 0.44));
+  border-color: rgba(255, 213, 138, 0.16);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 180, 74, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(8, 12, 24, 0.58), rgba(4, 7, 13, 0.4));
 }
 
 .theatre-panel h2,
@@ -1711,14 +1800,14 @@ li {
 
 .theatre-panel h2 {
   max-width: 20ch;
-  font-size: clamp(1.45rem, 2vw, 2.2rem);
+  font-size: clamp(1.36rem, 1.8vw, 2rem);
 }
 
 .theatre-progress-track {
-  height: 0.35rem;
+  height: 0.28rem;
   margin: 0.9rem 0 0.75rem;
   border-radius: 999px;
-  background: rgba(139, 226, 248, 0.12);
+  background: rgba(125, 229, 255, 0.1);
   overflow: hidden;
 }
 
@@ -1791,6 +1880,10 @@ li {
 
 .surface-orbit {
   align-content: start;
+  padding: 0.35rem;
+  border: 1px solid rgba(125, 229, 255, 0.08);
+  border-radius: 1.25rem;
+  background: rgba(2, 3, 7, 0.18);
 }
 
 .surface-chip span {
@@ -1800,12 +1893,16 @@ li {
 .theatre-center-field {
   position: relative;
   min-height: 100%;
-  border: 1px solid rgba(149, 216, 232, 0.1);
-  border-radius: 1.6rem;
+  border: 1px solid rgba(255, 213, 138, 0.1);
+  border-radius: 1.9rem;
   background:
-    radial-gradient(circle at 50% 52%, rgba(255, 185, 121, 0.12), transparent 18%),
-    radial-gradient(circle at 46% 54%, rgba(0, 0, 0, 0.34), transparent 12%),
-    linear-gradient(180deg, rgba(4, 10, 13, 0.24), rgba(4, 10, 13, 0.08));
+    radial-gradient(circle at 52% 55%, rgba(255, 180, 74, 0.16), transparent 15%),
+    radial-gradient(circle at 49% 56%, rgba(0, 0, 0, 0.42), transparent 10%),
+    radial-gradient(circle at 44% 46%, rgba(125, 229, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(3, 6, 11, 0.26), rgba(3, 5, 9, 0.08));
+  box-shadow:
+    inset 0 0 80px rgba(125, 229, 255, 0.045),
+    inset 0 -80px 120px rgba(0, 0, 0, 0.24);
   overflow: hidden;
 }
 
@@ -1815,28 +1912,80 @@ li {
   position: absolute;
   inset: 12% 6%;
   border-radius: 999px;
-  border: 1px solid rgba(139, 226, 248, 0.13);
+  border: 1px solid rgba(125, 229, 255, 0.11);
   transform: rotate(-8deg);
   pointer-events: none;
 }
 
 .theatre-center-field::after {
   inset: 22% 12%;
-  border-color: rgba(255, 185, 121, 0.12);
+  border-color: rgba(255, 213, 138, 0.12);
   transform: rotate(14deg);
+}
+
+.stage-orbit-map {
+  position: absolute;
+  inset: 11% 8% 14%;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.stage-orbit-map i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.56rem;
+  height: 0.56rem;
+  border-radius: 999px;
+  background: rgba(125, 229, 255, 0.42);
+  box-shadow: 0 0 22px rgba(125, 229, 255, 0.18);
+  opacity: 0.38;
+  transform:
+    rotate(var(--orbit-angle))
+    translateX(var(--orbit-distance))
+    rotate(var(--orbit-counter-angle))
+    scale(0.86);
+  transition:
+    opacity 280ms ease,
+    transform 280ms ease,
+    background 280ms ease,
+    box-shadow 280ms ease;
+  transition-delay: var(--orbit-delay);
+}
+
+.stage-orbit-map i.revealed {
+  opacity: 0.86;
+  background: rgba(125, 229, 255, 0.9);
+}
+
+.stage-orbit-map i.active {
+  width: 0.78rem;
+  height: 0.78rem;
+  background: var(--amber);
+  box-shadow:
+    0 0 0 0.3rem rgba(255, 180, 74, 0.12),
+    0 0 34px rgba(255, 180, 74, 0.42);
+  opacity: 1;
+  transform:
+    rotate(var(--orbit-angle))
+    translateX(var(--orbit-distance))
+    rotate(var(--orbit-counter-angle))
+    scale(1);
 }
 
 .singularity-caption {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(260px, 42%);
+  width: min(220px, 36%);
   transform: translate(-50%, -50%);
   text-align: center;
   display: grid;
   gap: 0.35rem;
-  color: rgba(232, 239, 233, 0.78);
+  color: rgba(244, 239, 231, 0.76);
   pointer-events: none;
+  z-index: 1;
 }
 
 .singularity-caption span {
@@ -1848,19 +1997,20 @@ li {
 
 .process-trace-card {
   position: absolute;
-  left: clamp(1rem, 2vw, 1.4rem);
-  top: clamp(1rem, 2vw, 1.4rem);
-  width: min(520px, calc(100% - 2rem));
+  left: clamp(0.9rem, 1.6vw, 1.25rem);
+  top: clamp(0.9rem, 1.6vw, 1.25rem);
+  width: min(500px, calc(100% - 2rem));
   display: grid;
   gap: 0.75rem;
   padding: 1rem;
-  border: 1px solid rgba(139, 226, 248, 0.18);
-  border-radius: 1.2rem;
+  border: 1px solid rgba(125, 229, 255, 0.16);
+  border-radius: 1.35rem;
   background:
-    radial-gradient(circle at top right, rgba(139, 226, 248, 0.1), transparent 34%),
-    linear-gradient(180deg, rgba(4, 12, 16, 0.84), rgba(3, 8, 11, 0.64));
+    radial-gradient(circle at top right, rgba(125, 229, 255, 0.11), transparent 36%),
+    radial-gradient(circle at 12% 0%, rgba(255, 180, 74, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(7, 10, 20, 0.72), rgba(3, 5, 9, 0.54));
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(18px);
   overflow: hidden;
   z-index: 2;
 }
@@ -1993,9 +2143,9 @@ li {
   gap: 0.22rem;
   text-align: left;
   padding: 0.65rem;
-  border: 1px solid rgba(139, 226, 248, 0.12);
+  border: 1px solid rgba(125, 229, 255, 0.12);
   border-radius: 0.85rem;
-  background: rgba(5, 13, 17, 0.7);
+  background: rgba(2, 3, 7, 0.48);
   color: var(--text);
   cursor: pointer;
   transition:
@@ -2010,8 +2160,8 @@ li {
 }
 
 .process-layer-card.active {
-  border-color: rgba(255, 185, 121, 0.76);
-  background: linear-gradient(180deg, rgba(68, 39, 24, 0.82), rgba(12, 15, 16, 0.68));
+  border-color: rgba(255, 213, 138, 0.76);
+  background: linear-gradient(180deg, rgba(68, 39, 24, 0.74), rgba(8, 10, 16, 0.62));
 }
 
 .process-layer-card span {
@@ -2100,9 +2250,9 @@ li {
 
 .progressive-worldline {
   position: absolute;
-  inset: auto 1.2rem 1.1rem;
+  inset: auto 1rem 1rem;
   display: flex;
-  gap: 0.7rem;
+  gap: 0.62rem;
   align-items: flex-end;
   list-style: none;
   margin: 0;
@@ -2111,24 +2261,29 @@ li {
 }
 
 .progressive-worldline li {
-  flex: 0 0 min(240px, 44vw);
+  flex: 0 0 min(218px, 42vw);
 }
 
 .progressive-worldline button,
 .ghost-node {
   width: 100%;
-  min-height: 112px;
-  border: 1px solid rgba(139, 226, 248, 0.15);
-  border-radius: 1.1rem;
-  background: rgba(5, 12, 16, 0.72);
+  min-height: 104px;
+  border: 1px solid rgba(125, 229, 255, 0.13);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(7, 10, 20, 0.6), rgba(2, 3, 7, 0.48)),
+    radial-gradient(circle at 100% 0%, rgba(125, 229, 255, 0.08), transparent 42%);
   color: var(--text);
   text-align: left;
   padding: 0.9rem;
 }
 
 .progressive-worldline li.active button {
-  border-color: rgba(255, 185, 121, 0.74);
-  background: linear-gradient(180deg, rgba(73, 39, 24, 0.84), rgba(14, 18, 18, 0.72));
+  border-color: rgba(255, 213, 138, 0.76);
+  background:
+    linear-gradient(180deg, rgba(73, 39, 24, 0.78), rgba(8, 10, 16, 0.64)),
+    radial-gradient(circle at 100% 0%, rgba(255, 180, 74, 0.14), transparent 46%);
+  box-shadow: 0 0 34px rgba(255, 180, 74, 0.12);
 }
 
 .progressive-worldline button span,
@@ -2170,9 +2325,9 @@ li {
 
 .branch-chip,
 .input-mode-chip {
-  border: 1px solid rgba(139, 226, 248, 0.14);
+  border: 1px solid rgba(125, 229, 255, 0.13);
   border-radius: 1rem;
-  background: rgba(4, 12, 16, 0.76);
+  background: rgba(2, 3, 7, 0.46);
   color: var(--text);
   text-align: left;
   padding: 0.75rem 0.85rem;
@@ -2191,8 +2346,10 @@ li {
 
 .branch-chip.active,
 .input-mode-chip.active {
-  border-color: rgba(255, 185, 121, 0.74);
-  background: rgba(91, 49, 28, 0.72);
+  border-color: rgba(255, 213, 138, 0.74);
+  background:
+    linear-gradient(180deg, rgba(91, 49, 28, 0.62), rgba(9, 10, 16, 0.48));
+  box-shadow: 0 0 28px rgba(255, 180, 74, 0.1);
 }
 
 .branch-description {
@@ -2208,10 +2365,16 @@ li {
 }
 
 .theatre-drawer {
-  border-radius: 1.45rem;
-  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(255, 213, 138, 0.13);
+  border-radius: 1.55rem;
+  padding: 0.95rem;
   display: grid;
   gap: 0.9rem;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 180, 74, 0.09), transparent 34%),
+    linear-gradient(180deg, rgba(8, 12, 24, 0.64), rgba(3, 5, 9, 0.48));
 }
 
 .theatre-drawer header {
@@ -2228,13 +2391,14 @@ li {
 .drawer-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.68rem;
 }
 
 .drawer-card {
-  border: 1px solid rgba(149, 216, 232, 0.14);
+  border: 1px solid rgba(125, 229, 255, 0.11);
   border-radius: 1.15rem;
-  background: rgba(2, 8, 11, 0.54);
+  background:
+    linear-gradient(180deg, rgba(7, 10, 20, 0.52), rgba(2, 3, 7, 0.36));
   padding: 0.9rem;
 }
 
@@ -2278,7 +2442,8 @@ li {
 .theatre-bottombar {
   position: sticky;
   bottom: 0.75rem;
-  border-radius: 1.35rem;
+  border-color: rgba(255, 213, 138, 0.18);
+  border-radius: 999px;
   padding: 0.9rem;
   display: flex;
   justify-content: space-between;
@@ -2288,14 +2453,15 @@ li {
 
 .theatre-primary-action,
 .theatre-secondary-action {
-  border: 1px solid rgba(255, 185, 121, 0.42);
+  border: 1px solid rgba(255, 213, 138, 0.42);
   border-radius: 999px;
   color: var(--text);
   padding: 0.75rem 1rem;
 }
 
 .theatre-primary-action {
-  background: linear-gradient(180deg, rgba(255, 185, 121, 0.28), rgba(73, 39, 24, 0.7));
+  background: linear-gradient(180deg, rgba(255, 180, 74, 0.3), rgba(73, 39, 24, 0.7));
+  box-shadow: 0 0 34px rgba(255, 180, 74, 0.12);
 }
 
 .theatre-secondary-action {
@@ -2355,6 +2521,8 @@ li {
 
   .theatre-tools {
     justify-items: start;
+    justify-content: flex-start;
+    min-width: 0;
   }
 
   .theatre-bottom-actions {
@@ -2385,6 +2553,10 @@ li {
   .branch-chip,
   .input-mode-chip,
   .process-layer-card {
+    transition: none;
+  }
+
+  .stage-orbit-map i {
     transition: none;
   }
 

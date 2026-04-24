@@ -303,12 +303,15 @@ describe('worldline theatre stage', () => {
     const { wrapper, fetchMock } = await mountStage()
 
     expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('1 / 3')
+    expect(wrapper.get('[data-testid="theatre-readout"]').text()).toContain('1 / 3')
+    expect(wrapper.findAll('[data-testid="stage-orbit-map"] i')).toHaveLength(3)
     expect(wrapper.find('[data-testid="worldline-event-evt_1"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(false)
 
     await wrapper.get('[data-testid="worldline-next"]').trigger('click')
     await flushPromises()
     expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('2 / 3')
+    expect(wrapper.findAll('[data-testid="stage-orbit-map"] i.revealed')).toHaveLength(2)
     expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/progress'),

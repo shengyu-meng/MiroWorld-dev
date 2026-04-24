@@ -815,3 +815,39 @@ Still open after slice 8:
 - run a visual review against `.ui-ref` to tune stage rhythm, drawer density, and black-hole scale
 - re-integrate advanced Archive and Ripple authored-export surfaces into the theatre language
 - tighten the performance benchmark thresholds for exhibition-grade deployment
+
+## 2026-04-24 - Experience Rebuild Slice 9 (impeccable theatre polish started)
+
+Planned in this iteration:
+
+- use the `teach-impeccable` / `frontend-design` workflow to establish durable UI design context before polishing
+- add a local `.impeccable.md` design context so future agents do not drift back toward report/dashboard language
+- tune the current theatre shell against the local `.ui-ref` orbital observatory direction without copying the reference package
+- add lightweight readout/orbit affordances tied to real reveal state
+- keep the polish inside existing performance and contract boundaries
+
+## 2026-04-24 - Experience Rebuild Slice 9 (impeccable theatre polish completed)
+
+Completed in this iteration:
+
+- added `.impeccable.md` with audience, tone, aesthetic direction, and design principles for MiroWorld UI work
+- added a topbar orbit readout and central event orbit map to the stage route
+- bound the orbit map to actual event reveal and active-selection state rather than decorative fake data
+- retuned theatre shell colors, panel borders, center-field atmosphere, drawer treatment, and bottom bar toward a thinner orbital instrument language
+- extended frontend route and smoke coverage for the new readout/orbit UI
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed with smoke and performance E2E specs
+- `npm run test:perf` passed
+- final diff, secret, and reference-folder checks passed before commit and push
+
+Still open after slice 9:
+
+- re-integrate advanced Archive and Ripple authored-export surfaces into the same theatre language
+- review mobile and low-height exhibition layouts after the orbital polish pass
+- tighten the performance benchmark thresholds for exhibition-grade deployment

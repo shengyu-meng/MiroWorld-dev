@@ -1,5 +1,5 @@
 <template>
-  <main class="theatre-page stage-page">
+  <main class="theatre-page stage-page" :data-surface="activeSurface">
     <WorldlineCanvas
       :active-surface="activeSurface"
       :events="revealedEvents"
@@ -19,6 +19,10 @@
         </div>
         <div class="theatre-tools">
           <LanguageToggle v-model="language" />
+          <span class="theatre-readout" data-testid="theatre-readout">
+            <span>{{ t.readout }}</span>
+            <strong>{{ revealedCount }} / {{ events.length || '-' }}</strong>
+          </span>
           <span class="theatre-live-dot">{{ t.live }}</span>
         </div>
       </header>
@@ -84,6 +88,18 @@
           </aside>
 
           <section class="theatre-center-field">
+            <div class="stage-orbit-map" data-testid="stage-orbit-map" aria-hidden="true">
+              <i
+                v-for="(event, index) in events"
+                :key="`orbit-${event.event_id}`"
+                :class="{
+                  revealed: revealedIds.has(event.event_id),
+                  active: event.event_id === selectedEventId,
+                }"
+                :style="orbitNodeStyle(index, events.length)"
+              ></i>
+            </div>
+
             <div class="singularity-caption">
               <span>{{ t.singularityLabel }}</span>
               <strong>{{ t.singularityNote }}</strong>
@@ -473,6 +489,7 @@ const theatreCopy = {
   zh: {
     kicker: 'MIROWORLD THEATRE',
     live: '世界线在线',
+    readout: '轨道读数',
     loading: '正在装配世界线剧场...',
     summaryFallback: '世界线先显影，解释稍后抵达。',
     progressLabel: '显影进度',
@@ -537,6 +554,7 @@ const theatreCopy = {
   en: {
     kicker: 'MIROWORLD THEATRE',
     live: 'worldline live',
+    readout: 'Orbit Readout',
     loading: 'Assembling the worldline theatre...',
     summaryFallback: 'The line appears first. Explanation arrives later.',
     progressLabel: 'Reveal Progress',
@@ -601,6 +619,7 @@ const theatreCopy = {
 } satisfies Record<DisplayLanguage, {
   kicker: string
   live: string
+  readout: string
   loading: string
   summaryFallback: string
   progressLabel: string
@@ -1012,5 +1031,17 @@ function cleanText(value?: string | null) {
 
 function formatConfidence(value: number) {
   return `${Math.round(value * 100)}%`
+}
+
+function orbitNodeStyle(index: number, total: number) {
+  const denominator = Math.max(total - 1, 1)
+  const angle = -126 + (252 * index) / denominator
+  const distance = 34 + (index % 3) * 6
+  return {
+    '--orbit-angle': `${angle}deg`,
+    '--orbit-counter-angle': `${-angle}deg`,
+    '--orbit-distance': `${distance}%`,
+    '--orbit-delay': `${index * 80}ms`,
+  } as Record<string, string>
 }
 </script>

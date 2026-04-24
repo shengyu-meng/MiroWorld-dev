@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 8 persistent theatre reading completed`
+Phase: `experience-first rebuild / slice 9 impeccable theatre polish completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Theatre reading progress now persists in project snapshots, so a viewer can refresh and resume the same revealed layer, selected node, selected branch, and surface.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Theatre reading progress now persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -19,6 +19,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - process artifacts now include orbit progress, runtime artifact strip, preview metrics, and an expanded selected-layer inspector
 - browser performance now has a repeatable Playwright benchmark instead of only manual impressions
 - theatre reading progress now saves back to the project snapshot and restores through `stage.surface_defaults` after refresh
+- `.impeccable.md` now captures the durable design context: cosmic, precise, consequential, with the worldline and cost of choice as the primary visual subject
+- the theatre UI now has a topbar orbit readout and central event orbit map bound to real reveal state
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - and the archive can now leave the UI as a self-contained exhibit HTML artifact instead of only fragmented exports
@@ -230,6 +232,14 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the stage saves progress after Next, event selection, branch selection, surface changes, process intervention jumps, replay input, share, and calibration paths
 - frontend, API, and E2E coverage now validate progress persistence across reload
 
+### Experience rebuild slice 9 (impeccable theatre polish)
+
+- `.impeccable.md` now stores the project design context and principles for future UI work
+- the stage topbar now includes an orbit readout tied to revealed node count
+- the central theatre field now includes a lightweight event orbit map that distinguishes latent, revealed, and active nodes
+- theatre colors, spacing, panel borders, drawers, and bottom-bar treatment were retuned toward the local `.ui-ref` orbital observatory language without copying or tracking the reference package
+- frontend route and smoke tests now cover the new readout/orbit affordances
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -247,6 +257,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the new theatre shell restores progressive unfolding, but the Archive/Ripple advanced authored-export surfaces are now visually secondary and may need re-integration into the theatre language
 - the canvas is lighter and has a browser benchmark, but thresholds can still become stricter before exhibition deployment
 - calibration history is still available but can become more theatrical inside the Archive drawer instead of remaining mostly utility-like
+- mobile and low-height exhibition layouts need another visual pass after the new orbital polish
 
 ### Content expression gaps
 
@@ -262,8 +273,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice continues after `Experience Rebuild Slice 8`:
+The next active slice continues after `Experience Rebuild Slice 9`:
 
-- run a visual/browser review of the new theatre shell against `.ui-ref` and tune spacing, scale, and black-hole size
 - re-integrate the deeper Ripple/Archive authored export tools into the theatre drawer language without returning to report density
 - continue tightening the performance benchmark toward stricter exhibition thresholds once the visual system stabilizes
+- review mobile and low-height exhibition displays so the orbit polish does not collapse into dense panels on smaller screens

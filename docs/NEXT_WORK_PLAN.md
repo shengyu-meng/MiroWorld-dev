@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 8 / Persistent Theatre Reading completed`
+Current slice: `Experience Rebuild Slice 9 / Impeccable Theatre Polish completed`
 
 ## Goal
 
@@ -33,6 +33,8 @@ This slice does include:
 - a more cinematic computation display that still keeps data-file truth visible
 - a repeatable browser performance benchmark for canvas FPS and Next-step latency
 - persistent theatre reading state so refreshes can resume the same worldline layer
+- an `.impeccable.md` design context so future UI work keeps the artwork's visual language consistent
+- a stronger orbital theatre polish pass that makes the current stage feel less like stacked cards
 - cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
 - performance-focused canvas simplification with a smaller black-hole anchor
 - further documentation sync after each iteration
@@ -115,11 +117,28 @@ This slice does include:
 - [x] added a lightweight save-state marker that never blocks ordinary stage navigation
 - [x] extended API, frontend, and E2E coverage so progress persistence is validated across reload
 
+## Slice 9 Acceptance Criteria
+
+- [x] project has a reusable `.impeccable.md` design context describing audience, tone, aesthetic direction, and design principles
+- [x] `/world/:projectId` gains a stronger orbital-theatre treatment without copying or tracking `.ui-ref`
+- [x] central stage includes lightweight orbital event readouts tied to real revealed worldline state
+- [x] panel, drawer, and bottom-bar styling moves further away from generic report/card density
+- [x] frontend tests cover the new theatre readout/orbit affordances
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 9 Completed
+
+- [x] added `.impeccable.md` with durable art-first UI guidance for future design iterations
+- [x] added a topbar orbit readout and a central event orbit map bound to revealed/active worldline state
+- [x] retuned theatre colors, spacing, panel borders, drawer treatment, and center-field atmosphere toward the `.ui-ref` orbital observatory language
+- [x] preserved reduced-motion behavior and existing canvas performance boundaries
+- [x] updated route and smoke coverage for the new readout/orbit UI
+
 ## Next Candidate Slice
 
-- [ ] run a visual review of the theatre shell against `.ui-ref` and tune spatial rhythm, black-hole scale, and drawer density
 - [ ] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [ ] tighten the existing browser performance benchmark into stricter exhibition thresholds
+- [ ] continue visual review on mobile and low-height exhibition displays after the orbital polish pass
 
 ## Slice 1 Completed
 
@@ -205,6 +224,7 @@ This slice does include:
 - [x] add clearer curatorial control so replay sets can be authored before save/export instead of only using derived labels
 - [x] widen the replay author deck beyond title and note so richer curatorial fields can flow into saved replay artifacts
 - [x] move theatre reveal progress from frontend-local memory into project-level persistence
+- [x] add the `.impeccable.md` design context and first orbital UI polish pass
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
