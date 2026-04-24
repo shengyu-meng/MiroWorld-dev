@@ -777,3 +777,41 @@ Verification:
 - `git diff --check` passed
 - secret scan returned no matches for the provided MiniMax key fragment
 - `git ls-files .ui-ref ui-ref` returned no tracked reference files
+
+## 2026-04-24 - Experience Rebuild Slice 8 (persistent theatre reading started)
+
+Planned in this iteration:
+
+- move theatre reveal progress from frontend-local memory into project snapshots
+- add a progress save endpoint and typed frontend API call
+- restore revealed event count, selected event, selected branch, and active surface from `stage.surface_defaults`
+- show lightweight save state in the theatre without blocking navigation
+- cover refresh/resume behavior in API, frontend, and E2E tests
+
+## 2026-04-24 - Experience Rebuild Slice 8 (persistent theatre reading completed)
+
+Completed in this iteration:
+
+- added `TheatreProgress` to the project model and world-state contract so reveal progress is stored with project snapshots
+- added `POST /api/projects/{projectId}/progress` with event/branch sanitization and saved timestamp updates
+- extended `stage.surface_defaults` so revealed count, selected event, selected branch, active surface, and save timestamp restore after refresh
+- wired the theatre UI to save progress after Next, event selection, branch selection, surface changes, process intervention jumps, replay input, share, and calibration paths
+- added a lightweight save-state marker in the progress panel without blocking navigation
+- extended API, frontend, and Playwright coverage for progress persistence across reload
+
+Verification:
+
+- `npm run test:api` passed
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run build` passed
+- `npm run test` passed
+- `npm run smoke` passed with smoke and performance E2E specs
+- `npm run test:perf` passed
+- final diff, secret, and reference-folder checks passed before commit and push
+
+Still open after slice 8:
+
+- run a visual review against `.ui-ref` to tune stage rhythm, drawer density, and black-hole scale
+- re-integrate advanced Archive and Ripple authored-export surfaces into the theatre language
+- tighten the performance benchmark thresholds for exhibition-grade deployment

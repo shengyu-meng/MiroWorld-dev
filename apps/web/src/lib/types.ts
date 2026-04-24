@@ -158,6 +158,14 @@ export interface SavedReplaySet extends SavedReplaySetDraft {
   saved_at: string
 }
 
+export interface TheatreProgress {
+  revealed_event_count: number
+  selected_event_id: string
+  selected_branch_id: string
+  active_surface: SurfaceKey
+  updated_at: string
+}
+
 export interface ProcessLayerResult {
   layer: KnowledgeLayer
   title: string
@@ -218,6 +226,8 @@ export interface StageData {
     selected_event_id: string
     selected_branch_id: string
     active_surface: SurfaceKey
+    revealed_event_count: number
+    progress_saved_at: string
   }
   observatory: {
     knowledge_layers: string[]

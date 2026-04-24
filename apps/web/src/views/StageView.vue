@@ -38,6 +38,13 @@
                 <i :style="{ width: `${stageProgress * 100}%` }"></i>
               </div>
               <p>{{ progressComplete ? t.progressComplete : t.progressHint }}</p>
+              <small
+                class="progress-save-state"
+                :class="`progress-save-state--${progressSaveState}`"
+                data-testid="progress-save-state"
+              >
+                {{ progressSaveLabel }}
+              </small>
             </article>
 
             <article class="theatre-panel">
@@ -68,7 +75,7 @@
                 type="button"
                 class="surface-chip"
                 :class="{ active: surface.key === activeSurface }"
-                @click="activeSurface = surface.key"
+                @click="handleSurfaceChange(surface.key)"
               >
                 <span>{{ surface.index }}</span>
                 {{ surface.label }}
@@ -373,7 +380,7 @@
             <strong>{{ activeSurfaceCopy.label }} / {{ cleanText(selectedBranch.label) }}</strong>
           </div>
           <div class="theatre-bottom-actions">
-            <button type="button" class="theatre-secondary-action" @click="activeSurface = 'intervention'">
+            <button type="button" class="theatre-secondary-action" @click="handleSurfaceChange('intervention')">
               {{ t.interveneShortcut }}
             </button>
             <button type="button" class="theatre-primary-action" data-testid="worldline-next" @click="advanceWorldline">
@@ -397,6 +404,7 @@ import {
   buildShare,
   getStage,
   recordCalibration,
+  saveTheatreProgress,
 } from '@/lib/api'
 import type {
   Branch,
@@ -407,6 +415,7 @@ import type {
   KnowledgeLayer,
   StageData,
   SurfaceKey,
+  TheatreProgress,
 } from '@/lib/types'
 
 const route = useRoute()
@@ -431,6 +440,8 @@ const shareSnapshot = ref<StageData['archive']['share_snapshot'] | null>(null)
 const revealedCount = ref(1)
 const pulseKey = ref(0)
 const branchMemory = ref<Record<string, string>>({})
+const progressSaveState = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+let progressSaveRevision = 0
 
 const surfaceKeys: SurfaceKey[] = ['observatory', 'intervention', 'cost', 'ripple', 'archive']
 const calibrationResults: CalibrationRecord['result'][] = ['hit', 'partial', 'miss', 'insufficient_data']
@@ -669,8 +680,24 @@ const processCopy = {
   openInterventionWindow: string
 }>
 
+const progressSaveCopy = {
+  zh: {
+    idle: '阅读书签待同步',
+    saving: '正在保存阅读书签',
+    saved: '阅读书签已保存',
+    failed: '书签暂存本地',
+  },
+  en: {
+    idle: 'bookmark pending',
+    saving: 'saving bookmark',
+    saved: 'bookmark saved',
+    failed: 'bookmark local only',
+  },
+} satisfies Record<DisplayLanguage, Record<'idle' | 'saving' | 'saved' | 'failed', string>>
+
 const t = computed(() => theatreCopy[language.value])
 const processText = computed(() => processCopy[language.value])
+const progressSaveLabel = computed(() => progressSaveCopy[language.value][progressSaveState.value])
 const events = computed(() => stage.value?.observatory.key_events ?? [])
 const revealedEvents = computed(() => events.value.slice(0, Math.min(revealedCount.value, events.value.length)))
 const revealedIds = computed(() => new Set(revealedEvents.value.map((event) => event.event_id)))
@@ -761,7 +788,7 @@ async function loadStage() {
   try {
     const projectId = route.params.projectId as string
     const nextStage = await getStage(projectId, language.value)
-    syncSelection(nextStage)
+    syncSelection(nextStage, activeSurface.value, true)
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
   } finally {
@@ -769,21 +796,26 @@ async function loadStage() {
   }
 }
 
-function syncSelection(nextStage: StageData, nextSurface = activeSurface.value) {
+function syncSelection(nextStage: StageData, nextSurface = activeSurface.value, restoreProgress = false) {
   stage.value = nextStage
-  activeSurface.value = nextSurface
+  activeSurface.value = restoreProgress ? nextStage.surface_defaults.active_surface : nextSurface
   shareSnapshot.value = nextStage.archive.share_snapshot
 
   const nextEvents = nextStage.observatory.key_events
-  revealedCount.value = Math.max(1, Math.min(revealedCount.value, nextEvents.length || 1))
+  const preferredRevealCount = restoreProgress
+    ? nextStage.surface_defaults.revealed_event_count
+    : revealedCount.value
+  revealedCount.value = Math.max(1, Math.min(preferredRevealCount, nextEvents.length || 1))
 
   const visibleEvents = nextEvents.slice(0, revealedCount.value)
-  const nextEvent = visibleEvents.find((event) => event.event_id === selectedEventId.value)
+  const preferredEventId = restoreProgress ? nextStage.surface_defaults.selected_event_id : selectedEventId.value
+  const nextEvent = visibleEvents.find((event) => event.event_id === preferredEventId)
     ?? visibleEvents.find((event) => event.event_id === nextStage.surface_defaults.selected_event_id)
     ?? visibleEvents[visibleEvents.length - 1]
     ?? nextEvents[0]
 
-  selectEvent(nextEvent)
+  selectEvent(nextEvent, restoreProgress ? nextStage.surface_defaults.selected_branch_id : undefined)
+  progressSaveState.value = nextStage.surface_defaults.progress_saved_at ? 'saved' : progressSaveState.value
 
   if (!availableLayers.value.includes(selectedLayer.value)) {
     selectedLayer.value = availableLayers.value[0] ?? 'FACT'
@@ -794,11 +826,12 @@ function syncSelection(nextStage: StageData, nextSurface = activeSurface.value) 
   }
 }
 
-function selectEvent(event?: StageData['observatory']['key_events'][number]) {
+function selectEvent(event?: StageData['observatory']['key_events'][number], preferredBranchId?: string) {
   if (!event) return
   selectedEventId.value = event.event_id
   const rememberedBranchId = branchMemory.value[event.event_id]
-  const nextBranch = event.branches.find((branch) => branch.branch_id === rememberedBranchId)
+  const nextBranch = event.branches.find((branch) => branch.branch_id === preferredBranchId)
+    ?? event.branches.find((branch) => branch.branch_id === rememberedBranchId)
     ?? event.branches.find((branch) => branch.visibility === 'primary')
     ?? event.branches[0]
   selectedBranchId.value = nextBranch?.branch_id ?? ''
@@ -817,22 +850,25 @@ function advanceWorldline() {
   }
 
   pulseKey.value += 1
+  void persistTheatreProgress()
 }
 
-function handleSelectEvent(eventId: string) {
+function handleSelectEvent(eventId: string, persist = true) {
   const index = events.value.findIndex((event) => event.event_id === eventId)
   if (index < 0) return
   if (index + 1 > revealedCount.value) revealedCount.value = index + 1
   selectEvent(events.value[index])
+  if (persist) void persistTheatreProgress()
 }
 
-function handleSelectBranch(eventId: string, branchId: string) {
+function handleSelectBranch(eventId: string, branchId: string, persist = true) {
   selectedEventId.value = eventId
   selectedBranchId.value = branchId
   branchMemory.value = {
     ...branchMemory.value,
     [eventId]: branchId,
   }
+  if (persist) void persistTheatreProgress()
 }
 
 function handleModeChange(mode: InputType) {
@@ -840,12 +876,18 @@ function handleModeChange(mode: InputType) {
   selectedLayer.value = 'ACTION'
 }
 
+function handleSurfaceChange(surface: SurfaceKey) {
+  activeSurface.value = surface
+  void persistTheatreProgress({ active_surface: surface })
+}
+
 function openProcessIntervention(step: StageData['process_trace']['steps'][number]) {
-  handleSelectEvent(step.intervention_window.target_event_id)
-  handleSelectBranch(step.intervention_window.target_event_id, step.intervention_window.target_branch_id)
+  handleSelectEvent(step.intervention_window.target_event_id, false)
+  handleSelectBranch(step.intervention_window.target_event_id, step.intervention_window.target_branch_id, false)
   currentInputType.value = step.intervention_window.recommended_input_type
   selectedLayer.value = 'ACTION'
   activeSurface.value = 'intervention'
+  void persistTheatreProgress()
 }
 
 function handleCalibrationResult(value: string) {
@@ -876,6 +918,7 @@ async function submitInput() {
       language: language.value,
     })
     syncSelection(response.stage, response.replay_result ? 'ripple' : 'observatory')
+    void persistTheatreProgress({ active_surface: response.replay_result ? 'ripple' : 'observatory' })
     replaySummary.value = response.replay_result?.summary ?? ''
     draft.value = ''
   } catch (error) {
@@ -894,7 +937,7 @@ async function generateShare() {
       branch_id: selectedBranchId.value,
     })
     shareSnapshot.value = artifact
-    activeSurface.value = 'archive'
+    handleSurfaceChange('archive')
     if (navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(cleanText(artifact.share_text))
@@ -920,10 +963,45 @@ async function saveCalibration() {
       language: language.value,
     })
     syncSelection(nextStage, 'archive')
+    void persistTheatreProgress({ active_surface: 'archive' })
     calibrationDraft.value = ''
     calibrationOpen.value = false
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+async function persistTheatreProgress(overrides: Partial<Pick<TheatreProgress, 'revealed_event_count' | 'selected_event_id' | 'selected_branch_id' | 'active_surface'>> = {}) {
+  if (!stage.value || !selectedEvent.value || !selectedBranch.value) return
+
+  const payload = {
+    revealed_event_count: overrides.revealed_event_count ?? revealedCount.value,
+    selected_event_id: overrides.selected_event_id ?? selectedEvent.value.event_id,
+    selected_branch_id: overrides.selected_branch_id ?? selectedBranch.value.branch_id,
+    active_surface: overrides.active_surface ?? activeSurface.value,
+    language: language.value,
+  }
+  const revision = ++progressSaveRevision
+  progressSaveState.value = 'saving'
+
+  try {
+    const projectId = route.params.projectId as string
+    const saved = await saveTheatreProgress(projectId, payload)
+    if (revision !== progressSaveRevision) return
+    progressSaveState.value = 'saved'
+    if (stage.value) {
+      stage.value.surface_defaults = {
+        selected_event_id: saved.selected_event_id,
+        selected_branch_id: saved.selected_branch_id,
+        active_surface: saved.active_surface,
+        revealed_event_count: saved.revealed_event_count,
+        progress_saved_at: saved.updated_at,
+      }
+    }
+  } catch {
+    if (revision === progressSaveRevision) {
+      progressSaveState.value = 'failed'
+    }
   }
 }
 

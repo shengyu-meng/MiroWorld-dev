@@ -1731,6 +1731,53 @@ li {
   transition: width 360ms ease;
 }
 
+.progress-save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.progress-save-state::before {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgba(139, 226, 248, 0.45);
+  box-shadow: 0 0 12px rgba(139, 226, 248, 0.22);
+}
+
+.progress-save-state--saving::before {
+  background: var(--warm);
+  animation: save-pulse 900ms ease-in-out infinite;
+}
+
+.progress-save-state--saved {
+  color: var(--cool);
+}
+
+.progress-save-state--failed {
+  color: #f5bb9d;
+}
+
+@keyframes save-pulse {
+  0%,
+  100% {
+    transform: scale(0.86);
+    opacity: 0.62;
+  }
+
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
 .surface-orbit,
 .layer-chip-row,
 .theatre-tag-row,

@@ -13,6 +13,11 @@ test('viewer can unfold a worldline without writing an intervention', async ({ p
 
   await page.getByTestId('worldline-next').click()
   await expect(page.getByTestId('progressive-worldline').locator('li').nth(1)).toBeVisible()
+  await expect(page.getByTestId('progress-save-state')).toContainText(/saved|已保存/i)
+  await page.reload()
+  await expect(page.getByTestId('worldline-theatre')).toBeVisible()
+  await expect(page.getByTestId('revealed-event-count')).toContainText(/2 \/ 3|2 \/ 4|2 \/ 5/)
+  await expect(page.getByTestId('progressive-worldline').locator('li').nth(1)).toBeVisible()
   await expect(page.getByTestId('process-trace-panel')).toBeVisible()
 
   await page.getByTestId('worldline-next').click()

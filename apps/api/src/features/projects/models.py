@@ -9,6 +9,7 @@ DisplayLanguage = Literal["zh", "en"]
 KnowledgeLayer = Literal["FACT", "INFERENCE", "VALUE", "ACTION"]
 InputType = Literal["observation", "correction", "intervention", "preference"]
 EffectScope = Literal["evidence", "world_state", "ranking"]
+SurfaceKey = Literal["observatory", "intervention", "cost", "ripple", "archive"]
 BranchVisibility = Literal["primary", "alternate"]
 BranchState = Literal["candidate", "selected", "replayed", "invalidated"]
 CalibrationResultType = Literal["hit", "partial", "miss", "insufficient_data"]
@@ -222,6 +223,14 @@ class SavedReplaySet(SavedReplaySetDraft):
   saved_at: str
 
 
+class TheatreProgress(BaseModel):
+  revealed_event_count: int = Field(default=1, ge=1)
+  selected_event_id: str = ""
+  selected_branch_id: str = ""
+  active_surface: SurfaceKey = "observatory"
+  updated_at: str = ""
+
+
 class ProjectRecord(BaseModel):
   project_id: str
   title: str
@@ -256,6 +265,7 @@ class WorldState(BaseModel):
   replay_trace: list[ReplayTraceItem] = Field(default_factory=list)
   saved_replay_sets: list[SavedReplaySet] = Field(default_factory=list)
   calibration_records: list[CalibrationRecord] = Field(default_factory=list)
+  theatre_progress: TheatreProgress = Field(default_factory=TheatreProgress)
   created_at: str
   updated_at: str
 
@@ -307,3 +317,11 @@ class CalibrationRequest(BaseModel):
 
 class ReplaySetSaveRequest(SavedReplaySetDraft):
   pass
+
+
+class TheatreProgressRequest(BaseModel):
+  revealed_event_count: int = Field(ge=1)
+  selected_event_id: str
+  selected_branch_id: str
+  active_surface: SurfaceKey = "observatory"
+  language: DisplayLanguage = "zh"

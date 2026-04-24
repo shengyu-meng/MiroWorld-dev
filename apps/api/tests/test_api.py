@@ -73,6 +73,46 @@ def test_prompt_project_creation():
   assert_process_trace(payload["stage"])
 
 
+def test_theatre_progress_persistence_restores_stage_defaults():
+  data = create_fixture_project()
+  project_id = data["project_id"]
+  stage = data["stage"]
+  second_event = stage["observatory"]["key_events"][1]
+  second_branch = second_event["branches"][0]
+
+  progress_response = client.post(
+    f"/api/projects/{project_id}/progress",
+    json={
+      "revealed_event_count": 2,
+      "selected_event_id": second_event["event_id"],
+      "selected_branch_id": second_branch["branch_id"],
+      "active_surface": "ripple",
+      "language": "zh",
+    },
+  )
+  assert progress_response.status_code == 200
+  progress = progress_response.json()["data"]
+  assert progress["revealed_event_count"] == 2
+  assert progress["selected_event_id"] == second_event["event_id"]
+  assert progress["selected_branch_id"] == second_branch["branch_id"]
+  assert progress["active_surface"] == "ripple"
+  assert progress["updated_at"]
+
+  stage_response = client.get(f"/api/projects/{project_id}/stage", params={"language": "zh"})
+  assert stage_response.status_code == 200
+  restored_stage = stage_response.json()["data"]
+  assert_schema("stage-response.schema.json", restored_stage)
+  assert restored_stage["surface_defaults"]["revealed_event_count"] == 2
+  assert restored_stage["surface_defaults"]["selected_event_id"] == second_event["event_id"]
+  assert restored_stage["surface_defaults"]["selected_branch_id"] == second_branch["branch_id"]
+  assert restored_stage["surface_defaults"]["active_surface"] == "ripple"
+
+  project_file = ROOT / "data" / "runtime" / "projects" / f"{project_id}.json"
+  snapshot = json.loads(project_file.read_text(encoding="utf-8"))
+  assert snapshot["world_state"]["theatre_progress"]["selected_event_id"] == second_event["event_id"]
+  assert_schema("world-state.schema.json", snapshot["world_state"])
+
+
 def test_input_replay_share_and_calibration_flow():
   payload = create_fixture_project()
   project_id = payload["project_id"]

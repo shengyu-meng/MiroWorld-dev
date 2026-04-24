@@ -14,7 +14,10 @@ from .models import (
   ReplayTraceItem,
   SavedReplaySet,
   ShareRequest,
+  TheatreProgress,
+  TheatreProgressRequest,
   UserInputRecord,
+  WorldState,
 )
 from .repository import ProjectRepository
 from .replay_engine import ReplayEngine
@@ -121,6 +124,16 @@ class ProjectService:
     self.project_repository.save(snapshot)
     return self.stage_builder.build(snapshot.world_state, payload.language)
 
+  def save_theatre_progress(self, project_id: str, payload: TheatreProgressRequest) -> dict:
+    snapshot = self.project_repository.load(project_id)
+    snapshot.project.language = payload.language
+    progress = self._sanitize_theatre_progress(snapshot.world_state, payload)
+    snapshot.world_state.theatre_progress = progress
+    snapshot.world_state.updated_at = progress.updated_at
+    snapshot.project.updated_at = progress.updated_at
+    self.project_repository.save(snapshot)
+    return progress.model_dump(mode="json")
+
   def save_replay_set(self, project_id: str, payload: ReplaySetSaveRequest) -> list[dict]:
     snapshot = self.project_repository.load(project_id)
     saved_replay = SavedReplaySet(
@@ -171,6 +184,37 @@ class ProjectService:
         if branch.branch_id == branch_id:
           return branch.label
     return ""
+
+  def _sanitize_theatre_progress(self, world_state: WorldState, payload: TheatreProgressRequest) -> TheatreProgress:
+    if not world_state.key_events:
+      raise ValidationError("Cannot save theatre progress without key events.")
+
+    selected_event = next(
+      (event for event in world_state.key_events if event.event_id == payload.selected_event_id),
+      world_state.key_events[0],
+    )
+    if not selected_event.branches:
+      raise ValidationError("Cannot save theatre progress for an event without branches.")
+
+    selected_branch = next(
+      (branch for branch in selected_event.branches if branch.branch_id == payload.selected_branch_id),
+      next((branch for branch in selected_event.branches if branch.visibility == "primary"), selected_event.branches[0]),
+    )
+    selected_index = world_state.key_events.index(selected_event)
+    revealed_event_count = max(
+      1,
+      min(
+        len(world_state.key_events),
+        max(payload.revealed_event_count, selected_index + 1),
+      ),
+    )
+    return TheatreProgress(
+      revealed_event_count=revealed_event_count,
+      selected_event_id=selected_event.event_id,
+      selected_branch_id=selected_branch.branch_id,
+      active_surface=payload.active_surface,
+      updated_at=utc_now(),
+    )
 
   def _is_same_saved_replay(self, saved_replay: SavedReplaySet, payload: ReplaySetSaveRequest) -> bool:
     return (

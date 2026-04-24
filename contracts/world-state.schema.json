@@ -17,6 +17,7 @@
     "disclaimer",
     "share_context",
     "share_artifact",
+    "theatre_progress",
     "entities",
     "key_events",
     "cost_lenses",
@@ -42,6 +43,27 @@
     "disclaimer": { "type": "string" },
     "share_context": { "type": "string" },
     "share_artifact": { "$ref": "./share-artifact.schema.json" },
+    "theatre_progress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revealed_event_count",
+        "selected_event_id",
+        "selected_branch_id",
+        "active_surface",
+        "updated_at"
+      ],
+      "properties": {
+        "revealed_event_count": { "type": "integer", "minimum": 1 },
+        "selected_event_id": { "type": "string" },
+        "selected_branch_id": { "type": "string" },
+        "active_surface": {
+          "type": "string",
+          "enum": ["observatory", "intervention", "cost", "ripple", "archive"]
+        },
+        "updated_at": { "type": "string" }
+      }
+    },
     "entities": {
       "type": "array",
       "items": {

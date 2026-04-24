@@ -19,7 +19,27 @@
         "display_language": { "type": "string", "enum": ["zh", "en"] }
       }
     },
-    "surface_defaults": { "type": "object" },
+    "surface_defaults": {
+      "type": "object",
+      "required": [
+        "selected_event_id",
+        "selected_branch_id",
+        "active_surface",
+        "revealed_event_count",
+        "progress_saved_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "selected_event_id": { "type": "string" },
+        "selected_branch_id": { "type": "string" },
+        "active_surface": {
+          "type": "string",
+          "enum": ["observatory", "intervention", "cost", "ripple", "archive"]
+        },
+        "revealed_event_count": { "type": "integer", "minimum": 1 },
+        "progress_saved_at": { "type": "string" }
+      }
+    },
     "observatory": { "type": "object" },
     "intervention": { "type": "object" },
     "cost_lens": { "type": "object" },

@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 7 / Computation Theatre and Performance Benchmark completed`
+Current slice: `Experience Rebuild Slice 8 / Persistent Theatre Reading completed`
 
 ## Goal
 
@@ -32,6 +32,7 @@ This slice does include:
 - timed intervention windows so the viewer can disturb the line at meaningful nodes
 - a more cinematic computation display that still keeps data-file truth visible
 - a repeatable browser performance benchmark for canvas FPS and Next-step latency
+- persistent theatre reading state so refreshes can resume the same worldline layer
 - cleanup of public-opinion / platform-era wording in UI, prompts, and fixtures
 - performance-focused canvas simplification with a smaller black-hole anchor
 - further documentation sync after each iteration
@@ -89,13 +90,36 @@ This slice does include:
 - [x] updated Playwright server reuse behavior so smoke validates the current checkout
 - [x] updated docs after verification
 
+## Slice 8 Acceptance Criteria
+
+- [x] world-state snapshots persist theatre reading state: revealed event count, selected event, selected branch, active surface, and saved timestamp
+- [x] stage payload restores persisted defaults so a refresh resumes the current reading instead of returning to the first node
+- [x] frontend saves progress after Next, event selection, branch selection, surface changes, and process-window intervention jumps
+- [x] UI shows lightweight save state without blocking ordinary navigation
+- [x] API, frontend, and E2E tests cover progress persistence across reload
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 8 Planned Work
+
+- [x] add `TheatreProgress` to project models and world-state schema
+- [x] add `POST /api/projects/{projectId}/progress`
+- [x] include persisted reveal defaults in `stage.surface_defaults`
+- [x] add typed frontend API and save-state UI
+- [x] update docs after verification
+
+## Slice 8 Completed
+
+- [x] added project-level theatre progress persistence for reveal count, selected event, selected branch, active surface, and saved timestamp
+- [x] restored theatre defaults from `stage.surface_defaults` so browser refresh resumes the same reading layer
+- [x] saved theatre progress after Next, event/branch/surface changes, process intervention jumps, replay input, share, and calibration paths
+- [x] added a lightweight save-state marker that never blocks ordinary stage navigation
+- [x] extended API, frontend, and E2E coverage so progress persistence is validated across reload
+
 ## Next Candidate Slice
 
 - [ ] run a visual review of the theatre shell against `.ui-ref` and tune spatial rhythm, black-hole scale, and drawer density
-- [ ] decide whether process-trace reveal progress should persist in backend project snapshots
 - [ ] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
-- [ ] decide whether reveal progress should persist in backend project snapshots
-- [ ] add a repeatable browser performance benchmark for canvas FPS and interaction latency
+- [ ] tighten the existing browser performance benchmark into stricter exhibition thresholds
 
 ## Slice 1 Completed
 
@@ -180,6 +204,7 @@ This slice does include:
 - [x] remove the deprecated `jsonschema.RefResolver` path from API contract validation
 - [x] add clearer curatorial control so replay sets can be authored before save/export instead of only using derived labels
 - [x] widen the replay author deck beyond title and note so richer curatorial fields can flow into saved replay artifacts
+- [x] move theatre reveal progress from frontend-local memory into project-level persistence
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration

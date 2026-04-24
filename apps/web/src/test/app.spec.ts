@@ -99,6 +99,8 @@ const sampleStage: StageData = {
     selected_event_id: 'evt_1',
     selected_branch_id: 'br_1',
     active_surface: 'observatory',
+    revealed_event_count: 1,
+    progress_saved_at: '',
   },
   observatory: {
     knowledge_layers: ['FACT', 'INFERENCE', 'VALUE', 'ACTION'],
@@ -244,6 +246,16 @@ async function mountStage(stage: StageData = sampleStage) {
     if (url.includes('/stage')) return apiResponse(stage)
     if (url.includes('/share')) return apiResponse(stage.archive.share_snapshot)
     if (url.includes('/calibration')) return apiResponse(stage)
+    if (url.includes('/progress')) {
+      const body = init?.body ? JSON.parse(String(init.body)) : {}
+      return apiResponse({
+        revealed_event_count: body.revealed_event_count ?? 1,
+        selected_event_id: body.selected_event_id ?? 'evt_1',
+        selected_branch_id: body.selected_branch_id ?? 'br_1',
+        active_surface: body.active_surface ?? 'observatory',
+        updated_at: '2026-04-24T00:00:00Z',
+      })
+    }
     if (url.includes('/inputs')) {
       return apiResponse({
         stage,
@@ -288,15 +300,20 @@ afterEach(() => {
 
 describe('worldline theatre stage', () => {
   it('progressively reveals the worldline when the viewer only presses next', async () => {
-    const { wrapper } = await mountStage()
+    const { wrapper, fetchMock } = await mountStage()
 
     expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('1 / 3')
     expect(wrapper.find('[data-testid="worldline-event-evt_1"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(false)
 
     await wrapper.get('[data-testid="worldline-next"]').trigger('click')
+    await flushPromises()
     expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('2 / 3')
     expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(true)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/progress'),
+      expect.objectContaining({ method: 'POST' }),
+    )
 
     await wrapper.get('[data-testid="worldline-next"]').trigger('click')
     expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('3 / 3')
@@ -305,6 +322,26 @@ describe('worldline theatre stage', () => {
     await wrapper.get('[data-testid="worldline-next"]').trigger('click')
     expect(wrapper.find('[data-testid="archive-section"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="archive-terminal"]').exists()).toBe(true)
+  })
+
+  it('restores persisted theatre progress from stage defaults', async () => {
+    const restoredStage: StageData = {
+      ...sampleStage,
+      surface_defaults: {
+        selected_event_id: 'evt_2',
+        selected_branch_id: 'br_3',
+        active_surface: 'ripple',
+        revealed_event_count: 2,
+        progress_saved_at: '2026-04-24T00:00:00Z',
+      },
+    }
+
+    const { wrapper } = await mountStage(restoredStage)
+
+    expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('2 / 3')
+    expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="ripple-section"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="process-file-path"]').text()).toContain('evt_2-process.json')
   })
 
   it('removes legacy public-opinion wording from the rendered core UI', async () => {

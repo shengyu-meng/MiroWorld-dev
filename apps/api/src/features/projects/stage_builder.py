@@ -9,8 +9,7 @@ class StageBuilder:
     self.process_trace_builder = ProcessTraceBuilder()
 
   def build(self, world_state: WorldState, language: DisplayLanguage) -> dict:
-    selected_event = world_state.key_events[0]
-    selected_branch = selected_event.branches[0]
+    selected_event, selected_branch, revealed_event_count = self._resolve_theatre_defaults(world_state)
     calibration_summary = self._build_calibration_summary(world_state, language)
     process_trace = self.process_trace_builder.build(world_state, language)
     return {
@@ -25,7 +24,9 @@ class StageBuilder:
       "surface_defaults": {
         "selected_event_id": selected_event.event_id,
         "selected_branch_id": selected_branch.branch_id,
-        "active_surface": "observatory",
+        "active_surface": world_state.theatre_progress.active_surface,
+        "revealed_event_count": revealed_event_count,
+        "progress_saved_at": world_state.theatre_progress.updated_at,
       },
       "observatory": {
         "knowledge_layers": ["FACT", "INFERENCE", "VALUE", "ACTION"],
@@ -89,6 +90,26 @@ class StageBuilder:
       "process_trace": process_trace,
       "version": world_state.version,
     }
+
+  def _resolve_theatre_defaults(self, world_state: WorldState) -> tuple[KeyEvent, Branch, int]:
+    progress = world_state.theatre_progress
+    selected_event = next(
+      (event for event in world_state.key_events if event.event_id == progress.selected_event_id),
+      world_state.key_events[0],
+    )
+    selected_branch = next(
+      (branch for branch in selected_event.branches if branch.branch_id == progress.selected_branch_id),
+      selected_event.branches[0],
+    )
+    selected_index = world_state.key_events.index(selected_event)
+    revealed_event_count = max(
+      1,
+      min(
+        len(world_state.key_events),
+        max(progress.revealed_event_count, selected_index + 1),
+      ),
+    )
+    return selected_event, selected_branch, revealed_event_count
 
   def _event_to_stage(self, event: KeyEvent) -> dict:
     return {

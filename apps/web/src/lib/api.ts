@@ -9,6 +9,8 @@ import type {
   SavedReplaySetDraft,
   ShareArtifact,
   StageData,
+  SurfaceKey,
+  TheatreProgress,
 } from '@/lib/types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
@@ -101,6 +103,22 @@ export function recordCalibration(
   },
 ) {
   return request<StageData>(`/api/projects/${projectId}/calibration`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function saveTheatreProgress(
+  projectId: string,
+  payload: {
+    revealed_event_count: number
+    selected_event_id: string
+    selected_branch_id: string
+    active_surface: SurfaceKey
+    language: DisplayLanguage
+  },
+) {
+  return request<TheatreProgress>(`/api/projects/${projectId}/progress`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })

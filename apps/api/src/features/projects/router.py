@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from .models import CalibrationRequest, InputRequest, ProjectCreateRequest, ReplaySetSaveRequest, ShareRequest
+from .models import (
+  CalibrationRequest,
+  InputRequest,
+  ProjectCreateRequest,
+  ReplaySetSaveRequest,
+  ShareRequest,
+  TheatreProgressRequest,
+)
 from .service import ProjectService
 
 
@@ -55,6 +62,14 @@ def record_calibration(project_id: str, payload: CalibrationRequest):
   return {
     "success": True,
     "data": service.record_calibration(project_id, payload),
+  }
+
+
+@router.post("/{project_id}/progress")
+def save_theatre_progress(project_id: str, payload: TheatreProgressRequest):
+  return {
+    "success": True,
+    "data": service.save_theatre_progress(project_id, payload),
   }
 
 

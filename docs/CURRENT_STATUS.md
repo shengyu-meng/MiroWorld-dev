@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 7 computation theatre completed`
+Phase: `experience-first rebuild / slice 8 persistent theatre reading completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Process traces now read more like a computation-theatre instrument, while `test:perf` gives a repeatable browser benchmark for canvas frame cadence and Next-step latency.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Theatre reading progress now persists in project snapshots, so a viewer can refresh and resume the same revealed layer, selected node, selected branch, and surface.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -18,6 +18,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - high-pressure nodes now expose intervention windows that jump into the Intervention drawer with a recommended input type
 - process artifacts now include orbit progress, runtime artifact strip, preview metrics, and an expanded selected-layer inspector
 - browser performance now has a repeatable Playwright benchmark instead of only manual impressions
+- theatre reading progress now saves back to the project snapshot and restores through `stage.surface_defaults` after refresh
 - the archive/share space now reads more like a curator-facing artifact chamber instead of a utility output list
 - and its core artifact can now leave the UI as a local poster SVG or share bundle
 - and the archive can now leave the UI as a self-contained exhibit HTML artifact instead of only fragmented exports
@@ -221,11 +222,20 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - Playwright smoke now starts fresh local API / web servers instead of silently reusing stale processes
 - `npm run test:perf` now runs a browser benchmark for canvas frame cadence and Next-step latency
 
+### Experience rebuild slice 8 (persistent theatre reading)
+
+- world-state snapshots now include `theatre_progress` with revealed event count, selected event, selected branch, active surface, and saved timestamp
+- `POST /api/projects/{projectId}/progress` saves sanitized theatre reading state without exposing secrets or requiring LLM work
+- `stage.surface_defaults` now restores persisted theatre defaults so refresh resumes the same reading layer
+- the stage saves progress after Next, event selection, branch selection, surface changes, process intervention jumps, replay input, share, and calibration paths
+- frontend, API, and E2E coverage now validate progress persistence across reload
+
 ### Verification baseline
 
 - `npm run build` passes
 - `npm run test` passes
 - `npm run smoke` passes
+- `npm run test:perf` passes
 - `git diff --check` passes
 - secret pattern scan returns no matches for the MiniMax key fragment
 - `git ls-files .ui-ref ui-ref` returns no tracked reference files
@@ -235,8 +245,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Product / experience gaps
 
 - the new theatre shell restores progressive unfolding, but the Archive/Ripple advanced authored-export surfaces are now visually secondary and may need re-integration into the theatre language
-- the current reveal state is frontend-local; if reload persistence becomes important, progression should move into project snapshot state
-- the canvas is lighter, but a dedicated FPS benchmark or in-browser performance budget is still needed before exhibition deployment
+- the canvas is lighter and has a browser benchmark, but thresholds can still become stricter before exhibition deployment
 - calibration history is still available but can become more theatrical inside the Archive drawer instead of remaining mostly utility-like
 
 ### Content expression gaps
@@ -253,10 +262,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice should continue after `Experience Rebuild Slice 7`:
+The next active slice continues after `Experience Rebuild Slice 8`:
 
 - run a visual/browser review of the new theatre shell against `.ui-ref` and tune spacing, scale, and black-hole size
-- decide whether process-trace reveal progress should persist in project snapshots or remain stage-derived
 - re-integrate the deeper Ripple/Archive authored export tools into the theatre drawer language without returning to report density
-- decide whether reveal progress should persist in the project snapshot or remain a local exhibition reading
 - continue tightening the performance benchmark toward stricter exhibition thresholds once the visual system stabilizes
