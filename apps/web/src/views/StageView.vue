@@ -318,35 +318,75 @@
             </article>
           </div>
 
-          <div v-else-if="activeSurface === 'ripple'" class="drawer-grid" data-testid="ripple-section">
-            <article class="drawer-card">
+          <div v-else-if="activeSurface === 'ripple'" class="drawer-grid drawer-grid--instrument" data-testid="ripple-section">
+            <article class="drawer-card theatre-instrument ripple-console" data-testid="ripple-console">
+              <span class="annotation-label">{{ instrumentText.rippleConsole }}</span>
+              <div class="instrument-hero">
+                <strong>{{ latestBend }}</strong>
+                <p>{{ instrumentText.rippleConsoleHint }}</p>
+              </div>
+              <div class="instrument-metrics" data-testid="ripple-instrument-metrics">
+                <span v-for="metric in rippleMetrics" :key="metric.label">
+                  <b>{{ metric.value }}</b>
+                  <small>{{ metric.label }}</small>
+                </span>
+              </div>
+              <div class="instrument-actions">
+                <button type="button" class="instrument-action" data-testid="ripple-trace-export" @click="exportRippleTrace">
+                  {{ instrumentText.exportRipple }}
+                </button>
+                <small aria-live="polite">{{ exportFeedback }}</small>
+              </div>
+            </article>
+            <article class="drawer-card theatre-track-card">
               <span class="annotation-label">{{ t.worldlineTrack }}</span>
-              <ol class="drawer-track">
-                <li v-for="track in revealedTrack" :key="track.event_id">
+              <ol class="instrument-track">
+                <li v-for="(track, index) in revealedTrack" :key="track.event_id">
+                  <span>{{ String(index + 1).padStart(2, '0') }}</span>
                   <strong>{{ cleanText(track.title) }}</strong>
-                  <span>{{ cleanText(track.primary_branch_label) }} / {{ formatConfidence(track.confidence) }}</span>
+                  <em>{{ cleanText(track.primary_branch_label) }} / {{ formatConfidence(track.confidence) }}</em>
                 </li>
               </ol>
             </article>
-            <article class="drawer-card">
-              <span class="annotation-label">{{ t.rippleLabel }}</span>
-              <p>{{ latestBend }}</p>
-              <ul class="theatre-mini-list">
+            <article class="drawer-card theatre-ripple-card">
+              <span class="annotation-label">{{ instrumentText.rippleAfterimage }}</span>
+              <ul class="ripple-signal-stack">
                 <li v-for="card in visibleRippleCards" :key="`${card.title}-${card.branch_label}`">
-                  {{ cleanText(card.title) }} / {{ cleanText(card.summary) }}
+                  <strong>{{ cleanText(card.title) }}</strong>
+                  <span>{{ cleanText(card.branch_label) }}</span>
+                  <p>{{ cleanText(card.summary) }}</p>
                 </li>
               </ul>
             </article>
           </div>
 
-          <div v-else-if="activeSurface === 'archive'" class="drawer-grid" data-testid="archive-section">
-            <article class="drawer-card" :data-testid="progressComplete ? 'archive-terminal' : 'archive-preview'">
-              <span class="annotation-label">{{ t.archiveLabel }}</span>
-              <strong>{{ cleanText(shareSnapshot.title) }}</strong>
-              <p>{{ cleanText(shareSnapshot.summary) }}</p>
-              <button type="button" class="theatre-secondary-action" @click="generateShare">
-                {{ t.shareAction }}
-              </button>
+          <div v-else-if="activeSurface === 'archive'" class="drawer-grid drawer-grid--instrument" data-testid="archive-section">
+            <article class="drawer-card archive-capsule-card" :data-testid="progressComplete ? 'archive-terminal' : 'archive-preview'">
+              <div class="archive-capsule" data-testid="archive-capsule">
+                <span class="annotation-label">{{ instrumentText.archiveCapsule }}</span>
+                <div class="instrument-hero">
+                  <strong>{{ cleanText(shareSnapshot.title) }}</strong>
+                  <p>{{ cleanText(shareSnapshot.summary) }}</p>
+                </div>
+                <div class="instrument-metrics" data-testid="archive-capsule-metrics">
+                  <span v-for="metric in archiveMetrics" :key="metric.label">
+                    <b>{{ metric.value }}</b>
+                    <small>{{ metric.label }}</small>
+                  </span>
+                </div>
+                <div class="instrument-actions">
+                  <button type="button" class="instrument-action" @click="generateShare">
+                    {{ t.shareAction }}
+                  </button>
+                  <button type="button" class="instrument-action" data-testid="archive-capsule-copy" @click="copyArchiveCapsule">
+                    {{ instrumentText.copyCapsule }}
+                  </button>
+                  <button type="button" class="instrument-action" data-testid="archive-capsule-export" @click="exportArchiveCapsule">
+                    {{ instrumentText.exportCapsule }}
+                  </button>
+                </div>
+                <small class="instrument-feedback" aria-live="polite">{{ exportFeedback }}</small>
+              </div>
             </article>
             <article class="drawer-card">
               <span class="annotation-label">{{ t.calibrationLabel }}</span>
@@ -457,6 +497,7 @@ const revealedCount = ref(1)
 const pulseKey = ref(0)
 const branchMemory = ref<Record<string, string>>({})
 const progressSaveState = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+const exportFeedback = ref('')
 let progressSaveRevision = 0
 
 const surfaceKeys: SurfaceKey[] = ['observatory', 'intervention', 'cost', 'ripple', 'archive']
@@ -714,8 +755,68 @@ const progressSaveCopy = {
   },
 } satisfies Record<DisplayLanguage, Record<'idle' | 'saving' | 'saved' | 'failed', string>>
 
+const instrumentCopy = {
+  zh: {
+    rippleConsole: '回响控制台',
+    rippleConsoleHint: '这一组读数来自当前已经显影的轨道，不需要等待新的模型调用。',
+    rippleAfterimage: '回响残影',
+    archiveCapsule: '残影胶囊',
+    revealedNodes: '已显影节点',
+    alternatePressure: '替代压力',
+    savedSets: '已存重演',
+    meanConfidence: '平均置信',
+    decisions: '干涉记录',
+    calibrations: '校准记录',
+    rippleCards: '回响片段',
+    exportRipple: '导出回响轨迹包',
+    copyCapsule: '复制胶囊文本',
+    exportCapsule: '导出残影胶囊',
+    exportReady: '本地文件已生成',
+    copyReady: '胶囊文本已复制',
+    copyUnavailable: '剪贴板不可用，可改用导出',
+  },
+  en: {
+    rippleConsole: 'Ripple Console',
+    rippleConsoleHint: 'These readings come from the revealed track; no fresh model call is needed.',
+    rippleAfterimage: 'Ripple Afterimage',
+    archiveCapsule: 'Afterimage Capsule',
+    revealedNodes: 'revealed nodes',
+    alternatePressure: 'alternate pressure',
+    savedSets: 'saved replays',
+    meanConfidence: 'mean confidence',
+    decisions: 'decision marks',
+    calibrations: 'calibrations',
+    rippleCards: 'ripple cards',
+    exportRipple: 'Export Ripple Trace',
+    copyCapsule: 'Copy Capsule Text',
+    exportCapsule: 'Export Afterimage Capsule',
+    exportReady: 'local file generated',
+    copyReady: 'capsule text copied',
+    copyUnavailable: 'clipboard unavailable; export instead',
+  },
+} satisfies Record<DisplayLanguage, {
+  rippleConsole: string
+  rippleConsoleHint: string
+  rippleAfterimage: string
+  archiveCapsule: string
+  revealedNodes: string
+  alternatePressure: string
+  savedSets: string
+  meanConfidence: string
+  decisions: string
+  calibrations: string
+  rippleCards: string
+  exportRipple: string
+  copyCapsule: string
+  exportCapsule: string
+  exportReady: string
+  copyReady: string
+  copyUnavailable: string
+}>
+
 const t = computed(() => theatreCopy[language.value])
 const processText = computed(() => processCopy[language.value])
+const instrumentText = computed(() => instrumentCopy[language.value])
 const progressSaveLabel = computed(() => progressSaveCopy[language.value][progressSaveState.value])
 const events = computed(() => stage.value?.observatory.key_events ?? [])
 const revealedEvents = computed(() => events.value.slice(0, Math.min(revealedCount.value, events.value.length)))
@@ -734,6 +835,26 @@ const latestBend = computed(() => cleanText(replaySummary.value || stage.value?.
 const currentCosts = computed(() => selectedLenses.value.flatMap((lens) => [...lens.first_order_costs, ...lens.second_order_costs]).map(cleanText).slice(0, 4))
 const visibleRippleCards = computed(() => stage.value?.ripple.ripple_cards.slice(0, revealedCount.value) ?? [])
 const revealedTrack = computed(() => stage.value?.observatory.worldline_track.filter((track) => revealedIds.value.has(track.event_id)) ?? [])
+const savedReplayCount = computed(() => stage.value?.ripple.saved_replay_sets.length ?? 0)
+const averageRevealedConfidence = computed(() => {
+  if (revealedTrack.value.length === 0) return 0
+  return revealedTrack.value.reduce((total, track) => total + track.confidence, 0) / revealedTrack.value.length
+})
+const alternatePressure = computed(() => revealedEvents.value.reduce((total, event) => (
+  total + event.branches.filter((branch) => branch.visibility === 'alternate').length
+), 0))
+const rippleMetrics = computed(() => [
+  { value: `${revealedTrack.value.length}/${events.value.length || 0}`, label: instrumentText.value.revealedNodes },
+  { value: String(alternatePressure.value), label: instrumentText.value.alternatePressure },
+  { value: String(savedReplayCount.value), label: instrumentText.value.savedSets },
+  { value: formatConfidence(averageRevealedConfidence.value), label: instrumentText.value.meanConfidence },
+])
+const archiveMetrics = computed(() => [
+  { value: `${revealedTrack.value.length}/${events.value.length || 0}`, label: instrumentText.value.revealedNodes },
+  { value: String(stage.value?.archive.player_decision_log.length ?? 0), label: instrumentText.value.decisions },
+  { value: String(stage.value?.archive.calibration_summary.count ?? stage.value?.archive.calibration_records.length ?? 0), label: instrumentText.value.calibrations },
+  { value: String(visibleRippleCards.value.length), label: instrumentText.value.rippleCards },
+])
 const processSteps = computed(() => stage.value?.process_trace.steps ?? [])
 const currentProcessStep = computed(() => processSteps.value.find((step) => step.event_id === selectedEventId.value) ?? null)
 const processStepIndex = computed(() => Math.max(1, processSteps.value.findIndex((step) => step.event_id === currentProcessStep.value?.event_id) + 1))
@@ -897,6 +1018,7 @@ function handleModeChange(mode: InputType) {
 
 function handleSurfaceChange(surface: SurfaceKey) {
   activeSurface.value = surface
+  exportFeedback.value = ''
   void persistTheatreProgress({ active_surface: surface })
 }
 
@@ -969,6 +1091,38 @@ async function generateShare() {
   }
 }
 
+function exportRippleTrace() {
+  downloadTextFile(
+    `${safeFileStem(stage.value?.project_context.project_id ?? 'miroworld')}-ripple-trace.json`,
+    JSON.stringify(buildRippleTracePacket(), null, 2),
+    'application/json;charset=utf-8',
+  )
+  exportFeedback.value = instrumentText.value.exportReady
+}
+
+async function copyArchiveCapsule() {
+  if (!navigator.clipboard) {
+    exportFeedback.value = instrumentText.value.copyUnavailable
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(buildArchiveCapsuleText())
+    exportFeedback.value = instrumentText.value.copyReady
+  } catch {
+    exportFeedback.value = instrumentText.value.copyUnavailable
+  }
+}
+
+function exportArchiveCapsule() {
+  downloadTextFile(
+    `${safeFileStem(stage.value?.project_context.project_id ?? 'miroworld')}-afterimage-capsule.json`,
+    JSON.stringify(buildArchiveCapsulePacket(), null, 2),
+    'application/json;charset=utf-8',
+  )
+  exportFeedback.value = instrumentText.value.exportReady
+}
+
 async function saveCalibration() {
   if (!selectedEvent.value || !selectedBranch.value || !calibrationDraft.value.trim()) return
   try {
@@ -1027,6 +1181,148 @@ async function persistTheatreProgress(overrides: Partial<Pick<TheatreProgress, '
 function cleanText(value?: string | null) {
   if (!value) return ''
   return textReplacements.reduce((next, [pattern, replacement]) => next.replace(pattern, replacement), value)
+}
+
+function buildRippleTracePacket() {
+  return {
+    kind: 'miroworld.ripple_trace',
+    version: 1,
+    generated_at: new Date().toISOString(),
+    language: language.value,
+    project: stage.value?.project_context ?? null,
+    selected_event: selectedEvent.value
+      ? {
+          event_id: selectedEvent.value.event_id,
+          title: cleanText(selectedEvent.value.title),
+          stage: cleanText(selectedEvent.value.stage),
+        }
+      : null,
+    selected_branch: selectedBranch.value
+      ? {
+          branch_id: selectedBranch.value.branch_id,
+          label: cleanText(selectedBranch.value.label),
+          confidence: selectedBranch.value.effective_confidence ?? selectedBranch.value.confidence,
+          cost_hint: cleanText(selectedBranch.value.cost_hint),
+        }
+      : null,
+    metrics: rippleMetrics.value,
+    latest_bend: latestBend.value,
+    revealed_track: revealedTrack.value.map((track) => ({
+      event_id: track.event_id,
+      title: cleanText(track.title),
+      stage: cleanText(track.stage),
+      branch_id: track.primary_branch_id,
+      branch_label: cleanText(track.primary_branch_label),
+      confidence: track.confidence,
+    })),
+    ripple_cards: visibleRippleCards.value.map((card) => ({
+      title: cleanText(card.title),
+      branch_label: cleanText(card.branch_label),
+      summary: cleanText(card.summary),
+    })),
+    saved_replay_sets: stage.value?.ripple.saved_replay_sets.map((set) => ({
+      replay_set_id: set.replay_set_id,
+      replay_set_label: cleanText(set.replay_set_label),
+      focus: set.focus,
+      metrics: set.metrics,
+      saved_at: set.saved_at,
+    })) ?? [],
+  }
+}
+
+function buildArchiveCapsulePacket() {
+  const snapshot = shareSnapshot.value
+  return {
+    kind: 'miroworld.afterimage_capsule',
+    version: 1,
+    generated_at: new Date().toISOString(),
+    language: language.value,
+    project: stage.value?.project_context ?? null,
+    share_snapshot: snapshot
+      ? {
+          title: cleanText(snapshot.title),
+          subtitle: cleanText(snapshot.subtitle),
+          summary: cleanText(snapshot.summary),
+          short_excerpt: cleanText(snapshot.short_excerpt),
+          curator_note: cleanText(snapshot.curator_note),
+          wall_label: cleanText(snapshot.wall_label),
+          archive_summary: cleanText(snapshot.archive_summary),
+          disclaimer: cleanText(snapshot.disclaimer),
+          tags: snapshot.tags.map(cleanText),
+        }
+      : null,
+    selected_event: selectedEvent.value
+      ? {
+          event_id: selectedEvent.value.event_id,
+          title: cleanText(selectedEvent.value.title),
+          impact_level: selectedEvent.value.impact_level,
+        }
+      : null,
+    selected_branch: selectedBranch.value
+      ? {
+          branch_id: selectedBranch.value.branch_id,
+          label: cleanText(selectedBranch.value.label),
+          confidence: selectedBranch.value.effective_confidence ?? selectedBranch.value.confidence,
+          cost_hint: cleanText(selectedBranch.value.cost_hint),
+        }
+      : null,
+    metrics: archiveMetrics.value,
+    revealed_track: revealedTrack.value.map((track) => ({
+      event_id: track.event_id,
+      title: cleanText(track.title),
+      branch_label: cleanText(track.primary_branch_label),
+      confidence: track.confidence,
+    })),
+    decision_log: stage.value?.archive.player_decision_log.map((entry) => ({
+      entry_id: entry.entry_id,
+      created_at: entry.created_at,
+      input_type: entry.input_type,
+      event_title: cleanText(entry.event_title),
+      branch_label: cleanText(entry.branch_label),
+      content: cleanText(entry.content),
+      replay_summary: cleanText(entry.replay_summary),
+      cost_changes: entry.cost_changes.map(cleanText),
+    })) ?? [],
+    calibration_summary: stage.value?.archive.calibration_summary ?? null,
+    calibration_records: stage.value?.archive.calibration_records ?? [],
+  }
+}
+
+function buildArchiveCapsuleText() {
+  const packet = buildArchiveCapsulePacket()
+  const snapshot = packet.share_snapshot
+  const lines = [
+    snapshot?.title ?? 'MiroWorld afterimage',
+    snapshot?.summary ?? '',
+    '',
+    `${instrumentText.value.revealedNodes}: ${archiveMetrics.value[0]?.value ?? '0'}`,
+    `${instrumentText.value.decisions}: ${archiveMetrics.value[1]?.value ?? '0'}`,
+    `${instrumentText.value.calibrations}: ${archiveMetrics.value[2]?.value ?? '0'}`,
+    '',
+    packet.revealed_track.map((track) => `${track.title} / ${track.branch_label} / ${formatConfidence(track.confidence)}`).join('\n'),
+    '',
+    snapshot?.disclaimer ?? '',
+  ]
+  return lines.filter((line) => line !== '').join('\n')
+}
+
+function downloadTextFile(filename: string, content: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType })
+  const href = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = href
+  link.download = filename
+  link.rel = 'noopener'
+  link.click()
+  URL.revokeObjectURL(href)
+}
+
+function safeFileStem(value: string) {
+  return cleanText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48) || 'miroworld'
 }
 
 function formatConfidence(value: number) {

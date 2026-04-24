@@ -851,3 +851,39 @@ Still open after slice 9:
 - re-integrate advanced Archive and Ripple authored-export surfaces into the same theatre language
 - review mobile and low-height exhibition layouts after the orbital polish pass
 - tighten the performance benchmark thresholds for exhibition-grade deployment
+
+## 2026-04-24 - Experience Rebuild Slice 10 (archive/ripple theatre instruments started)
+
+Planned in this iteration:
+
+- turn Ripple's saved replay / continuity export affordances into a theatre-native console rather than a utility drawer
+- add a local ripple trace packet export tied to the currently revealed worldline, latest bend, alternate pressure, and saved replay count
+- turn Archive's share / calibration / decision state into an afterimage capsule with visible metrics and local artifact actions
+- keep all new actions frontend-local and secret-safe, with no live LLM dependency for ordinary navigation or export
+- update route and smoke coverage, then run the full build/test/smoke/perf/secret/reference gate before push
+
+## 2026-04-24 - Experience Rebuild Slice 10 (archive/ripple theatre instruments completed)
+
+Completed in this iteration:
+
+- rebuilt the Ripple drawer into a theatre-native replay console with revealed-node, alternate-pressure, saved-replay, average-confidence, latest-bend, and ripple-card readings
+- added a frontend-only Ripple trace JSON export assembled from the current stage state
+- rebuilt the Archive drawer's first surface into an afterimage capsule with share, reveal, decision, calibration, and ripple-card metrics
+- added Archive capsule copy/export actions that use existing stage state only and do not require live LLM calls
+- added instrument-specific styling so Ripple and Archive read as orbital theatre tools instead of utility/report cards
+- extended frontend route tests and Playwright smoke coverage for the new console/capsule affordances
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed with smoke and performance E2E specs
+- `npm run test:perf` passed
+
+Still open after slice 10:
+
+- tighten performance thresholds toward exhibition deployment
+- continue mobile and low-height visual review
+- improve the authored prose quality of exported Archive/Ripple artifacts now that the instrument shells are in place

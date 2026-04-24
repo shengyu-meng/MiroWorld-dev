@@ -21,6 +21,8 @@ test('viewer can unfold a worldline without writing an intervention', async ({ p
   await expect(page.getByTestId('revealed-event-count')).toContainText(/2 \/ 3|2 \/ 4|2 \/ 5/)
   await expect(page.getByTestId('progressive-worldline').locator('li').nth(1)).toBeVisible()
   await expect(page.getByTestId('process-trace-panel')).toBeVisible()
+  await page.locator('.surface-chip').nth(3).click()
+  await expect(page.getByTestId('ripple-console')).toBeVisible()
 
   await page.getByTestId('worldline-next').click()
   await expect(page.getByTestId('progressive-worldline').locator('li').nth(2)).toBeVisible()
@@ -28,4 +30,5 @@ test('viewer can unfold a worldline without writing an intervention', async ({ p
   await page.getByTestId('worldline-next').click()
   await expect(page.getByTestId('archive-section')).toBeVisible()
   await expect(page.getByTestId('archive-terminal')).toBeVisible()
+  await expect(page.getByTestId('archive-capsule')).toBeVisible()
 })

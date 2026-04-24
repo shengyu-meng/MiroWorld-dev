@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Branch, StageData } from '@/lib/types'
 import StageView from '@/views/StageView.vue'
 
+const originalCreateObjectURL = URL.createObjectURL
+const originalRevokeObjectURL = URL.revokeObjectURL
+
 function branch(eventId: string, id: string, label: string, confidence: number, visibility: Branch['visibility']): Branch {
   return {
     branch_id: id,
@@ -295,8 +298,27 @@ async function mountStage(stage: StageData = sampleStage) {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  if (originalCreateObjectURL) {
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: originalCreateObjectURL })
+  } else {
+    Reflect.deleteProperty(URL, 'createObjectURL')
+  }
+  if (originalRevokeObjectURL) {
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: originalRevokeObjectURL })
+  } else {
+    Reflect.deleteProperty(URL, 'revokeObjectURL')
+  }
   vi.unstubAllGlobals()
 })
+
+function mockDownloadUrl() {
+  const createObjectURL = vi.fn(() => 'blob:miroworld-test')
+  const revokeObjectURL = vi.fn()
+  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: createObjectURL })
+  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: revokeObjectURL })
+  return { createObjectURL, revokeObjectURL, click }
+}
 
 describe('worldline theatre stage', () => {
   it('progressively reveals the worldline when the viewer only presses next', async () => {
@@ -344,7 +366,30 @@ describe('worldline theatre stage', () => {
     expect(wrapper.get('[data-testid="revealed-event-count"]').text()).toContain('2 / 3')
     expect(wrapper.find('[data-testid="worldline-event-evt_2"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="ripple-section"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="ripple-console"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="ripple-instrument-metrics"]').text()).toContain('2/3')
     expect(wrapper.get('[data-testid="process-file-path"]').text()).toContain('evt_2-process.json')
+  })
+
+  it('exposes local ripple trace and archive capsule instruments', async () => {
+    const { wrapper } = await mountStage()
+    const download = mockDownloadUrl()
+
+    await wrapper.findAll('.surface-chip')[3].trigger('click')
+    expect(wrapper.find('[data-testid="ripple-console"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="ripple-instrument-metrics"]').text()).toContain('1/3')
+
+    await wrapper.get('[data-testid="ripple-trace-export"]').trigger('click')
+    expect(download.createObjectURL).toHaveBeenCalledTimes(1)
+    expect(download.click).toHaveBeenCalledTimes(1)
+
+    await wrapper.findAll('.surface-chip')[4].trigger('click')
+    expect(wrapper.find('[data-testid="archive-capsule"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="archive-capsule-metrics"]').text()).toContain('1/3')
+
+    await wrapper.get('[data-testid="archive-capsule-export"]').trigger('click')
+    expect(download.createObjectURL).toHaveBeenCalledTimes(2)
+    expect(download.revokeObjectURL).toHaveBeenCalledTimes(2)
   })
 
   it('removes legacy public-opinion wording from the rendered core UI', async () => {

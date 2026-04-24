@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 9 / Impeccable Theatre Polish completed`
+Current slice: `Experience Rebuild Slice 10 / Archive Ripple Theatre Instruments completed`
 
 ## Goal
 
@@ -134,11 +134,39 @@ This slice does include:
 - [x] preserved reduced-motion behavior and existing canvas performance boundaries
 - [x] updated route and smoke coverage for the new readout/orbit UI
 
+## Slice 10 Acceptance Criteria
+
+- [x] Ripple exposes a theatre-native replay console with metrics tied to revealed track, alternate pressure, saved sets, and latest bend
+- [x] Ripple can export a local trace packet from the currently revealed worldline without backend calls or secrets
+- [x] Archive exposes an afterimage capsule with share, decision, calibration, and reveal metrics
+- [x] Archive can export or copy a local capsule artifact from existing stage state without relying on live LLM work
+- [x] the new Ripple / Archive affordances use the orbital theatre language rather than generic utility-card styling
+- [x] frontend route and smoke coverage assert the new console/capsule affordances
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 10 Planned Work
+
+- [x] mark Slice 10 as the active doc-tracked iteration before code changes
+- [x] add typed frontend derived metrics for Ripple and Archive instruments
+- [x] add local export helpers for ripple trace and archive afterimage capsule
+- [x] retune drawer styling so the advanced tools feel like stage instruments
+- [x] add focused frontend and E2E coverage
+- [x] update docs after verification
+
+## Slice 10 Completed
+
+- [x] replaced the plain Ripple drawer with a replay console that reads revealed nodes, alternate pressure, saved replay count, average confidence, latest bend, and ripple cards as theatre instrumentation
+- [x] added a frontend-only Ripple trace JSON export using current stage state only
+- [x] replaced the plain Archive share card with an afterimage capsule carrying reveal, decision, calibration, and ripple-card metrics
+- [x] added frontend-only Archive capsule copy/export actions using the existing share snapshot, revealed track, decision log, and calibration state
+- [x] added instrument-specific styling so Ripple and Archive read as orbital theatre tools rather than generic report cards
+- [x] updated frontend route and Playwright smoke coverage for the new console/capsule affordances
+
 ## Next Candidate Slice
 
-- [ ] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [ ] tighten the existing browser performance benchmark into stricter exhibition thresholds
 - [ ] continue visual review on mobile and low-height exhibition displays after the orbital polish pass
+- [ ] deepen Archive/Ripple artifact writing quality now that their theatre-native instrument shells are in place
 
 ## Slice 1 Completed
 
@@ -225,6 +253,7 @@ This slice does include:
 - [x] widen the replay author deck beyond title and note so richer curatorial fields can flow into saved replay artifacts
 - [x] move theatre reveal progress from frontend-local memory into project-level persistence
 - [x] add the `.impeccable.md` design context and first orbital UI polish pass
+- [x] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
