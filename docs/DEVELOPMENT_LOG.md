@@ -1256,3 +1256,40 @@ Still open after slice 20:
 - calibration can still gain model-assisted takeaways and richer visual navigation
 - the authored Ripple and Archive texts are deterministic and local; a later secret-safe async editorial lane can make them more alive without blocking the stage
 - the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery
+
+## 2026-04-24 - Experience Rebuild Slice 21 (async editorial takeaway lane started)
+
+Planned in this iteration:
+
+- add a safe async editorial lane for Archive/Ripple takeaways without blocking worldline reveal
+- reuse the backstage process-artifact pattern so viewers can inspect status and local files while the theatre remains driveable
+- call MiniMax only server-side when local credentials are present, and fall back to a deterministic public artifact when the model is unavailable or malformed
+- render the editorial status, artifact trail, and final takeaway inside Archive instead of hiding computation behind a spinner
+- update API tests, frontend tests, docs, smoke, performance, secret checks, and push only after verification
+
+## 2026-04-24 - Experience Rebuild Slice 21 (async editorial takeaway lane completed)
+
+Completed in this iteration:
+
+- generalized the backstage job manager so `seed_compiler` and `editorial_takeaway` jobs can share queued/running/completed/fallback artifact trails without colliding
+- added a server-side editorial engine that builds compact public context from selected worldline state, cost, Ripple, and calibration records
+- added MiniMax-backed editorial JSON generation with schema-shaped prompting, normalization, safe artifact writing, and deterministic fallback when credentials or valid output are unavailable
+- added `POST /api/projects/{projectId}/editorial` and `GET /api/projects/{projectId}/editorial` for request/status polling
+- added an Archive editorial-takeaway card with request action, status label, artifact path, artifact trail, rendered takeaways, and capsule-export inclusion
+- added API and frontend coverage for fallback artifact persistence, model packet handling, request/status flow, and rendered Archive lane
+
+Verification:
+
+- `python -m pytest apps/api/tests/test_api.py -q` passed
+- `npm --workspace apps/web run test -- --run` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `npm run test:perf` passed
+
+Still open after slice 21:
+
+- the editorial queue is still in-process, so exhibition deployment may need durable persistence or streaming
+- Ripple-specific authored packets can use the same safe editorial lane in a later slice
+- calibration takeaways can become more visual and comparative now that the model-assisted text path is safe

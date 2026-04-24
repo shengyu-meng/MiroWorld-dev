@@ -243,6 +243,39 @@ export interface ReasoningStatus {
   stage: StageData | null
 }
 
+export interface EditorialTakeaway {
+  title: string
+  summary: string
+  takeaways: string[]
+  ripple_note: string
+  calibration_note: string
+  intervention_note: string
+  disclaimer: string
+  source: 'minimax' | 'local_fallback' | string
+  generated_at: string
+}
+
+export interface EditorialStatus {
+  job_id: string
+  project_id: string
+  operation: 'editorial_takeaway'
+  provider: string
+  model_name: string
+  status: 'idle' | 'queued' | 'running' | 'completed' | 'fallback' | 'failed' | 'disabled'
+  progress_step: string
+  summary: string
+  artifact_path: string | null
+  artifact_trail: Array<{
+    step: string
+    status: string
+    summary: string
+    artifact_path: string
+    created_at: string
+  }>
+  updated_at: string
+  editorial: EditorialTakeaway | null
+}
+
 export interface StageData {
   project_context: {
     project_id: string

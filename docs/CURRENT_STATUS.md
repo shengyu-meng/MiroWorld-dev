@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 20 archive calibration drift map completed`
+Phase: `experience-first rebuild / slice 21 async editorial takeaway lane completed`
 
 ## One-line Summary
 
@@ -53,6 +53,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and Archive calibration can now be filtered by branch slice and read as authored calibration drift instead of only constellation metrics
 - and Archive calibration now also shows event-to-event drift maps so actual outcomes read as temporal movement across the worldline
 - and Archive now produces an authored wall-reading text derived from the selected worldline, branch, cost, ripple, and calibration state instead of only a structured data capsule
+- and Archive can now request a safe async editorial takeaway that enriches wall/ripple/calibration readings as a visible backstage artifact without blocking worldline reveal
 - and the performance benchmark now targets 45 FPS desktop frame cadence plus sub-150 ms Next-step reveal latency instead of the earlier loose MVP budget
 - and mobile / low-height viewport checks now guard theatre reachability, process panel visibility, Next control access, and horizontal overflow
 - and the calibration / replay archive can still become more comparative and more navigable
@@ -339,6 +340,15 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - the local afterimage capsule export now includes the selected calibration drift-map payload
 - frontend tests cover all-record and branch-filtered drift sequences
 
+### Experience rebuild slice 21 (async editorial takeaway lane)
+
+- Archive now exposes a backstage editorial takeaway lane for model-assisted reading without blocking worldline reveal
+- the API supports `POST /api/projects/{projectId}/editorial` and `GET /api/projects/{projectId}/editorial`
+- the editorial lane writes safe local runtime artifacts under ignored `data/runtime/process/.../editorial/...`
+- MiniMax output is JSON-normalized server-side, and missing credentials or malformed output produce a visible deterministic fallback artifact
+- the Archive UI shows editorial status, artifact path, trail, and final takeaway while keeping provider keys and raw hidden reasoning out of the browser
+- frontend capsule export now includes the editorial takeaway when one exists
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -364,7 +374,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - live MiniMax enrichment is now asynchronous and file-visible, but the job runner is still an in-process lightweight worker rather than a durable persisted queue
 - the layer lens is now visible, but its depth is still mostly presentation-layer driven rather than fully model-driven
 - cost narration can become more comparative across branches, not just branch-local
-- archive artifacts can become more authored and less template-like as share formats mature
+- archive artifacts now have a first async editorial lane, but the writing can still become more comparative and dramaturgically precise as share formats mature
 
 ### Documentation gaps
 
@@ -373,9 +383,9 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice continues after `Experience Rebuild Slice 20`:
+The next active slice continues after `Experience Rebuild Slice 21`:
 
 - consider a durable persisted reasoning queue or streaming progress protocol now that checkpoint files are visible but still in-process
 - keep mobile and low-height visual review active through future UI passes, especially on real exhibition hardware
-- deepen calibration interaction with model-assisted calibration takeaways
-- consider a second editorial pass that lets the async MiniMax lane safely enrich Archive/Ripple writing without blocking the theatre
+- deepen calibration interaction now that model-assisted editorial takeaways can be requested safely
+- consider applying the editorial lane to Ripple-specific authored packets, not only Archive afterimages

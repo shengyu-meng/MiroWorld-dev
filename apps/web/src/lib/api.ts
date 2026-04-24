@@ -2,6 +2,7 @@ import type {
   CalibrationRecord,
   DisplayLanguage,
   EffectScope,
+  EditorialStatus,
   FixtureManifest,
   InputType,
   ReasoningStatus,
@@ -60,6 +61,17 @@ export function getStage(projectId: string, language: DisplayLanguage) {
 
 export function getReasoningStatus(projectId: string, language: DisplayLanguage) {
   return request<ReasoningStatus>(`/api/projects/${projectId}/reasoning?language=${language}`)
+}
+
+export function requestEditorialTakeaway(projectId: string, language: DisplayLanguage) {
+  return request<EditorialStatus>(`/api/projects/${projectId}/editorial`, {
+    method: 'POST',
+    body: JSON.stringify({ language }),
+  })
+}
+
+export function getEditorialStatus(projectId: string, language: DisplayLanguage) {
+  return request<EditorialStatus>(`/api/projects/${projectId}/editorial?language=${language}`)
 }
 
 export function applyInput(

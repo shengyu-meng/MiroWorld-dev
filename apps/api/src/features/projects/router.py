@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from .models import (
   CalibrationRequest,
+  EditorialRequest,
   InputRequest,
   ProjectCreateRequest,
   ReplaySetSaveRequest,
@@ -43,6 +44,22 @@ def get_reasoning_status(project_id: str, language: str = "zh"):
   return {
     "success": True,
     "data": service.get_reasoning_status(project_id, language),
+  }
+
+
+@router.post("/{project_id}/editorial")
+def request_editorial_takeaway(project_id: str, payload: EditorialRequest):
+  return {
+    "success": True,
+    "data": service.request_editorial_takeaway(project_id, payload),
+  }
+
+
+@router.get("/{project_id}/editorial")
+def get_editorial_status(project_id: str, language: str = "zh"):
+  return {
+    "success": True,
+    "data": service.get_editorial_status(project_id, language),
   }
 
 

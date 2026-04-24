@@ -3,10 +3,12 @@ from __future__ import annotations
 from core.errors import ValidationError
 from shared.utils import make_id, utc_now
 from .calibration_engine import CalibrationEngine
+from .editorial_engine import EditorialEngine
 from .fixture_repository import FixtureRepository
 from .models import (
   CalibrationRequest,
   DecisionLogEntry,
+  EditorialRequest,
   InputRequest,
   ProjectCreateRequest,
   ProjectSnapshot,
@@ -43,6 +45,11 @@ class ProjectService:
       provider="MiniMax",
       model_name=self.seed_compiler.llm_adapter.settings.llm_model_name,
     )
+    self.editorial_jobs = ReasoningJobManager(
+      provider="MiniMax",
+      model_name=self.seed_compiler.llm_adapter.settings.llm_model_name,
+    )
+    self.editorial_engine = EditorialEngine(self.seed_compiler.llm_adapter)
     self.replay_engine = ReplayEngine()
     self.share_engine = ShareEngine()
     self.stage_builder = StageBuilder()
@@ -117,6 +124,46 @@ class ProjectService:
       "artifact_trail": [],
       "updated_at": snapshot.world_state.updated_at,
       "stage": None,
+    }
+
+  def request_editorial_takeaway(self, project_id: str, payload: EditorialRequest) -> dict:
+    # Validate the project before accepting a background job.
+    self.project_repository.load(project_id)
+
+    def worker(progress):
+      latest = self.project_repository.load(project_id)
+      return self.editorial_engine.run_takeaway(latest, payload.language, progress)
+
+    job = self.editorial_jobs.enqueue(
+      project_id,
+      worker,
+      operation="editorial_takeaway",
+      queued_summary="Editorial takeaway is queued as a safe backstage artifact.",
+      running_summary="MiniMax is drafting a public editorial takeaway.",
+      artifact_group="editorial",
+    )
+    return self._decorate_editorial_status(job)
+
+  def get_editorial_status(self, project_id: str, language: str) -> dict:
+    job = self.editorial_jobs.get(project_id)
+    if job:
+      return self._decorate_editorial_status(job)
+
+    snapshot = self.project_repository.load(project_id)
+    settings = self.seed_compiler.llm_adapter.settings
+    return {
+      "job_id": "",
+      "project_id": project_id,
+      "operation": "editorial_takeaway",
+      "provider": "MiniMax",
+      "model_name": settings.llm_model_name,
+      "status": "idle",
+      "progress_step": "not_started",
+      "summary": "Editorial takeaway lane is ready; request it from Archive when the worldline has enough afterimage.",
+      "artifact_path": None,
+      "artifact_trail": [],
+      "updated_at": snapshot.world_state.updated_at,
+      "editorial": None,
     }
 
   def apply_input(self, project_id: str, payload: InputRequest) -> tuple[dict, object | None]:
@@ -373,6 +420,12 @@ class ProjectService:
       and saved_replay.focus.event_id == payload.focus.event_id
       and saved_replay.focus.branch_id == payload.focus.branch_id
     )
+
+  def _decorate_editorial_status(self, job: dict) -> dict:
+    return {
+      **job,
+      "editorial": self.editorial_engine.read_takeaway_artifact(job.get("artifact_path")),
+    }
 
   def _build_non_replay_summary(self, language: str, input_type: str) -> str:
     if language == "zh":

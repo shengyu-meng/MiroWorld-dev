@@ -466,6 +466,50 @@
                 </button>
               </div>
             </article>
+            <article class="drawer-card editorial-takeaway-card" data-testid="editorial-takeaway">
+              <span class="annotation-label">{{ instrumentText.editorialTakeaway }}</span>
+              <div v-if="editorialTakeaway" class="editorial-takeaway">
+                <strong>{{ editorialTakeaway.title }}</strong>
+                <p>{{ editorialTakeaway.summary }}</p>
+                <ul>
+                  <li v-for="item in editorialTakeaway.takeaways" :key="item">{{ item }}</li>
+                </ul>
+                <blockquote>{{ editorialTakeaway.ripple_note }}</blockquote>
+                <p>{{ editorialTakeaway.calibration_note }}</p>
+                <small>{{ editorialTakeaway.disclaimer }}</small>
+              </div>
+              <p v-else class="editorial-takeaway-hint">{{ editorialStatus?.summary || instrumentText.editorialTakeawayHint }}</p>
+              <div
+                v-if="editorialStatus?.artifact_path"
+                class="process-file-strip process-file-strip--backstage editorial-artifact-strip"
+                data-testid="editorial-artifact-strip"
+              >
+                <span>{{ editorialStatusLabel }}</span>
+                <code>{{ editorialStatus.artifact_path }}</code>
+              </div>
+              <ol
+                v-if="editorialTrail.length"
+                class="backstage-artifact-trail editorial-artifact-trail"
+                :aria-label="instrumentText.editorialArtifactTrail"
+                data-testid="editorial-artifact-trail"
+              >
+                <li v-for="item in editorialTrail" :key="item.artifact_path">
+                  <span>{{ item.status }} / {{ item.step }}</span>
+                  <code>{{ item.artifact_path }}</code>
+                </li>
+              </ol>
+              <div class="instrument-actions">
+                <button
+                  type="button"
+                  class="instrument-action"
+                  data-testid="editorial-takeaway-request"
+                  :disabled="editorialBusy"
+                  @click="requestArchiveEditorial"
+                >
+                  {{ editorialStatusLabel || instrumentText.requestEditorialTakeaway }}
+                </button>
+              </div>
+            </article>
             <article class="drawer-card calibration-constellation-card" data-testid="calibration-constellation">
               <span class="annotation-label">{{ instrumentText.calibrationConstellation }}</span>
               <div class="calibration-constellation-hero">
@@ -612,9 +656,11 @@ import WorldlineCanvas from '@/components/WorldlineCanvas.vue'
 import {
   applyInput,
   buildShare,
+  getEditorialStatus,
   getReasoningStatus,
   getStage,
   recordCalibration,
+  requestEditorialTakeaway,
   saveTheatreProgress,
 } from '@/lib/api'
 import type {
@@ -622,6 +668,7 @@ import type {
   CalibrationRecord,
   CostLens,
   DisplayLanguage,
+  EditorialStatus,
   InputType,
   KnowledgeLayer,
   ReasoningStatus,
@@ -651,6 +698,7 @@ const activeCalibrationBranchId = ref('all')
 const submitting = ref(false)
 const shareSnapshot = ref<StageData['archive']['share_snapshot'] | null>(null)
 const reasoningStatus = ref<ReasoningStatus | null>(null)
+const editorialStatus = ref<EditorialStatus | null>(null)
 const revealedCount = ref(1)
 const pulseKey = ref(0)
 const branchMemory = ref<Record<string, string>>({})
@@ -658,6 +706,7 @@ const progressSaveState = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
 const exportFeedback = ref('')
 let progressSaveRevision = 0
 let reasoningPollTimer: ReturnType<typeof setInterval> | null = null
+let editorialPollTimer: ReturnType<typeof setInterval> | null = null
 
 const surfaceKeys: SurfaceKey[] = ['observatory', 'intervention', 'cost', 'ripple', 'archive']
 const calibrationResults: CalibrationRecord['result'][] = ['hit', 'partial', 'miss', 'insufficient_data']
@@ -948,6 +997,16 @@ const instrumentCopy = {
     exportDriftReading: '导出漂移读本',
     archiveCapsule: '残影胶囊',
     wallReading: '展览墙文',
+    editorialTakeaway: '后台编辑读法',
+    editorialTakeawayHint: '可以在后台请求一次模型辅助读法；世界线推进不会因此暂停。',
+    requestEditorialTakeaway: '生成后台读法',
+    editorialQueued: '后台编辑排队中',
+    editorialRunning: '后台编辑生成中',
+    editorialCompleted: '后台读法已生成',
+    editorialFallback: '已生成本地 fallback 读法',
+    editorialFailed: '后台编辑暂时失败',
+    editorialIdle: '等待请求后台读法',
+    editorialArtifactTrail: '后台读法 artifact trail',
     copyWallReading: '复制墙文',
     exportWallReading: '导出墙文',
     calibrationConstellation: '校准星图',
@@ -983,6 +1042,16 @@ const instrumentCopy = {
     exportDriftReading: 'Export Drift Text',
     archiveCapsule: 'Afterimage Capsule',
     wallReading: 'Wall Reading',
+    editorialTakeaway: 'Backstage Editorial Takeaway',
+    editorialTakeawayHint: 'Request one model-assisted reading in the background; worldline reveal never pauses for it.',
+    requestEditorialTakeaway: 'Generate Backstage Reading',
+    editorialQueued: 'editorial queued',
+    editorialRunning: 'editorial running',
+    editorialCompleted: 'editorial ready',
+    editorialFallback: 'local fallback ready',
+    editorialFailed: 'editorial failed',
+    editorialIdle: 'waiting for request',
+    editorialArtifactTrail: 'editorial artifact trail',
     copyWallReading: 'Copy Wall Text',
     exportWallReading: 'Export Wall Text',
     calibrationConstellation: 'Calibration Constellation',
@@ -1018,6 +1087,16 @@ const instrumentCopy = {
   exportDriftReading: string
   archiveCapsule: string
   wallReading: string
+  editorialTakeaway: string
+  editorialTakeawayHint: string
+  requestEditorialTakeaway: string
+  editorialQueued: string
+  editorialRunning: string
+  editorialCompleted: string
+  editorialFallback: string
+  editorialFailed: string
+  editorialIdle: string
+  editorialArtifactTrail: string
   copyWallReading: string
   exportWallReading: string
   calibrationConstellation: string
@@ -1355,6 +1434,19 @@ const reasoningStatusLabel = computed(() => {
   if (status === 'failed') return processText.value.failedLabel
   return ''
 })
+const editorialTakeaway = computed(() => editorialStatus.value?.editorial ?? null)
+const editorialBusy = computed(() => editorialStatus.value?.status === 'queued' || editorialStatus.value?.status === 'running')
+const editorialTrail = computed(() => editorialStatus.value?.artifact_trail.slice(-5) ?? [])
+const editorialStatusLabel = computed(() => {
+  const status = editorialStatus.value?.status
+  if (!status || status === 'idle') return instrumentText.value.requestEditorialTakeaway
+  if (status === 'queued') return instrumentText.value.editorialQueued
+  if (status === 'running') return instrumentText.value.editorialRunning
+  if (status === 'completed') return instrumentText.value.editorialCompleted
+  if (status === 'fallback') return instrumentText.value.editorialFallback
+  if (status === 'failed') return instrumentText.value.editorialFailed
+  return instrumentText.value.editorialIdle
+})
 const selectedProcessLayer = computed(() => (
   currentProcessStep.value?.layer_results.find((layer) => layer.layer === selectedLayer.value)
   ?? currentProcessStep.value?.layer_results[0]
@@ -1421,6 +1513,7 @@ watch(
 
 onUnmounted(() => {
   stopReasoningPoll()
+  stopEditorialPoll()
 })
 
 async function loadStage() {
@@ -1431,6 +1524,7 @@ async function loadStage() {
     const nextStage = await getStage(projectId, language.value)
     syncSelection(nextStage, activeSurface.value, true)
     void refreshReasoningStatus()
+    void refreshEditorialStatus()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error)
   } finally {
@@ -1467,6 +1561,48 @@ function stopReasoningPoll() {
   if (!reasoningPollTimer) return
   clearInterval(reasoningPollTimer)
   reasoningPollTimer = null
+}
+
+async function refreshEditorialStatus() {
+  try {
+    const projectId = route.params.projectId as string
+    const nextStatus = await getEditorialStatus(projectId, language.value)
+    editorialStatus.value = nextStatus
+    if (nextStatus.status === 'queued' || nextStatus.status === 'running') {
+      startEditorialPoll()
+    } else {
+      stopEditorialPoll()
+    }
+  } catch {
+    stopEditorialPoll()
+  }
+}
+
+async function requestArchiveEditorial() {
+  if (editorialBusy.value) return
+  errorMessage.value = ''
+  try {
+    const projectId = route.params.projectId as string
+    editorialStatus.value = await requestEditorialTakeaway(projectId, language.value)
+    if (editorialStatus.value.status === 'queued' || editorialStatus.value.status === 'running') {
+      startEditorialPoll()
+    }
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+function startEditorialPoll() {
+  if (editorialPollTimer) return
+  editorialPollTimer = setInterval(() => {
+    void refreshEditorialStatus()
+  }, 2500)
+}
+
+function stopEditorialPoll() {
+  if (!editorialPollTimer) return
+  clearInterval(editorialPollTimer)
+  editorialPollTimer = null
 }
 
 function syncSelection(nextStage: StageData, nextSurface = activeSurface.value, restoreProgress = false) {
@@ -1868,6 +2004,7 @@ function buildArchiveCapsulePacket() {
         }
       : null,
     wall_reading: archiveWallReading.value,
+    editorial_takeaway: editorialTakeaway.value,
     metrics: archiveMetrics.value,
     revealed_track: revealedTrack.value.map((track) => ({
       event_id: track.event_id,
@@ -1917,6 +2054,8 @@ function buildArchiveCapsuleText() {
     '',
     buildArchiveWallReadingText(),
     '',
+    editorialTakeaway.value ? buildEditorialTakeawayText() : '',
+    '',
     packet.revealed_track.map((track) => `${track.title} / ${track.branch_label} / ${formatConfidence(track.confidence)}`).join('\n'),
     '',
     snapshot?.disclaimer ?? '',
@@ -1938,6 +2077,25 @@ function buildArchiveWallReadingText() {
     `- ${reading.ripple_line}`,
     '',
     reading.closing_note,
+  ].join('\n')
+}
+
+function buildEditorialTakeawayText() {
+  const reading = editorialTakeaway.value
+  if (!reading) return ''
+  return [
+    `# ${reading.title}`,
+    '',
+    reading.summary,
+    '',
+    ...reading.takeaways.map((item) => `- ${item}`),
+    '',
+    `> ${reading.ripple_note}`,
+    '',
+    reading.calibration_note,
+    reading.intervention_note,
+    '',
+    reading.disclaimer,
   ].join('\n')
 }
 

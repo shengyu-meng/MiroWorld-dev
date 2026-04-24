@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 20 / Archive Calibration Drift Map completed`
+Current slice: `Experience Rebuild Slice 21 / Async Editorial Takeaway Lane completed`
 
 ## Goal
 
@@ -380,6 +380,34 @@ This slice does include:
 - [x] included the selected calibration drift map payload in the local Archive capsule export
 - [x] updated frontend coverage for all-record and branch-filtered drift sequences
 
+## Slice 21 Acceptance Criteria
+
+- [x] Archive exposes an async editorial-takeaway lane that can enrich the existing wall, ripple, and calibration readings without blocking worldline reveal
+- [x] API supports `POST /api/projects/{projectId}/editorial` and `GET /api/projects/{projectId}/editorial?language=zh|en`
+- [x] the editorial lane writes safe local runtime artifacts under ignored `data/runtime/process/.../editorial/...`
+- [x] if MiniMax credentials are absent or the model output is malformed, the lane returns a visible deterministic fallback artifact instead of silently failing
+- [x] frontend shows editorial status, artifact trail, and a safe rendered takeaway inside Archive; no API key or raw hidden reasoning reaches the browser
+- [x] tests cover request/status flow, fallback artifact persistence, model packet path, and rendered Archive lane
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 21 Planned Work
+
+- [x] mark Slice 21 as the active doc-tracked iteration before code changes
+- [x] generalize the existing backstage job manager enough to support an editorial operation without breaking seed reasoning
+- [x] add an editorial engine that builds a safe public context from the project snapshot and requests structured MiniMax JSON when available
+- [x] add frontend API/types and an Archive card for requesting, polling, and reading the editorial artifact
+- [x] update API and frontend tests
+- [x] update docs after verification
+
+## Slice 21 Completed
+
+- [x] added a reusable async editorial operation on the existing backstage job pattern
+- [x] added a server-side editorial engine that builds safe public context from worldline, ripple, cost, and calibration state
+- [x] added model-assisted editorial JSON generation with deterministic fallback when MiniMax credentials are absent or output is malformed
+- [x] wrote editorial artifacts under ignored `data/runtime/process/.../editorial/...` and surfaced their trail through the API
+- [x] added an Archive editorial-takeaway card with request, status, artifact trail, and rendered takeaway
+- [x] included the editorial takeaway in the local afterimage capsule export when available
+
 ## Slice 1 Completed
 
 - [x] the repo has canonical `CURRENT_STATUS / NEXT_WORK_PLAN / DEVELOPMENT_LOG / BLOCKERS` docs
@@ -479,6 +507,7 @@ This slice does include:
 - [x] add authored Ripple drift-reading output so continuity is not only a technical trace packet
 - [x] add branch-filtered authored calibration drift reading so Archive can explain how actual outcomes reshape specific branches
 - [x] add event-to-event calibration drift map so Archive can show actual outcomes moving across the worldline
+- [x] add a safe async editorial-takeaway lane so Archive/Ripple writing can be model-assisted without blocking the theatre
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
 

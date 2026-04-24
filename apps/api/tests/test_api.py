@@ -58,6 +58,19 @@ def assert_reasoning_artifact_trail(status_payload):
     assert "test-local-key" not in json.dumps(artifact)
 
 
+def assert_editorial_artifact(status_payload):
+  assert status_payload["artifact_path"].startswith("data/runtime/process/")
+  artifact_file = ROOT / status_payload["artifact_path"]
+  assert artifact_file.exists()
+  artifact = json.loads(artifact_file.read_text(encoding="utf-8"))
+  assert artifact["artifact_type"] == "miroworld_editorial_takeaway"
+  assert artifact["operation"] == "editorial_takeaway"
+  assert artifact["takeaway"]["title"]
+  assert artifact["takeaway"]["takeaways"]
+  assert "test-local-key" not in json.dumps(artifact)
+  return artifact
+
+
 def create_fixture_project():
   response = client.post("/api/projects", json={"fixture_id": "literary-branching-world", "language": "zh"})
   assert response.status_code == 200
@@ -255,6 +268,78 @@ def test_llm_adapter_extracts_json_after_think_block():
   adapter = OpenAICompatibleLLMAdapter()
   parsed = adapter._parse_json_object('<think>private reasoning {"noise": true}</think> {"ok": true, "value": 3}')
   assert parsed == {"ok": True, "value": 3}
+
+
+def test_editorial_takeaway_fallback_writes_safe_artifact(monkeypatch):
+  manager = ReasoningJobManager(provider="MiniMax", model_name="MiniMax-M2.7-highspeed")
+  manager.auto_start = False
+  monkeypatch.setattr(project_service, "editorial_jobs", manager)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_api_key", None)
+  payload = create_fixture_project()
+  project_id = payload["project_id"]
+
+  request_response = client.post(
+    f"/api/projects/{project_id}/editorial",
+    json={"language": "en"},
+  )
+  assert request_response.status_code == 200
+  assert request_response.json()["data"]["status"] == "queued"
+  manager.run_queued_for_tests(project_id)
+
+  status_response = client.get(f"/api/projects/{project_id}/editorial", params={"language": "en"})
+  assert status_response.status_code == 200
+  status_payload = status_response.json()["data"]
+  assert status_payload["operation"] == "editorial_takeaway"
+  assert status_payload["status"] == "fallback"
+  assert status_payload["editorial"]["source"] == "local_fallback"
+  assert "deterministic prediction" in status_payload["editorial"]["disclaimer"]
+  assert "queued" in {item["step"] for item in status_payload["artifact_trail"]}
+  assert "building_context" in {item["step"] for item in status_payload["artifact_trail"]}
+  artifact = assert_editorial_artifact(status_payload)
+  assert artifact["provider"] == "local"
+
+
+def test_editorial_takeaway_uses_structured_model_packet(monkeypatch):
+  manager = ReasoningJobManager(provider="MiniMax", model_name="MiniMax-M2.7-highspeed")
+  manager.auto_start = False
+  monkeypatch.setattr(project_service, "editorial_jobs", manager)
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_api_key", "test-local-key")
+  monkeypatch.setattr(project_service.seed_compiler.llm_adapter.settings, "llm_model_name", "MiniMax-M2.7-highspeed")
+  monkeypatch.setattr(
+    project_service.seed_compiler.llm_adapter,
+    "generate_json",
+    lambda **_kwargs: {
+      "title": "A bridge worldline becomes readable",
+      "summary": "The model-assisted takeaway connects cost, ripple, and archive afterimage.",
+      "takeaways": [
+        "The visible branch is a conditional orbit, not a verdict.",
+        "Cost accumulates in the rule and material layers.",
+        "Calibration will rewrite the afterimage rather than score the whole project.",
+      ],
+      "ripple_note": "Ripple remains visible while the audience keeps advancing.",
+      "calibration_note": "Actual outcomes return as archive residue.",
+      "intervention_note": "Intervene at the next high-pressure node.",
+      "disclaimer": "A public reading, not a deterministic prediction.",
+    },
+  )
+  payload = create_fixture_project()
+  project_id = payload["project_id"]
+
+  request_response = client.post(
+    f"/api/projects/{project_id}/editorial",
+    json={"language": "en"},
+  )
+  assert request_response.status_code == 200
+  manager.run_queued_for_tests(project_id)
+
+  status_payload = client.get(f"/api/projects/{project_id}/editorial", params={"language": "en"}).json()["data"]
+  assert status_payload["status"] == "completed"
+  assert status_payload["editorial"]["source"] == "minimax"
+  assert status_payload["editorial"]["title"] == "A bridge worldline becomes readable"
+  assert "conditional orbit" in " ".join(status_payload["editorial"]["takeaways"])
+  assert "writing_artifact" in {item["step"] for item in status_payload["artifact_trail"]}
+  artifact = assert_editorial_artifact(status_payload)
+  assert artifact["provider"] == "MiniMax"
 
 
 def test_prompt_compiler_can_run_without_live_llm_when_disabled(monkeypatch):

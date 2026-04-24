@@ -2,7 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type { Branch, StageData } from '@/lib/types'
+import type { Branch, EditorialStatus, StageData } from '@/lib/types'
 import StageView from '@/views/StageView.vue'
 
 const originalCreateObjectURL = URL.createObjectURL
@@ -301,11 +301,33 @@ function disabledReasoningStatus() {
   }
 }
 
-async function mountStage(stage: StageData = sampleStage, reasoningStatus = disabledReasoningStatus()) {
+function disabledEditorialStatus(): EditorialStatus {
+  return {
+    job_id: '',
+    project_id: 'proj_test',
+    operation: 'editorial_takeaway',
+    provider: 'MiniMax',
+    model_name: 'MiniMax-M2.7-highspeed',
+    status: 'idle',
+    progress_step: 'not_started',
+    summary: 'Editorial takeaway lane is ready.',
+    artifact_path: null,
+    artifact_trail: [],
+    updated_at: '2026-04-24T00:00:00Z',
+    editorial: null,
+  }
+}
+
+async function mountStage(
+  stage: StageData = sampleStage,
+  reasoningStatus = disabledReasoningStatus(),
+  editorialStatus: EditorialStatus = disabledEditorialStatus(),
+) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     if (url.includes('/stage')) return apiResponse(stage)
     if (url.includes('/reasoning')) return apiResponse(reasoningStatus)
+    if (url.includes('/editorial')) return apiResponse(editorialStatus)
     if (url.includes('/share')) return apiResponse(stage.archive.share_snapshot)
     if (url.includes('/calibration')) return apiResponse(stage)
     if (url.includes('/progress')) {
@@ -431,7 +453,7 @@ describe('worldline theatre stage', () => {
   })
 
   it('exposes local ripple trace and archive capsule instruments', async () => {
-    const { wrapper } = await mountStage()
+    const { wrapper, fetchMock } = await mountStage()
     const download = mockDownloadUrl()
 
     await wrapper.findAll('.surface-chip')[3].trigger('click')
@@ -453,6 +475,13 @@ describe('worldline theatre stage', () => {
     expect(wrapper.get('[data-testid="archive-wall-reading"]').text()).toContain('这不是结论')
     expect(wrapper.get('[data-testid="archive-wall-reading"]').text()).toContain('代价线索')
     expect(wrapper.get('[data-testid="archive-capsule-metrics"]').text()).toContain('1/3')
+    expect(wrapper.find('[data-testid="editorial-takeaway"]').exists()).toBe(true)
+    await wrapper.get('[data-testid="editorial-takeaway-request"]').trigger('click')
+    await flushPromises()
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/editorial'),
+      expect.objectContaining({ method: 'POST' }),
+    )
     expect(wrapper.find('[data-testid="calibration-constellation"]').exists()).toBe(true)
     expect(wrapper.find('.archive-empty').exists()).toBe(true)
 
@@ -461,6 +490,58 @@ describe('worldline theatre stage', () => {
     await wrapper.get('[data-testid="archive-wall-reading-export"]').trigger('click')
     expect(download.createObjectURL).toHaveBeenCalledTimes(4)
     expect(download.revokeObjectURL).toHaveBeenCalledTimes(4)
+  })
+
+  it('shows the async editorial takeaway lane inside Archive', async () => {
+    const editorialStatus: EditorialStatus = {
+      ...disabledEditorialStatus(),
+      job_id: 'rjob_editorial',
+      status: 'completed',
+      progress_step: 'editorial_ready',
+      summary: 'MiniMax editorial takeaway is ready as a safe public artifact.',
+      artifact_path: 'data/runtime/process/proj_test/editorial/rjob_editorial/00-editorial-takeaway.json',
+      artifact_trail: [
+        {
+          step: 'queued',
+          status: 'queued',
+          summary: 'Editorial takeaway is queued as a safe backstage artifact.',
+          artifact_path: 'data/runtime/process/proj_test/editorial/rjob_editorial/00-queued.json',
+          created_at: '2026-04-24T00:00:00Z',
+        },
+        {
+          step: 'editorial_ready',
+          status: 'completed',
+          summary: 'MiniMax editorial takeaway is ready as a safe public artifact.',
+          artifact_path: 'data/runtime/process/proj_test/editorial/rjob_editorial/01-editorial-ready.json',
+          created_at: '2026-04-24T00:00:01Z',
+        },
+      ],
+      editorial: {
+        title: 'Backstage reading for the visible orbit',
+        summary: 'The editorial lane connects the wall reading, ripple, and calibration afterimage.',
+        takeaways: [
+          'The current branch is a conditional orbit.',
+          'Cost is visible before the viewer intervenes.',
+          'Calibration returns later as archive residue.',
+        ],
+        ripple_note: 'Ripple remains inspectable while the line advances.',
+        calibration_note: 'Calibration rewrites the afterimage instead of scoring the whole worldline.',
+        intervention_note: 'Intervene at the next high-pressure node.',
+        disclaimer: 'A public reading, not a deterministic prediction.',
+        source: 'minimax',
+        generated_at: '2026-04-24T00:00:01Z',
+      },
+    }
+    const { wrapper } = await mountStage(sampleStage, disabledReasoningStatus(), editorialStatus)
+
+    await wrapper.findAll('.surface-chip')[4].trigger('click')
+    const card = wrapper.get('[data-testid="editorial-takeaway"]')
+
+    expect(card.text()).toContain('Backstage reading for the visible orbit')
+    expect(card.text()).toContain('conditional orbit')
+    expect(card.text()).toContain('Ripple remains inspectable')
+    expect(wrapper.get('[data-testid="editorial-artifact-strip"]').text()).toContain('00-editorial-takeaway.json')
+    expect(wrapper.get('[data-testid="editorial-artifact-trail"]').text()).toContain('editorial_ready')
   })
 
   it('renders calibration records as an archive constellation instrument', async () => {

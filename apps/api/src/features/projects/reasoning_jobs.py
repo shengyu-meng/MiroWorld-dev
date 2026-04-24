@@ -42,6 +42,8 @@ class ReasoningJob:
   status: str
   progress_step: str
   summary: str
+  running_summary: str
+  artifact_group: str
   artifact_path: str | None
   created_at: str
   updated_at: str
@@ -74,7 +76,16 @@ class ReasoningJobManager:
     self._workers: dict[str, ReasoningWorker] = {}
     self._lock = Lock()
 
-  def enqueue(self, project_id: str, worker: ReasoningWorker) -> dict[str, Any]:
+  def enqueue(
+    self,
+    project_id: str,
+    worker: ReasoningWorker,
+    *,
+    operation: str = "seed_compiler",
+    queued_summary: str = "MiniMax seed reasoning is queued as backstage computation.",
+    running_summary: str = "MiniMax is building a structured public reasoning packet.",
+    artifact_group: str = "reasoning",
+  ) -> dict[str, Any]:
     with self._lock:
       existing = self._active_project_job(project_id)
       if existing:
@@ -84,12 +95,14 @@ class ReasoningJobManager:
       job = ReasoningJob(
         job_id=make_id("rjob"),
         project_id=project_id,
-        operation="seed_compiler",
+        operation=operation,
         provider=self.provider,
         model_name=self.model_name,
         status="queued",
         progress_step="queued",
-        summary="MiniMax seed reasoning is queued as backstage computation.",
+        summary=queued_summary,
+        running_summary=running_summary,
+        artifact_group=artifact_group,
         artifact_path=None,
         created_at=now,
         updated_at=now,
@@ -132,11 +145,14 @@ class ReasoningJobManager:
     worker = self._workers.get(job_id)
     if not worker:
       return
+    with self._lock:
+      job = self._jobs.get(job_id)
+      running_summary = job.running_summary if job else "MiniMax is building a structured public reasoning packet."
     self._update(
       job_id,
       status="running",
       progress_step="requesting_model",
-      summary="MiniMax is building a structured public reasoning packet.",
+      summary=running_summary,
     )
     try:
       result = worker(lambda step, summary: self._update(job_id, progress_step=step, summary=summary))
@@ -193,14 +209,14 @@ class ReasoningJobManager:
     safe_step = re.sub(r"[^a-zA-Z0-9_-]+", "-", job.progress_step).strip("-") or "step"
     sequence = len(job.artifact_trail)
     relative_path = (
-      f"data/runtime/process/{job.project_id}/reasoning/"
+      f"data/runtime/process/{job.project_id}/{job.artifact_group}/"
       f"{job.job_id}/{sequence:02d}-{safe_step}.json"
     )
     absolute_path = (
       get_settings().data_dir
       / "process"
       / job.project_id
-      / "reasoning"
+      / job.artifact_group
       / job.job_id
       / f"{sequence:02d}-{safe_step}.json"
     )

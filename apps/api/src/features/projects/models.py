@@ -295,6 +295,11 @@ class ProjectCreateRequest(BaseModel):
   language: DisplayLanguage = "zh"
 
 
+class EditorialRequest(BaseModel):
+  language: DisplayLanguage = "zh"
+  scope: Literal["archive_ripple_calibration"] = "archive_ripple_calibration"
+
+
 class ProjectCreateResponse(BaseModel):
   project_id: str
   stage: dict
