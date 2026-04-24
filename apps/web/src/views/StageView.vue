@@ -423,6 +423,27 @@
                 <small class="instrument-feedback" aria-live="polite">{{ exportFeedback }}</small>
               </div>
             </article>
+            <article class="drawer-card archive-wall-reading-card" data-testid="archive-wall-reading">
+              <span class="annotation-label">{{ instrumentText.wallReading }}</span>
+              <div class="archive-wall-reading">
+                <strong>{{ archiveWallReading.title }}</strong>
+                <p>{{ archiveWallReading.thesis }}</p>
+                <blockquote>{{ archiveWallReading.wall_text }}</blockquote>
+                <ul>
+                  <li>{{ archiveWallReading.cost_line }}</li>
+                  <li>{{ archiveWallReading.calibration_line }}</li>
+                  <li>{{ archiveWallReading.closing_note }}</li>
+                </ul>
+              </div>
+              <div class="instrument-actions">
+                <button type="button" class="instrument-action" data-testid="archive-wall-reading-copy" @click="copyArchiveWallReading">
+                  {{ instrumentText.copyWallReading }}
+                </button>
+                <button type="button" class="instrument-action" data-testid="archive-wall-reading-export" @click="exportArchiveWallReading">
+                  {{ instrumentText.exportWallReading }}
+                </button>
+              </div>
+            </article>
             <article class="drawer-card calibration-constellation-card" data-testid="calibration-constellation">
               <span class="annotation-label">{{ instrumentText.calibrationConstellation }}</span>
               <div class="calibration-constellation-hero">
@@ -854,6 +875,9 @@ const instrumentCopy = {
     rippleConsoleHint: '这一组读数来自当前已经显影的轨道，不需要等待新的模型调用。',
     rippleAfterimage: '回响残影',
     archiveCapsule: '残影胶囊',
+    wallReading: '展览墙文',
+    copyWallReading: '复制墙文',
+    exportWallReading: '导出墙文',
     calibrationConstellation: '校准星图',
     calibrationConstellationHint: '真实结果正在把这条世界线留下的置信残影重新排布。',
     noCalibrationAfterimage: '还没有真实结果写入档案。星图会在第一次校准后显影。',
@@ -880,6 +904,9 @@ const instrumentCopy = {
     rippleConsoleHint: 'These readings come from the revealed track; no fresh model call is needed.',
     rippleAfterimage: 'Ripple Afterimage',
     archiveCapsule: 'Afterimage Capsule',
+    wallReading: 'Wall Reading',
+    copyWallReading: 'Copy Wall Text',
+    exportWallReading: 'Export Wall Text',
     calibrationConstellation: 'Calibration Constellation',
     calibrationConstellationHint: 'Actual outcomes are rearranging the confidence residue of this worldline.',
     noCalibrationAfterimage: 'No actual outcome has been written yet. The constellation appears after the first calibration.',
@@ -906,6 +933,9 @@ const instrumentCopy = {
   rippleConsoleHint: string
   rippleAfterimage: string
   archiveCapsule: string
+  wallReading: string
+  copyWallReading: string
+  exportWallReading: string
   calibrationConstellation: string
   calibrationConstellationHint: string
   noCalibrationAfterimage: string
@@ -1021,6 +1051,37 @@ const calibrationConstellation = computed(() => {
     ],
     marks,
     counts,
+  }
+})
+const archiveWallReading = computed(() => {
+  const eventTitle = cleanText(selectedEvent.value?.title ?? stage.value?.project_context.headline ?? 'MiroWorld')
+  const branchLabel = cleanText(selectedBranch.value?.label ?? '')
+  const costLine = currentCosts.value[0] ?? cleanText(selectedBranch.value?.cost_hint ?? '')
+  const rippleLine = cleanText(latestBend.value)
+  const calibrationLine = calibrationConstellation.value.total > 0
+    ? `${instrumentText.value.dominantCalibration}: ${calibrationConstellation.value.dominant_label}; ${instrumentText.value.confidenceResidue}: ${calibrationConstellation.value.confidence_residue}.`
+    : instrumentText.value.noCalibrationAfterimage
+
+  if (language.value === 'zh') {
+    return {
+      title: `${eventTitle} / ${branchLabel || '未命名分支'}`,
+      thesis: `这不是结论，而是一条被观测、代价和真实结果共同折弯的世界线。`,
+      wall_text: `当前残影停在“${eventTitle}”。观众看到的不是单一预测，而是${branchLabel || '这一分支'}如何把规则、材料、环境和行动者拉到同一个代价场里。`,
+      cost_line: costLine ? `代价线索：${costLine}` : '代价线索：仍在显影。',
+      ripple_line: rippleLine,
+      calibration_line: `校准线索：${calibrationLine}`,
+      closing_note: `如果继续触碰这条线，下一次选择会带着这次残影的重量。`,
+    }
+  }
+
+  return {
+    title: `${eventTitle} / ${branchLabel || 'unnamed branch'}`,
+    thesis: 'This is not a conclusion; it is a worldline bent by observation, cost, and actual outcomes.',
+    wall_text: `The current afterimage rests at "${eventTitle}". The viewer is not reading a single prediction, but how ${branchLabel || 'this branch'} pulls rules, materials, environments, and actors into one cost field.`,
+    cost_line: costLine ? `Cost cue: ${costLine}` : 'Cost cue: still exposing.',
+    ripple_line: rippleLine,
+    calibration_line: `Calibration cue: ${calibrationLine}`,
+    closing_note: 'If the line is touched again, the next choice carries the weight of this afterimage.',
   }
 })
 const processSteps = computed(() => stage.value?.process_trace.steps ?? [])
@@ -1334,11 +1395,34 @@ async function copyArchiveCapsule() {
   }
 }
 
+async function copyArchiveWallReading() {
+  if (!navigator.clipboard) {
+    exportFeedback.value = instrumentText.value.copyUnavailable
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(buildArchiveWallReadingText())
+    exportFeedback.value = instrumentText.value.copyReady
+  } catch {
+    exportFeedback.value = instrumentText.value.copyUnavailable
+  }
+}
+
 function exportArchiveCapsule() {
   downloadTextFile(
     `${safeFileStem(stage.value?.project_context.project_id ?? 'miroworld')}-afterimage-capsule.json`,
     JSON.stringify(buildArchiveCapsulePacket(), null, 2),
     'application/json;charset=utf-8',
+  )
+  exportFeedback.value = instrumentText.value.exportReady
+}
+
+function exportArchiveWallReading() {
+  downloadTextFile(
+    `${safeFileStem(stage.value?.project_context.project_id ?? 'miroworld')}-archive-wall-reading.md`,
+    buildArchiveWallReadingText(),
+    'text/markdown;charset=utf-8',
   )
   exportFeedback.value = instrumentText.value.exportReady
 }
@@ -1486,6 +1570,7 @@ function buildArchiveCapsulePacket() {
           cost_hint: cleanText(selectedBranch.value.cost_hint),
         }
       : null,
+    wall_reading: archiveWallReading.value,
     metrics: archiveMetrics.value,
     revealed_track: revealedTrack.value.map((track) => ({
       event_id: track.event_id,
@@ -1531,11 +1616,30 @@ function buildArchiveCapsuleText() {
     `${instrumentText.value.dominantCalibration}: ${calibrationConstellation.value.dominant_label}`,
     `${instrumentText.value.confidenceResidue}: ${calibrationConstellation.value.confidence_residue}`,
     '',
+    buildArchiveWallReadingText(),
+    '',
     packet.revealed_track.map((track) => `${track.title} / ${track.branch_label} / ${formatConfidence(track.confidence)}`).join('\n'),
     '',
     snapshot?.disclaimer ?? '',
   ]
   return lines.filter((line) => line !== '').join('\n')
+}
+
+function buildArchiveWallReadingText() {
+  const reading = archiveWallReading.value
+  return [
+    `# ${reading.title}`,
+    '',
+    reading.thesis,
+    '',
+    `> ${reading.wall_text}`,
+    '',
+    `- ${reading.cost_line}`,
+    `- ${reading.calibration_line}`,
+    `- ${reading.ripple_line}`,
+    '',
+    reading.closing_note,
+  ].join('\n')
 }
 
 function downloadTextFile(filename: string, content: string, mimeType: string) {

@@ -444,13 +444,18 @@ describe('worldline theatre stage', () => {
 
     await wrapper.findAll('.surface-chip')[4].trigger('click')
     expect(wrapper.find('[data-testid="archive-capsule"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="archive-wall-reading"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="archive-wall-reading"]').text()).toContain('这不是结论')
+    expect(wrapper.get('[data-testid="archive-wall-reading"]').text()).toContain('代价线索')
     expect(wrapper.get('[data-testid="archive-capsule-metrics"]').text()).toContain('1/3')
     expect(wrapper.find('[data-testid="calibration-constellation"]').exists()).toBe(true)
     expect(wrapper.find('.archive-empty').exists()).toBe(true)
 
     await wrapper.get('[data-testid="archive-capsule-export"]').trigger('click')
     expect(download.createObjectURL).toHaveBeenCalledTimes(2)
-    expect(download.revokeObjectURL).toHaveBeenCalledTimes(2)
+    await wrapper.get('[data-testid="archive-wall-reading-export"]').trigger('click')
+    expect(download.createObjectURL).toHaveBeenCalledTimes(3)
+    expect(download.revokeObjectURL).toHaveBeenCalledTimes(3)
   })
 
   it('renders calibration records as an archive constellation instrument', async () => {

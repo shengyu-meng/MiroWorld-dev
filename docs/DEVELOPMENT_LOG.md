@@ -1064,6 +1064,9 @@ Verification:
 - `git diff --check` passed
 - secret pattern scan returned no matches
 - `git ls-files .ui-ref ui-ref` returned no tracked reference files
+- `git diff --check` passed
+- secret pattern scan returned no matches
+- `git ls-files .ui-ref ui-ref` returned no tracked reference files
 
 Still open after slice 15:
 
@@ -1104,4 +1107,38 @@ Still open after slice 16:
 
 - calibration can become more interactive with branch filters, event-to-event drift, and authored calibration takeaways
 - Archive/Ripple artifact writing can still gain stronger authorial language beyond structured export packets
+- the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery
+
+## 2026-04-24 - Experience Rebuild Slice 17 (archive authored wall reading started)
+
+Planned in this iteration:
+
+- turn Archive export from a mostly structured capsule into a more authored exhibition wall-reading artifact
+- derive curator-facing text from current worldline state, selected branch, cost lens, ripple, and calibration constellation without backend calls or live LLM dependency
+- expose copy/export actions for the authored wall reading inside Archive
+- include the wall-reading payload in the local afterimage capsule export
+- update tests, docs, smoke, secret checks, and push only after verification
+
+## 2026-04-24 - Experience Rebuild Slice 17 (archive authored wall reading completed)
+
+Completed in this iteration:
+
+- added an authored Archive wall-reading card derived from selected worldline state, branch, cost cue, ripple, and calibration constellation
+- added local copy/export actions for the wall reading without backend calls, live LLM work, or frontend secrets
+- included the authored wall-reading payload in the Archive afterimage capsule export
+- added frontend coverage for rendered wall text and wall-reading export actions
+
+Verification:
+
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed
+- `npm run test:perf` passed
+
+Still open after slice 17:
+
+- Ripple exported artifacts can still become more authored and less technical
+- Archive wall text is deterministic and local; later it can optionally receive model-assisted editorial passes if secret-safe async flow is ready
 - the reasoning queue remains in-process and should be revisited if installation deployment requires durable recovery

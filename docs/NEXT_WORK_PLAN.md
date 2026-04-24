@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 16 / Archive Calibration Constellation completed`
+Current slice: `Experience Rebuild Slice 17 / Archive Authored Wall Reading completed`
 
 ## Goal
 
@@ -288,6 +288,23 @@ This slice does include:
 - [x] included constellation data in the local Archive capsule export
 - [x] updated frontend tests and docs after verification
 
+## Slice 17 Acceptance Criteria
+
+- [x] Archive exposes an authored wall-reading card derived from current worldline state, selected branch, cost lens, ripple, and calibration constellation
+- [x] the wall reading contains curator-facing title, thesis, cost line, calibration line, and closing afterimage note in the active UI language
+- [x] wall reading can be copied/exported locally without backend calls, live LLM dependency, or frontend secrets
+- [x] afterimage capsule export includes the authored wall-reading payload
+- [x] frontend tests cover rendered wall reading and export/copy affordances
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 17 Completed
+
+- [x] marked Slice 17 as the active doc-tracked iteration before code changes
+- [x] derived authored archive wall reading from existing stage state
+- [x] added wall-reading card and local copy/export actions to Archive
+- [x] included wall-reading data in the Archive capsule packet
+- [x] updated frontend tests and docs after verification
+
 ## Slice 1 Completed
 
 - [x] the repo has canonical `CURRENT_STATUS / NEXT_WORK_PLAN / DEVELOPMENT_LOG / BLOCKERS` docs
@@ -380,6 +397,7 @@ This slice does include:
 - [x] add a background/async model-enrichment lane that can enrich prompt starts after the deterministic worldline is already visible
 - [x] add a backstage reasoning artifact trail so async model work is visible as ordered local process files
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
+- [x] add authored Archive wall-reading output so the afterimage is not only a structured data packet
 - [x] make Archive calibration read as a constellation / afterimage instrument instead of only an input drawer
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration
