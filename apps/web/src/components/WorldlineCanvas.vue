@@ -251,16 +251,19 @@ function draw() {
     ctx.lineWidth = 1
     ctx.stroke()
   }
+  frameId = 0
+}
 
-  if (visible.value && !reducedMotion.matches) {
-    frameId = requestAnimationFrame(draw)
-  }
+function scheduleDraw() {
+  if (frameId || !visible.value) return
+  frameId = requestAnimationFrame(draw)
 }
 
 function handleVisibility() {
   visible.value = !document.hidden
   cancelAnimationFrame(frameId)
-  draw()
+  frameId = 0
+  scheduleDraw()
 }
 
 function handlePointerMove(event: PointerEvent) {
@@ -273,6 +276,7 @@ function handlePointerMove(event: PointerEvent) {
     x: (event.clientX - rect.left) / rect.width,
     y: (event.clientY - rect.top) / rect.height,
   }
+  scheduleDraw()
 }
 
 onMounted(() => {
@@ -280,14 +284,15 @@ onMounted(() => {
   resizeObserver = new ResizeObserver(() => {
     resizeCanvas()
     cancelAnimationFrame(frameId)
-    draw()
+    frameId = 0
+    scheduleDraw()
   })
   resizeObserver.observe(containerRef.value)
   containerRef.value.addEventListener('pointermove', handlePointerMove)
   document.addEventListener('visibilitychange', handleVisibility)
   reducedMotion.addEventListener?.('change', handleVisibility)
   resizeCanvas()
-  draw()
+  scheduleDraw()
 })
 
 watch(
@@ -295,7 +300,8 @@ watch(
   () => {
     resizeCanvas()
     cancelAnimationFrame(frameId)
-    draw()
+    frameId = 0
+    scheduleDraw()
   },
   { deep: true },
 )

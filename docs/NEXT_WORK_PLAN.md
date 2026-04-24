@@ -2,7 +2,7 @@
 
 Updated: 2026-04-24
 Status: Active
-Current slice: `Experience Rebuild Slice 10 / Archive Ripple Theatre Instruments completed`
+Current slice: `Experience Rebuild Slice 11 / Exhibition Performance Budget completed`
 
 ## Goal
 
@@ -162,11 +162,38 @@ This slice does include:
 - [x] added instrument-specific styling so Ripple and Archive read as orbital theatre tools rather than generic report cards
 - [x] updated frontend route and Playwright smoke coverage for the new console/capsule affordances
 
+## Slice 11 Acceptance Criteria
+
+- [x] performance benchmark asserts a stricter desktop exhibition budget instead of the old loose MVP threshold
+- [x] canvas frame cadence target is at least 45 FPS in the default desktop fixture path
+- [x] ordinary Next-step reveal latency target is under 150 ms locally
+- [x] performance spec records benchmark evidence so failures are diagnosable
+- [x] mobile and low-height exhibition viewports keep the worldline theatre, process panel, and Next control reachable without horizontal overflow
+- [x] any responsive hardening stays CSS-only or frontend-local, with no contract or backend changes
+- [x] build, tests, smoke, perf benchmark, diff check, secret scan, and reference-folder checks pass before push
+
+## Slice 11 Planned Work
+
+- [x] mark Slice 11 as the active doc-tracked iteration before code changes
+- [x] refactor the Playwright performance spec around named exhibition budgets
+- [x] add low-height and mobile viewport coverage to the performance/responsive suite
+- [x] harden theatre CSS for low-height and mobile interaction reachability
+- [x] update docs after verification
+
+## Slice 11 Completed
+
+- [x] replaced the old 24 FPS / 300 ms MVP performance assertions with named exhibition budgets: 45 FPS desktop frame cadence and 150 ms Next-step latency
+- [x] attached benchmark JSON evidence from the Playwright performance spec so future regressions have inspectable numbers
+- [x] removed wasteful continuous canvas redraws by switching `WorldlineCanvas` to dirty-frame rendering
+- [x] removed theatre-route constant backdrop blur and infinite process-scan animation that were depressing headless frame cadence
+- [x] added mobile and low-height viewport checks for theatre visibility, process panel reachability, Next control reachability, and horizontal overflow
+- [x] hardened theatre CSS for mobile and low-height displays without changing public contracts or backend behavior
+
 ## Next Candidate Slice
 
-- [ ] tighten the existing browser performance benchmark into stricter exhibition thresholds
-- [ ] continue visual review on mobile and low-height exhibition displays after the orbital polish pass
 - [ ] deepen Archive/Ripple artifact writing quality now that their theatre-native instrument shells are in place
+- [ ] continue visual review on mobile and low-height exhibition displays after the new performance hardening
+- [ ] make calibration more theatrical inside the Archive drawer instead of remaining utility-like
 
 ## Slice 1 Completed
 
@@ -254,6 +281,7 @@ This slice does include:
 - [x] move theatre reveal progress from frontend-local memory into project-level persistence
 - [x] add the `.impeccable.md` design context and first orbital UI polish pass
 - [x] make Archive and Ripple advanced export/replay tools feel native to the theatre shell instead of utility drawers
+- [x] tighten the existing browser performance benchmark into stricter exhibition thresholds
 - [ ] deepen the replay dossier further if later we need wider curatorial fields, saved authored collections, or stronger replay writing
 - [ ] decide whether multi-event exploration belongs in the linefield, archive, or a future dedicated scene
 - [ ] keep docs, tests, and smoke aligned with each iteration

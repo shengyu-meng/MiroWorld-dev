@@ -887,3 +887,39 @@ Still open after slice 10:
 - tighten performance thresholds toward exhibition deployment
 - continue mobile and low-height visual review
 - improve the authored prose quality of exported Archive/Ripple artifacts now that the instrument shells are in place
+
+## 2026-04-24 - Experience Rebuild Slice 11 (exhibition performance budget started)
+
+Planned in this iteration:
+
+- replace the loose MVP performance assertion with named exhibition budgets for desktop canvas frame cadence and Next-step latency
+- target at least 45 FPS in the default desktop fixture path and under 150 ms for ordinary Next reveal interactions
+- add benchmark evidence output so slowdowns are easier to diagnose
+- cover low-height and mobile viewport reachability so the theatre, process panel, and bottom action do not collapse out of use
+- keep changes frontend-local and contract-safe, then run the full verification and secret/reference gate before push
+
+## 2026-04-24 - Experience Rebuild Slice 11 (exhibition performance budget completed)
+
+Completed in this iteration:
+
+- replaced the loose MVP performance assertions with named exhibition budgets: 45 FPS desktop frame cadence and 150 ms Next-step latency
+- added Playwright benchmark evidence attachment for frame cadence and Next reveal latency
+- changed `WorldlineCanvas` from continuous redraw to dirty-frame redraw on mount, resize, pointer movement, prop changes, and visibility changes
+- removed theatre-route constant backdrop blur and the infinite process-scan animation that were depressing frame cadence in headless Chromium
+- added mobile and low-height viewport checks for theatre visibility, process panel reachability, Next control reachability, and horizontal overflow
+- hardened theatre CSS for mobile and low-height display reachability without backend or contract changes
+
+Verification:
+
+- `npm run test:perf` initially failed at about 28-30 FPS, then passed after render/compositor hardening
+- `npm --workspace apps/web run test` passed
+- `npm --workspace apps/web run build` passed
+- `npm run test` passed
+- `npm run build` passed
+- `npm run smoke` passed with the standard smoke path plus the stricter performance and viewport checks
+
+Still open after slice 11:
+
+- deepen Archive/Ripple artifact prose now that their theatre-native shells are stable
+- keep real-device / real-display visual review on mobile and low-height exhibition hardware
+- make Archive calibration more theatrical and less utility-like

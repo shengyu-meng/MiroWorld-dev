@@ -2,11 +2,11 @@
 
 Updated: 2026-04-24
 Status: Active
-Phase: `experience-first rebuild / slice 10 archive ripple theatre instruments completed`
+Phase: `experience-first rebuild / slice 11 exhibition performance budget completed`
 
 ## One-line Summary
 
-`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Theatre reading progress now persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule with copy/export actions.
+`MiroWorld-dev` now has a working standalone monorepo, public contracts, fixture-backed API, replay/share/calibration flow, tests, CI, one-click local startup, and a worldline theatre shell where `/world/:projectId` progressively reveals events through a Next-driven stage instead of reading as a report stack. Theatre reading progress now persists in project snapshots, and the stage has a first `.impeccable.md`-guided orbital polish pass so it reads more like an exhibition instrument than a report page. Ripple and Archive now also read as theatre instruments: Ripple exposes a replay console and local trace export, while Archive exposes an afterimage capsule with copy/export actions. The browser benchmark now enforces a stricter exhibition budget, and mobile / low-height viewport reachability is covered by Playwright.
 
 The main product risk is no longer "can it run." It is "how far the public experience has been pushed":
 
@@ -44,6 +44,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - and saved replay sets now persist with the project snapshot instead of living only inside browser-local state
 - and Ripple now has a theatre-native replay console with revealed-track metrics and a frontend-only trace packet export
 - and Archive now has a theatre-native afterimage capsule with reveal, decision, calibration, and export/copy affordances
+- and the performance benchmark now targets 45 FPS desktop frame cadence plus sub-150 ms Next-step reveal latency instead of the earlier loose MVP budget
+- and mobile / low-height viewport checks now guard theatre reachability, process panel visibility, Next control access, and horizontal overflow
 - and the calibration / replay archive can still become more comparative and more navigable
 
 ## Completed
@@ -250,6 +252,15 @@ The main product risk is no longer "can it run." It is "how far the public exper
 - Archive can copy a text capsule or export a JSON capsule locally from existing stage state
 - route tests and Playwright smoke now cover the new theatre-native console/capsule affordances
 
+### Experience rebuild slice 11 (exhibition performance budget)
+
+- Playwright performance coverage now uses named exhibition budgets instead of loose MVP assertions
+- default desktop frame cadence must stay at or above 45 FPS and ordinary Next reveal latency below 150 ms locally
+- the performance spec attaches benchmark JSON evidence for future regression diagnosis
+- `WorldlineCanvas` now uses dirty-frame rendering instead of continuous redraw when nothing is changing
+- theatre-route constant backdrop blur and infinite process-scan animation were removed to avoid persistent compositor cost
+- mobile and low-height viewport checks now verify theatre visibility, process panel reachability, Next control access, and horizontal overflow
+
 ### Verification baseline
 
 - `npm run build` passes
@@ -265,7 +276,7 @@ The main product risk is no longer "can it run." It is "how far the public exper
 ### Product / experience gaps
 
 - the new theatre shell restores progressive unfolding, and Archive/Ripple export surfaces now read as theatre instruments, but their generated artifact writing can become more authored and less template-like
-- the canvas is lighter and has a browser benchmark, but thresholds can still become stricter before exhibition deployment
+- the canvas is lighter and now has stricter exhibition budget checks, but real physical display testing is still needed before installation
 - calibration history is still available but can become more theatrical inside the Archive drawer instead of remaining mostly utility-like
 - mobile and low-height exhibition layouts need another visual pass after the new orbital polish
 
@@ -283,8 +294,8 @@ The main product risk is no longer "can it run." It is "how far the public exper
 
 ## Current Focus
 
-The next active slice continues after `Experience Rebuild Slice 10`:
+The next active slice continues after `Experience Rebuild Slice 11`:
 
-- tighten the existing performance benchmark toward stricter exhibition thresholds
 - deepen the authored writing quality of Archive/Ripple local artifacts now that their theatre-native shells are in place
-- review mobile and low-height exhibition displays so the orbit polish does not collapse into dense panels on smaller screens
+- keep mobile and low-height visual review active through future UI passes, especially on real exhibition hardware
+- make calibration more theatrical inside the Archive drawer instead of remaining mostly utility-like
